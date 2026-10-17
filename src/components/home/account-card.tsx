@@ -1,5 +1,5 @@
 import { SymbolView } from "expo-symbols";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
 
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
@@ -63,48 +63,36 @@ export function AccountCard({
   return (
     <Pressable
       onPress={onSelect}
-      style={({ pressed }) => [
-        styles.card,
-        isDark ? styles.cardDark : styles.cardLight,
-        isSelected &&
-          (isDark ? styles.cardSelectedDark : styles.cardSelectedLight),
-        pressed && styles.pressed,
-      ]}
+      className={`rounded-[20px] p-4 border-[1.5px] gap-2.5 active:opacity-85 ${
+        isSelected
+          ? "bg-[#AB9FF2]/10 border-[#AB9FF2]"
+          : "bg-[#f5f5f5] dark:bg-[#121214] border-transparent"
+      }`}
       accessibilityRole="button"
       accessibilityLabel={`${account.name}, balance ${formatCurrency(balance)}, ${isSelected ? "selected" : "not selected"}`}
     >
       {/* Top row: Type badge & Selected state indicator */}
-      <View style={styles.topRow}>
-        <View style={styles.badgeRow}>
-          <View
-            style={[
-              styles.typeIconWrap,
-              isDark ? styles.iconWrapDark : styles.iconWrapLight,
-            ]}
-          >
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
+          <View className="w-8 h-8 rounded-full items-center justify-center bg-black/5 dark:bg-white/10">
             <SymbolView
               name={{
                 ios: iconInfo.sf as any,
                 android: iconInfo.material as any,
                 web: iconInfo.material as any,
               }}
-              size={22}
+              size={18}
               tintColor={isDark ? "#FFFFFF" : "#000000"}
             />
           </View>
-          <Text
-            style={[
-              styles.typeLabel,
-              isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-            ]}
-          >
+          <Text className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
             {TYPE_LABELS[account.type] ?? "Account"}
           </Text>
         </View>
 
-        <View style={styles.topRightActions}>
+        <View className="flex-row items-center gap-2">
           {isSelected ? (
-            <View style={styles.selectedPill}>
+            <View className="flex-row items-center gap-1 bg-[#AB9FF2]/15 px-2.5 py-1 rounded-full">
               <SymbolView
                 name={{
                   ios: "checkmark.circle.fill",
@@ -114,15 +102,10 @@ export function AccountCard({
                 size={14}
                 tintColor="#AB9FF2"
               />
-              <Text style={styles.selectedPillText}>Active</Text>
+              <Text className="text-xs font-bold text-[#AB9FF2]">Active</Text>
             </View>
           ) : (
-            <Text
-              style={[
-                styles.tapHint,
-                isDark ? styles.textMutedDark : styles.textMutedLight,
-              ]}
-            >
+            <Text className="text-xs font-medium text-neutral-400 dark:text-neutral-600">
               Tap to filter
             </Text>
           )}
@@ -133,7 +116,7 @@ export function AccountCard({
               e.stopPropagation();
               handleDeleteAccount();
             }}
-            style={styles.deleteAccountBtn}
+            className="p-1 ml-1 active:opacity-60"
             accessibilityRole="button"
             accessibilityLabel={`Delete account ${account.name}`}
           >
@@ -149,42 +132,24 @@ export function AccountCard({
       {/* Account Title */}
       <Text
         numberOfLines={1}
-        style={[
-          styles.accountName,
-          isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-        ]}
+        className="text-base font-bold text-black dark:text-white tracking-tight"
       >
         {account.name}
       </Text>
 
       {/* Main Account Balance */}
-      <View style={styles.balanceRow}>
-        <Text
-          style={[
-            styles.balanceAmount,
-            isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-          ]}
-        >
+      <View className="flex-row items-baseline">
+        <Text className="text-2xl font-extrabold tracking-tight text-black dark:text-white">
           {formatCurrency(balance)}
         </Text>
       </View>
 
       {/* Footer stats: monthly outflow */}
-      <View
-        style={[
-          styles.footerRow,
-          isDark ? styles.footerBorderDark : styles.footerBorderLight,
-        ]}
-      >
-        <Text
-          style={[
-            styles.footerLabel,
-            isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-          ]}
-        >
+      <View className="flex-row items-center justify-between pt-2.5 mt-1 border-t border-black/5 dark:border-white/10">
+        <Text className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
           Spent this month
         </Text>
-        <View style={styles.footerValueRow}>
+        <View className="flex-row items-center gap-1">
           {monthlyExpense > 0 && (
             <SymbolView
               name={{
@@ -197,13 +162,11 @@ export function AccountCard({
             />
           )}
           <Text
-            style={[
-              styles.footerValue,
-              {
-                color:
-                  monthlyExpense > 0 ? "#FF3B30" : isDark ? "#8E8E93" : "#6C6C70",
-              },
-            ]}
+            className="text-xs font-semibold"
+            style={{
+              color:
+                monthlyExpense > 0 ? "#FF3B30" : isDark ? "#8E8E93" : "#6C6C70",
+            }}
           >
             {formatCurrency(monthlyExpense)}
           </Text>
@@ -212,147 +175,3 @@ export function AccountCard({
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 20,
-    padding: 18,
-    borderWidth: 1.5,
-    gap: 10,
-  },
-  cardDark: {
-    backgroundColor: "#121214",
-    borderColor: "rgba(255, 255, 255, 0.10)",
-  },
-  cardLight: {
-    backgroundColor: "#f5f5f5ff",
-    borderColor: "rgba(0, 0, 0, 0)",
-  },
-  cardSelectedDark: {
-    borderColor: "#AB9FF2",
-    backgroundColor: "#18171E",
-  },
-  cardSelectedLight: {
-    borderColor: "#AB9FF2",
-    backgroundColor: "#FBF9FF",
-  },
-  pressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.99 }],
-  },
-  topRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  badgeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  typeIconWrap: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconWrapDark: {
-    backgroundColor: "rgba(255, 255, 255, 0.10)",
-  },
-  iconWrapLight: {
-    backgroundColor: "#F5F2FF",
-  },
-  typeLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 0.4,
-    textTransform: "uppercase",
-  },
-  selectedPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-    backgroundColor: "rgba(171, 159, 242, 0.15)",
-  },
-  selectedPillText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#AB9FF2",
-  },
-  topRightActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  deleteAccountBtn: {
-    padding: 3,
-  },
-  tapHint: {
-    fontSize: 11,
-    fontWeight: "500",
-  },
-  accountName: {
-    fontSize: 18,
-    fontWeight: "700",
-    letterSpacing: -0.3,
-  },
-  balanceRow: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    marginTop: -2,
-  },
-  balanceAmount: {
-    fontSize: 26,
-    fontWeight: "800",
-    letterSpacing: -0.6,
-  },
-  footerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 10,
-    marginTop: 2,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  footerBorderDark: {
-    borderTopColor: "rgba(255, 255, 255, 0.08)",
-  },
-  footerBorderLight: {
-    borderTopColor: "rgba(0, 0, 0, 0.06)",
-  },
-  footerLabel: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  footerValue: {
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  footerValueRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-  },
-  textPrimaryDark: {
-    color: "#FFFFFF",
-  },
-  textPrimaryLight: {
-    color: "#000000",
-  },
-  textSecondaryDark: {
-    color: "#8E8E93",
-  },
-  textSecondaryLight: {
-    color: "#6C6C70",
-  },
-  textMutedDark: {
-    color: "#636366",
-  },
-  textMutedLight: {
-    color: "#8E8E93",
-  },
-});

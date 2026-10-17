@@ -1,5 +1,5 @@
 import { SymbolView } from "expo-symbols";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
 
 import { CATEGORY_ICONS, useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
@@ -61,21 +61,13 @@ export function TransactionItem({
   };
 
   return (
-    <View style={styles.container}>
+    <View className="w-full">
       <Pressable
         onPress={onPress}
-        style={({ pressed }) => [
-          styles.rowContent,
-          pressed && { opacity: 0.75 },
-        ]}
+        className="min-h-[64px] flex-row items-center px-4 py-2 gap-3 active:opacity-75"
       >
-        {/* Neutral Monochrome iOS Icon (No colorful background) */}
-        <View
-          style={[
-            // styles.iconWrap,
-            isDark ? styles.iconWrapDark : styles.iconWrapLight,
-          ]}
-        >
+        {/* Neutral Monochrome iOS Icon */}
+        <View className="w-9 h-9 rounded-xl items-center justify-center">
           <SymbolView
             name={{
               ios: isTransfer ? "arrow.left.arrow.right" : categoryMeta.sf,
@@ -83,35 +75,29 @@ export function TransactionItem({
               web: isTransfer ? "sync_alt" : categoryMeta.material,
             }}
             size={24}
-            tintColor={isTransfer ? "#AB9FF2" : isDark ? "#FFFFFF" : "#000000"}
+            tintColor={isTransfer ? "#AB9FF2" : isDark ? "#E4E5EB" : "#1E1F24"}
           />
         </View>
 
         {/* Title and Subtitle */}
-        <View style={styles.infoCol}>
+        <View className="flex-1 gap-0.5">
           <Text
             numberOfLines={1}
-            style={[
-              styles.title,
-              isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-            ]}
+            className="text-[16px] font-semibold tracking-tight text-text-light dark:text-text-dark"
           >
             {transaction.title}
           </Text>
           <Text
             numberOfLines={1}
-            style={[
-              styles.subtitle,
-              isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-            ]}
+            className="text-[13px] text-text-secondary-light dark:text-text-secondary-dark mt-0.5"
           >
             {subtitleText}
           </Text>
         </View>
 
-        {/* Amount: Income Green with up arrow, Expense Red with down arrow, Transfer Purple */}
-        <View style={styles.amountCol}>
-          <View style={styles.amountRow}>
+        {/* Amount */}
+        <View className="items-end">
+          <View className="flex-row items-center gap-1">
             {!isTransfer && (
               <SymbolView
                 name={{
@@ -124,16 +110,14 @@ export function TransactionItem({
               />
             )}
             <Text
-              style={[
-                styles.amountText,
-                {
-                  color: isTransfer
-                    ? "#AB9FF2"
-                    : isIncome
-                      ? "#2EC08B"
-                      : "#FF3B30",
-                },
-              ]}
+              className="text-[15px] font-bold tracking-tight"
+              style={{
+                color: isTransfer
+                  ? "#AB9FF2"
+                  : isIncome
+                    ? "#2EC08B"
+                    : "#FF3B30",
+              }}
             >
               {formatCurrency(transaction.amount)}
             </Text>
@@ -147,7 +131,7 @@ export function TransactionItem({
             e.stopPropagation();
             handleDelete();
           }}
-          style={styles.deleteBtn}
+          className="p-1 ml-1 active:opacity-60"
           accessibilityRole="button"
           accessibilityLabel={`Delete transaction ${transaction.title}`}
         >
@@ -160,91 +144,9 @@ export function TransactionItem({
       </Pressable>
 
       {showDivider && (
-        <View
-          style={[
-            styles.divider,
-            isDark ? styles.dividerDark : styles.dividerLight,
-          ]}
-        />
+        <View className="h-[0.5px] ml-[52px] bg-black/5 dark:bg-white/10" />
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-  },
-  rowContent: {
-    minHeight: 64,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 12,
-  },
-  iconWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconWrapDark: {
-    backgroundColor: "#1C1C1E",
-  },
-  iconWrapLight: {
-    backgroundColor: "#F5F2FF", // Magnolia
-  },
-  infoCol: {
-    flex: 1,
-    gap: 3,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: "600",
-    letterSpacing: -0.2,
-  },
-  subtitle: {
-    fontSize: 12,
-  },
-  amountCol: {
-    alignItems: "flex-end",
-  },
-  amountRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-  },
-  amountText: {
-    fontSize: 15,
-    fontWeight: "700",
-    letterSpacing: -0.3,
-  },
-  deleteBtn: {
-    padding: 4,
-    marginLeft: 4,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 66,
-  },
-  dividerDark: {
-    backgroundColor: "rgba(255, 255, 255, 0.10)",
-  },
-  dividerLight: {
-    backgroundColor: "rgba(0, 0, 0, 0.08)",
-  },
-  textPrimaryDark: {
-    color: "#FFFFFF",
-  },
-  textPrimaryLight: {
-    color: "#000000",
-  },
-  textSecondaryDark: {
-    color: "#8E8E93",
-  },
-  textSecondaryLight: {
-    color: "#6C6C70",
-  },
-});

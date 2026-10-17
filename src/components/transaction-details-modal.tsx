@@ -1,13 +1,6 @@
 import { BottomSheet, RNHostView } from "@expo/ui";
 import { SymbolView } from "expo-symbols";
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 
 import { CATEGORY_ICONS, useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
@@ -66,23 +59,16 @@ function TransactionDetailsContent({
   };
 
   return (
-    <View
-      style={[styles.container, isDark ? styles.sheetDark : styles.sheetLight]}
-    >
+    <View className="flex-1 bg-white dark:bg-black px-5 pt-3 pb-8">
       {/* Header */}
-      <View style={styles.headerRow}>
-        <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-          ]}
-        >
+      <View className="flex-row items-center justify-between py-3">
+        <Text className="text-xl font-bold tracking-tight text-black dark:text-white">
           Transaction Details
         </Text>
         <Pressable
           onPress={onClose}
           hitSlop={12}
-          style={styles.closeBtn}
+          className="p-1 active:opacity-70"
           accessibilityRole="button"
           accessibilityLabel="Close details"
         >
@@ -100,11 +86,11 @@ function TransactionDetailsContent({
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ paddingBottom: 24, gap: 18 }}
       >
         {/* Hero Amount & Type Card */}
-        <View style={styles.heroWrap}>
-          <View style={styles.heroAmountRow}>
+        <View className="items-center justify-center py-5 gap-2">
+          <View className="flex-row items-center justify-center gap-2">
             {!isTransfer && (
               <SymbolView
                 name={{
@@ -116,71 +102,50 @@ function TransactionDetailsContent({
                 tintColor={amountColor}
               />
             )}
-            <Text style={[styles.amountText, { color: amountColor }]}>
+            <Text
+              className="text-4xl font-extrabold tracking-tight"
+              style={{ color: amountColor }}
+            >
               {formatCurrency(transaction.amount)}
             </Text>
           </View>
           <View
-            style={[styles.typeBadge, { backgroundColor: `${amountColor}1A` }]}
+            className="px-3 py-1 rounded-xl"
+            style={{ backgroundColor: `${amountColor}1A` }}
           >
-            <Text style={[styles.typeBadgeText, { color: amountColor }]}>
+            <Text
+              className="text-xs font-bold tracking-wider"
+              style={{ color: amountColor }}
+            >
               {transaction.type.toUpperCase()}
             </Text>
           </View>
         </View>
 
         {/* Grouped Information List */}
-        <View
-          style={[
-            styles.cardGroup,
-            isDark ? styles.cardDark : styles.cardLight,
-          ]}
-        >
+        <View className="rounded-2xl px-4 py-1.5 bg-[#f5f5f5] dark:bg-[#1C1C1E]">
           {/* Title Row */}
-          <View style={styles.infoRow}>
-            <Text
-              style={[
-                styles.rowLabel,
-                isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-              ]}
-            >
+          <View className="flex-row items-center justify-between py-3.5 gap-3">
+            <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
               Title
             </Text>
             <Text
               numberOfLines={2}
-              style={[
-                styles.rowValueBold,
-                isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-              ]}
+              className="text-[15px] font-bold text-black dark:text-white max-w-[200px] text-right"
             >
               {transaction.title}
             </Text>
           </View>
 
-          <View
-            style={[
-              styles.rowDivider,
-              isDark ? styles.dividerDark : styles.dividerLight,
-            ]}
-          />
+          <View className="h-[0.5px] w-full bg-black/5 dark:bg-white/10" />
 
           {/* Category Row */}
-          <View style={styles.infoRow}>
-            <Text
-              style={[
-                styles.rowLabel,
-                isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-              ]}
-            >
+          <View className="flex-row items-center justify-between py-3.5 gap-3">
+            <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
               Category
             </Text>
-            <View style={styles.categoryValueWrap}>
-              <View
-                style={[
-                  styles.catIconCircle,
-                  isDark ? styles.iconWrapDark : styles.iconWrapLight,
-                ]}
-              >
+            <View className="flex-row items-center gap-2">
+              <View className="w-7 h-7 rounded-full items-center justify-center bg-[#E5E5EA] dark:bg-[#2C2C2E]">
                 <SymbolView
                   name={{
                     ios: isTransfer
@@ -195,118 +160,54 @@ function TransactionDetailsContent({
                   }
                 />
               </View>
-              <Text
-                style={[
-                  styles.rowValue,
-                  isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                ]}
-              >
+              <Text className="text-[15px] font-semibold text-black dark:text-white">
                 {transaction.category}
               </Text>
             </View>
           </View>
 
-          <View
-            style={[
-              styles.rowDivider,
-              isDark ? styles.dividerDark : styles.dividerLight,
-            ]}
-          />
+          <View className="h-[0.5px] w-full bg-black/5 dark:bg-white/10" />
 
           {/* Account Row */}
           {isTransfer ? (
             <>
-              <View style={styles.infoRow}>
-                <Text
-                  style={[
-                    styles.rowLabel,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
+              <View className="flex-row items-center justify-between py-3.5 gap-3">
+                <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
                   From
                 </Text>
-                <Text
-                  style={[
-                    styles.rowValue,
-                    isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                  ]}
-                >
+                <Text className="text-[15px] font-semibold text-black dark:text-white">
                   {sourceAccount?.name ?? "Source Account"}
                 </Text>
               </View>
-              <View
-                style={[
-                  styles.rowDivider,
-                  isDark ? styles.dividerDark : styles.dividerLight,
-                ]}
-              />
-              <View style={styles.infoRow}>
-                <Text
-                  style={[
-                    styles.rowLabel,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
+              <View className="h-[0.5px] w-full bg-black/5 dark:bg-white/10" />
+              <View className="flex-row items-center justify-between py-3.5 gap-3">
+                <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
                   To
                 </Text>
-                <Text
-                  style={[
-                    styles.rowValue,
-                    isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                  ]}
-                >
+                <Text className="text-[15px] font-semibold text-black dark:text-white">
                   {destAccount?.name ?? "Destination Account"}
                 </Text>
               </View>
             </>
           ) : (
-            <View style={styles.infoRow}>
-              <Text
-                style={[
-                  styles.rowLabel,
-                  isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-                ]}
-              >
+            <View className="flex-row items-center justify-between py-3.5 gap-3">
+              <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
                 Account
               </Text>
-              <Text
-                style={[
-                  styles.rowValue,
-                  isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                ]}
-              >
+              <Text className="text-[15px] font-semibold text-black dark:text-white">
                 {sourceAccount?.name ?? "Connected Account"}
               </Text>
             </View>
           )}
 
-          <View
-            style={[
-              styles.rowDivider,
-              isDark ? styles.dividerDark : styles.dividerLight,
-            ]}
-          />
+          <View className="h-[0.5px] w-full bg-black/5 dark:bg-white/10" />
 
           {/* Date Row */}
-          <View style={styles.infoRow}>
-            <Text
-              style={[
-                styles.rowLabel,
-                isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-              ]}
-            >
+          <View className="flex-row items-center justify-between py-3.5 gap-3">
+            <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
               Date
             </Text>
-            <Text
-              style={[
-                styles.rowValue,
-                isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-              ]}
-            >
+            <Text className="text-[15px] font-semibold text-black dark:text-white">
               {transaction.date}
             </Text>
           </View>
@@ -314,29 +215,12 @@ function TransactionDetailsContent({
           {/* Notes Row if present */}
           {transaction.note ? (
             <>
-              <View
-                style={[
-                  styles.rowDivider,
-                  isDark ? styles.dividerDark : styles.dividerLight,
-                ]}
-              />
-              <View style={styles.infoRow}>
-                <Text
-                  style={[
-                    styles.rowLabel,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
+              <View className="h-[0.5px] w-full bg-black/5 dark:bg-white/10" />
+              <View className="flex-row items-center justify-between py-3.5 gap-3">
+                <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
                   Note
                 </Text>
-                <Text
-                  style={[
-                    styles.rowValue,
-                    isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                  ]}
-                >
+                <Text className="text-[15px] font-semibold text-black dark:text-white max-w-[200px] text-right">
                   {transaction.note}
                 </Text>
               </View>
@@ -347,11 +231,7 @@ function TransactionDetailsContent({
         {/* Delete Action Button */}
         <Pressable
           onPress={handleDelete}
-          style={({ pressed }) => [
-            styles.deleteActionBtn,
-            isDark ? styles.deleteBtnDark : styles.deleteBtnLight,
-            pressed && { opacity: 0.8 },
-          ]}
+          className="flex-row items-center justify-center h-[52px] rounded-2xl gap-2 mt-1.5 bg-red-500/10 dark:bg-red-500/15 active:opacity-80"
           accessibilityRole="button"
           accessibilityLabel="Delete this transaction"
         >
@@ -360,7 +240,9 @@ function TransactionDetailsContent({
             size={18}
             tintColor="#FF3B30"
           />
-          <Text style={styles.deleteActionText}>Delete Transaction</Text>
+          <Text className="text-[#FF3B30] text-base font-bold">
+            Delete Transaction
+          </Text>
         </Pressable>
       </ScrollView>
     </View>
@@ -396,158 +278,3 @@ export function TransactionDetailsModal({
     </BottomSheet>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 24,
-    gap: 16,
-  },
-  sheetDark: {
-    backgroundColor: "#121214",
-  },
-  sheetLight: {
-    backgroundColor: "#FFFFFF",
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 6,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    letterSpacing: -0.3,
-  },
-  closeBtn: {
-    padding: 4,
-  },
-  scrollContent: {
-    gap: 18,
-    paddingBottom: 16,
-  },
-  heroWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    gap: 8,
-  },
-  heroAmountRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  amountText: {
-    fontSize: 36,
-    fontWeight: "800",
-    letterSpacing: -1,
-  },
-  typeBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 12,
-  },
-  typeBadgeText: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.6,
-  },
-  cardGroup: {
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderWidth: 0,
-  },
-  cardDark: {
-    backgroundColor: "#1C1C1E",
-    borderColor: "rgba(255, 255, 255, 0.12)",
-  },
-  cardLight: {
-    backgroundColor: "#f5f5f5ff",
-    borderColor: "rgba(0, 0, 0, 0)",
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 14,
-    gap: 12,
-  },
-  rowLabel: {
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  rowValue: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  rowValueBold: {
-    fontSize: 15,
-    fontWeight: "700",
-    maxWidth: 200,
-    textAlign: "right",
-  },
-  categoryValueWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  catIconCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconWrapDark: {
-    backgroundColor: "#2C2C2E",
-  },
-  iconWrapLight: {
-    backgroundColor: "#E5E5EA",
-  },
-  rowDivider: {
-    height: StyleSheet.hairlineWidth,
-    width: "100%",
-  },
-  dividerDark: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-  },
-  dividerLight: {
-    backgroundColor: "rgba(0, 0, 0, 0.08)",
-  },
-  deleteActionBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 52,
-    borderRadius: 16,
-    gap: 8,
-    marginTop: 6,
-  },
-  deleteBtnDark: {
-    backgroundColor: "rgba(255, 59, 48, 0.12)",
-  },
-  deleteBtnLight: {
-    backgroundColor: "rgba(255, 59, 48, 0.08)",
-  },
-  deleteActionText: {
-    color: "#FF3B30",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  textPrimaryDark: {
-    color: "#FFFFFF",
-  },
-  textPrimaryLight: {
-    color: "#000000",
-  },
-  textSecondaryDark: {
-    color: "#8E8E93",
-  },
-  textSecondaryLight: {
-    color: "#6C6C70",
-  },
-});

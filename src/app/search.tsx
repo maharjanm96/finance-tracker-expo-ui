@@ -67,15 +67,18 @@ export default function AnalyticsScreen() {
   const expenseBarWidth = Math.round((monthlyExpenses / maxCashFlow) * 100);
 
   return (
-    <View style={[styles.screen, isDark ? styles.screenDark : styles.screenLight]}>
+    <View
+      className="flex-1 bg-bg-light dark:bg-bg-dark"
+      style={styles.screen}
+    >
       <BlurTargetView ref={blurTargetRef} style={styles.blurTarget}>
         <Animated.ScrollView
           style={styles.scrollView}
           contentContainerStyle={[
             styles.scrollContent,
             {
-              paddingTop: insets.top + (Platform.OS === 'ios' ? 14 : 24),
-              paddingBottom: insets.bottom + BottomTabInset + 44,
+              paddingTop: 10,
+              paddingBottom: 110,
             },
           ]}
           showsVerticalScrollIndicator={false}
@@ -719,21 +722,21 @@ const styles = StyleSheet.create({
     color: '#6C6C70',
   },
   cardDark: {
-    backgroundColor: '#121214',
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: '#202227',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   cardLight: {
-    backgroundColor: '#f5f5f5ff',
+    backgroundColor: '#F5F5F5',
     borderColor: 'rgba(0, 0, 0, 0)',
   },
   textPrimaryDark: {
-    color: '#FFFFFF',
+    color: '#E4E5EB',
   },
   textPrimaryLight: {
-    color: '#000000',
+    color: '#1E1F24',
   },
   textSecondaryDark: {
-    color: '#8E8E93',
+    color: '#989BA5',
   },
   textSecondaryLight: {
     color: '#6C6C70',

@@ -1,46 +1,62 @@
-:root {
-  /* Typography */
-  --font-display:
-    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji,
-    Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono,
-    Courier New, monospace;
-  --font-rounded:
-    "SF Pro Rounded", "Hiragino Maru Gothic ProN", Meiryo, "MS PGothic",
-    sans-serif;
-  --font-serif: Georgia, "Times New Roman", serif;
+@import "tailwindcss";
+@import "uniwind";
 
-  /* Brand Palette */
-  --brand-perano: #ab9ff2; /* Primary Purple Accent */
-  --brand-dark-purple: #3c315b; /* Deep Purple / Martinique */
-  --brand-fog: #e2dffe; /* Soft Lilac Gray */
-  --brand-magnolia: #f5f2ff; /* Off-White */
+@theme {
+  /* Brand Accent Tokens */
+  --color-brand-perano: #AB9FF2;
+  --color-brand-dark-purple: #3C315B;
+  --color-brand-fog: #E2DFFE;
+  --color-brand-magnolia: #F5F2FF;
 
   /* Cash Flow Semantics */
-  --color-income: #2ec08b; /* Green */
-  --color-expense: #ff3b30; /* Red */
+  --color-income: #2EC08B;
+  --color-expense: #FF3B30;
 
-  /* Light Theme - Clean White */
-  --bg-light: #ffffff;
-  --surface-light: #ffffff;
-  --text-light: #000000;
-  --text-secondary-light: #6c6c70;
-  --border-light: rgba(0, 0, 0, 0.08);
+  /* Light Theme */
+  --color-bg-light: #FFFFFF;
+  --color-surface-light: #FFFFFF;
+  --color-card-light: #F5F5F5;
+  --color-chip-light: #F0EEF8;
+  --color-text-light: #1E1F24;
+  --color-text-secondary-light: #6C6C70;
+  --color-border-light: rgba(0, 0, 0, 0.08);
 
-  /* Dark Theme - Pure Black */
-  --bg-dark: #000000;
-  --surface-dark: #121214;
-  --text-dark: #ffffff;
-  --text-secondary-dark: #8e8e93;
-  --border-dark: rgba(255, 255, 255, 0.12);
+  /* Eye-Friendly Dark Theme (Warm Charcoal Dark) */
+  --color-bg-dark: #121316;
+  --color-surface-dark: #18191D;
+  --color-card-dark: #202227;
+  --color-chip-dark: #262830;
+  --color-text-dark: #E4E5EB;
+  --color-text-secondary-dark: #989BA5;
+  --color-border-dark: rgba(255, 255, 255, 0.08);
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #000000;
-  color: #ffffff;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
+:root {
+  /* Brand Palette */
+  --brand-perano: #AB9FF2;
+  --brand-dark-purple: #3C315B;
+  --brand-fog: #E2DFFE;
+  --brand-magnolia: #F5F2FF;
+
+  /* Cash Flow Semantics */
+  --color-income: #2EC08B;
+  --color-expense: #FF3B30;
+
+  /* Light Theme */
+  --bg-light: #FFFFFF;
+  --surface-light: #FFFFFF;
+  --card-light: #F5F5F5;
+  --chip-light: #F0EEF8;
+  --text-light: #1A1A1E;
+  --text-secondary-light: #6C6C70;
+  --border-light: rgba(0, 0, 0, 0.08);
+
+  /* Eye-Friendly Dark Theme */
+  --bg-dark: #121316;
+  --surface-dark: #18191D;
+  --card-dark: #202227;
+  --chip-dark: #262830;
+  --text-dark: #E4E5EB;
+  --text-secondary-dark: #989BA5;
+  --border-dark: rgba(255, 255, 255, 0.08);
 }

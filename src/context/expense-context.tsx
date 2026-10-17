@@ -1,11 +1,6 @@
 import type { SymbolViewProps } from "expo-symbols";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
-import {
-  INITIAL_ACCOUNTS,
-  INITIAL_PROFILE,
-  INITIAL_TRANSACTIONS,
-} from "@/data/mock-data";
 import {
   calculateAccountBalance,
   calculateCombinedBalance,
@@ -21,6 +16,7 @@ import {
   Transaction,
   UserProfile,
 } from "@/domain/types";
+import { StorageService } from "@/services/storage-service";
 
 export type CategorySymbol = Extract<SymbolViewProps["name"], { ios?: any }>;
 
@@ -55,12 +51,21 @@ export const CATEGORY_ICONS: Record<ExpenseCategory, CategoryMeta> = {
   Other: { sf: "tag.fill", material: "label", color: "#8E8E93" },
 };
 
+export const DEFAULT_PROFILE: UserProfile = {
+  name: "",
+  monthlyIncome: 0,
+  annualSavingsGoal: 0,
+  currency: "Rs.",
+  isConfigured: false,
+};
+
 interface ExpenseContextType {
   profile: UserProfile;
   accounts: Account[];
   transactions: Transaction[];
   selectedAccountId: string | null;
   selectedAccount: Account | null;
+  isHydrated: boolean;
 
   // Derived financial metrics
   combinedBalance: number;
@@ -105,13 +110,38 @@ interface ExpenseContextType {
 const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
 
 export function ExpenseProvider({ children }: { children: React.ReactNode }) {
-  const [profile, setProfileState] = useState<UserProfile>(INITIAL_PROFILE);
-  const [accounts, setAccounts] = useState<Account[]>(INITIAL_ACCOUNTS);
-  const [transactions, setTransactions] =
-    useState<Transaction[]>(INITIAL_TRANSACTIONS);
+  const [profile, setProfileState] = useState<UserProfile>(DEFAULT_PROFILE);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
   );
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Load persisted offline state on startup
+  useEffect(() => {
+    async function hydrate() {
+      const [savedProfile, savedAccounts, savedTransactions] =
+        await Promise.all([
+          StorageService.loadProfile(),
+          StorageService.loadAccounts(),
+          StorageService.loadTransactions(),
+        ]);
+
+      if (savedProfile) {
+        setProfileState(savedProfile);
+      }
+      if (savedAccounts) {
+        setAccounts(savedAccounts);
+      }
+      if (savedTransactions) {
+        setTransactions(savedTransactions);
+      }
+      setIsHydrated(true);
+    }
+
+    hydrate();
+  }, []);
 
   const selectedAccount =
     accounts.find((acc) => acc.id === selectedAccountId) ?? null;
@@ -155,7 +185,11 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
   };
 
   const setProfile = (newProfile: Partial<UserProfile>) => {
-    setProfileState((prev) => ({ ...prev, ...newProfile }));
+    setProfileState((prev) => {
+      const next = { ...prev, ...newProfile };
+      StorageService.saveProfile(next);
+      return next;
+    });
   };
 
   const addTransaction = (
@@ -166,17 +200,27 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
       id: `tx-${Date.now()}`,
       timestamp: tx.timestamp ?? Date.now(),
     };
-    setTransactions((prev) => [newTx, ...prev]);
+    setTransactions((prev) => {
+      const next = [newTx, ...prev];
+      StorageService.saveTransactions(next);
+      return next;
+    });
   };
 
   const editTransaction = (id: string, updated: Partial<Transaction>) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updated } : t)),
-    );
+    setTransactions((prev) => {
+      const next = prev.map((t) => (t.id === id ? { ...t, ...updated } : t));
+      StorageService.saveTransactions(next);
+      return next;
+    });
   };
 
   const deleteTransaction = (id: string) => {
-    setTransactions((prev) => prev.filter((tx) => tx.id !== id));
+    setTransactions((prev) => {
+      const next = prev.filter((tx) => tx.id !== id);
+      StorageService.saveTransactions(next);
+      return next;
+    });
   };
 
   const addAccount = (accountData: Omit<Account, "id">) => {
@@ -184,19 +228,31 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
       ...accountData,
       id: `acc-${Date.now()}`,
     };
-    setAccounts((prev) => [...prev, newAccount]);
+    setAccounts((prev) => {
+      const next = [...prev, newAccount];
+      StorageService.saveAccounts(next);
+      return next;
+    });
   };
 
   const editAccount = (id: string, updated: Partial<Account>) => {
-    setAccounts((prev) =>
-      prev.map((acc) => (acc.id === id ? { ...acc, ...updated } : acc)),
-    );
+    setAccounts((prev) => {
+      const next = prev.map((acc) =>
+        acc.id === id ? { ...acc, ...updated } : acc,
+      );
+      StorageService.saveAccounts(next);
+      return next;
+    });
   };
 
   const archiveAccount = (id: string) => {
-    setAccounts((prev) =>
-      prev.map((acc) => (acc.id === id ? { ...acc, isArchived: true } : acc)),
-    );
+    setAccounts((prev) => {
+      const next = prev.map((acc) =>
+        acc.id === id ? { ...acc, isArchived: true } : acc,
+      );
+      StorageService.saveAccounts(next);
+      return next;
+    });
     if (selectedAccountId === id) {
       setSelectedAccountId(null);
     }
@@ -206,12 +262,18 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
     if (selectedAccountId === id) {
       setSelectedAccountId(null);
     }
-    setAccounts((prev) => prev.filter((acc) => acc.id !== id));
-    setTransactions((prev) =>
-      prev.filter(
+    setAccounts((prev) => {
+      const nextAccs = prev.filter((acc) => acc.id !== id);
+      StorageService.saveAccounts(nextAccs);
+      return nextAccs;
+    });
+    setTransactions((prev) => {
+      const nextTxs = prev.filter(
         (tx) => tx.sourceAccountId !== id && tx.destinationAccountId !== id,
-      ),
-    );
+      );
+      StorageService.saveTransactions(nextTxs);
+      return nextTxs;
+    });
   };
 
   const getAccountById = (id: string) => {
@@ -225,16 +287,11 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetAllData = () => {
-    setProfileState({
-      name: "",
-      monthlyIncome: 0,
-      annualSavingsGoal: 0,
-      currency: "Rs.",
-      isConfigured: false,
-    });
+    setProfileState(DEFAULT_PROFILE);
     setAccounts([]);
     setTransactions([]);
     setSelectedAccountId(null);
+    StorageService.clearAllData();
   };
 
   // Legacy compat aliases for hero card
@@ -256,6 +313,7 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
         transactions,
         selectedAccountId,
         selectedAccount,
+        isHydrated,
         combinedBalance,
         scopedBalance,
         monthlyIncome,
@@ -287,6 +345,7 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
     </ExpenseContext.Provider>
   );
 }
+
 
 export function useExpense() {
   const context = useContext(ExpenseContext);

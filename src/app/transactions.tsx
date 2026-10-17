@@ -26,7 +26,15 @@ import { Transaction, TransactionType } from "@/domain/types";
 
 type FilterType = "all" | TransactionType;
 
-export default function TransactionsScreen() {
+interface TransactionsScreenProps {
+  externalSearchQuery?: string;
+  onOpenAddTransaction?: () => void;
+}
+
+export default function TransactionsScreen({
+  externalSearchQuery,
+  onOpenAddTransaction,
+}: TransactionsScreenProps = {}) {
   const insets = useSafeAreaInsets();
   const { isDark } = useAppTheme();
   const { transactions, accounts, selectedAccountId, selectAccount } =
@@ -39,6 +47,8 @@ export default function TransactionsScreen() {
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+
+  const effectiveSearch = (externalSearchQuery !== undefined ? externalSearchQuery : searchQuery).trim();
 
   // Filter transactions
   const filteredTransactions = useMemo(() => {
@@ -57,8 +67,8 @@ export default function TransactionsScreen() {
       }
 
       // 3. Search query
-      if (searchQuery.trim().length > 0) {
-        const query = searchQuery.toLowerCase().trim();
+      if (effectiveSearch.length > 0) {
+        const query = effectiveSearch.toLowerCase().trim();
         const matchesTitle = tx.title.toLowerCase().includes(query);
         const matchesCategory = tx.category.toLowerCase().includes(query);
         const matchesNote = tx.note?.toLowerCase().includes(query);
@@ -67,7 +77,7 @@ export default function TransactionsScreen() {
 
       return true;
     });
-  }, [transactions, selectedAccountId, filterType, searchQuery]);
+  }, [transactions, selectedAccountId, filterType, effectiveSearch]);
 
   // Group by date
   const groupedTransactions = useMemo(() => {
@@ -85,7 +95,8 @@ export default function TransactionsScreen() {
 
   return (
     <View
-      style={[styles.screen, isDark ? styles.screenDark : styles.screenLight]}
+      className="flex-1 bg-bg-light dark:bg-bg-dark"
+      style={styles.screen}
     >
       <BlurTargetView ref={blurTargetRef} style={styles.blurTarget}>
         <Animated.ScrollView
@@ -93,8 +104,8 @@ export default function TransactionsScreen() {
           contentContainerStyle={[
             styles.scrollContent,
             {
-              paddingTop: insets.top + (Platform.OS === "ios" ? 14 : 24),
-              paddingBottom: insets.bottom + BottomTabInset + 44,
+              paddingTop: 8,
+              paddingBottom: 110,
             },
           ]}
           showsVerticalScrollIndicator={false}
@@ -161,8 +172,10 @@ export default function TransactionsScreen() {
                 tintColor="#8E8E93"
               />
               <TextInput
-                value={searchQuery}
-                onChangeText={setSearchQuery}
+                value={externalSearchQuery !== undefined ? externalSearchQuery : searchQuery}
+                onChangeText={(val) => {
+                  setSearchQuery(val);
+                }}
                 placeholder="Search transactions, notes..."
                 placeholderTextColor="#8E8E93"
                 style={[
@@ -170,8 +183,13 @@ export default function TransactionsScreen() {
                   isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
                 ]}
               />
-              {searchQuery.length > 0 && (
-                <Pressable onPress={() => setSearchQuery("")} hitSlop={8}>
+              {effectiveSearch.length > 0 && (
+                <Pressable
+                  onPress={() => {
+                    setSearchQuery("");
+                  }}
+                  hitSlop={8}
+                >
                   <SymbolView
                     name={{
                       ios: "xmark.circle.fill",
@@ -569,21 +587,21 @@ const styles = StyleSheet.create({
     maxWidth: 260,
   },
   cardDark: {
-    backgroundColor: "#121214",
-    borderColor: "rgba(255, 255, 255, 0.12)",
+    backgroundColor: "#202227",
+    borderColor: "rgba(255, 255, 255, 0.08)",
   },
   cardLight: {
-    backgroundColor: "#f5f5f5ff",
+    backgroundColor: "#F5F5F5",
     borderColor: "rgba(0, 0, 0, 0)",
   },
   textPrimaryDark: {
-    color: "#FFFFFF",
+    color: "#E4E5EB",
   },
   textPrimaryLight: {
-    color: "#000000",
+    color: "#1E1F24",
   },
   textSecondaryDark: {
-    color: "#8E8E93",
+    color: "#989BA5",
   },
   textSecondaryLight: {
     color: "#6C6C70",

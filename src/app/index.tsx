@@ -9,26 +9,25 @@ import {
   Text,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddTransactionModal } from "@/components/add-transaction-modal";
-import {
-  BlurTargetView,
-  BlurredStatusBar,
-} from "@/components/blurred-status-bar";
+import { BlurTargetView } from "@/components/blurred-status-bar";
 import { CreateAccountModal } from "@/components/create-account-modal";
-import { AccountStack } from "@/components/home/account-stack";
 import { MonthlySummary } from "@/components/home/monthly-summary";
 import { OnboardingSetup } from "@/components/onboarding-setup";
 import { TransactionDetailsModal } from "@/components/transaction-details-modal";
 import { TransactionItem } from "@/components/transaction-item";
-import { BottomTabInset, MaxContentWidth } from "@/constants/theme";
+import { MaxContentWidth } from "@/constants/theme";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { Transaction, TransactionType } from "@/domain/types";
 
-export default function HomeScreen() {
-  const insets = useSafeAreaInsets();
+interface HomeScreenProps {
+  onNavigateToTab?: (tabIndex: number) => void;
+  onOpenAddTransaction?: () => void;
+}
+
+export default function HomeScreen({ onNavigateToTab }: HomeScreenProps = {}) {
   const router = useRouter();
   const { isDark } = useAppTheme();
 
@@ -50,7 +49,8 @@ export default function HomeScreen() {
 
   return (
     <View
-      style={[styles.screen, isDark ? styles.screenDark : styles.screenLight]}
+      className="flex-1 bg-bg-light dark:bg-bg-dark"
+      style={styles.screen}
     >
       <BlurTargetView ref={blurTargetRef} style={styles.blurTarget}>
         <Animated.ScrollView
@@ -58,8 +58,8 @@ export default function HomeScreen() {
           contentContainerStyle={[
             styles.scrollContent,
             {
-              paddingTop: insets.top + (Platform.OS === "ios" ? 14 : 24),
-              paddingBottom: insets.bottom + BottomTabInset + 44,
+              paddingTop: 8,
+              paddingBottom: 110,
             },
           ]}
           showsVerticalScrollIndicator={false}
@@ -70,53 +70,8 @@ export default function HomeScreen() {
           )}
         >
           <View style={styles.contentWrapper}>
-            {/* ─── Top Header Bar ─── */}
-            <View style={styles.headerRow}>
-              <View>
-                <Text
-                  style={[
-                    styles.dateText,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
-                  {currentDate.toUpperCase()}
-                </Text>
-                <Text
-                  style={[
-                    styles.greetingText,
-                    isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                  ]}
-                >
-                  Hello, {profile.name || "there"}
-                </Text>
-              </View>
-
-              <Pressable
-                onPress={() => setModalType("expense")}
-                style={({ pressed }) => [
-                  styles.addBtnCircle,
-                  isDark ? styles.addBtnDark : styles.addBtnLight,
-                  pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] },
-                ]}
-              >
-                <SymbolView
-                  name={{ ios: "plus", android: "add", web: "add" }}
-                  size={18}
-                  tintColor="#000000"
-                />
-              </Pressable>
-            </View>
-
             {/* ─── 1. Monthly Financial Snapshot Hero ─── */}
             <MonthlySummary />
-
-            {/* ─── 2. Quick Actions: Expense, Income, Transfer ─── */}
-            {/* <QuickActions onSelectAction={(type) => setModalType(type)} /> */}
-
-            {/* ─── 3. Vertically Stacked Account Cards ─── */}
-            <AccountStack onAddAccount={() => setShowAccountModal(true)} />
 
             {/* ─── 4. Scoped Recent Transactions ─── */}
             <View style={styles.sectionWrap}>
@@ -147,7 +102,13 @@ export default function HomeScreen() {
 
                 {scopedTransactions.length > 0 && (
                   <Pressable
-                    onPress={() => router.push("/transactions" as never)}
+                    onPress={() => {
+                      if (onNavigateToTab) {
+                        onNavigateToTab(1);
+                      } else {
+                        router.push("/transactions" as never);
+                      }
+                    }}
                     hitSlop={8}
                     style={({ pressed }) => [
                       styles.seeAllBtn,
@@ -217,7 +178,7 @@ export default function HomeScreen() {
       </BlurTargetView>
 
       {/* Top Scroll-Reactive Blurred Status Bar */}
-      <BlurredStatusBar blurTarget={blurTargetRef} scrollY={scrollY} />
+      {/* <BlurredStatusBar blurTarget={blurTargetRef} scrollY={scrollY} /> */}
 
       {/* Initial 2-Step Onboarding Modal */}
       <OnboardingSetup />
@@ -355,21 +316,21 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   cardDark: {
-    backgroundColor: "#121214",
-    borderColor: "rgba(255, 255, 255, 0.12)",
+    backgroundColor: "#202227",
+    borderColor: "rgba(255, 255, 255, 0.08)",
   },
   cardLight: {
-    backgroundColor: "#f5f5f5ff",
+    backgroundColor: "#F5F5F5",
     borderColor: "rgba(0, 0, 0, 0)",
   },
   textPrimaryDark: {
-    color: "#FFFFFF",
+    color: "#E4E5EB",
   },
   textPrimaryLight: {
-    color: "#000000",
+    color: "#1E1F24",
   },
   textSecondaryDark: {
-    color: "#8E8E93",
+    color: "#989BA5",
   },
   textSecondaryLight: {
     color: "#6C6C70",

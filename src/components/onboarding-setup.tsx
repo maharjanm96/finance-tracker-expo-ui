@@ -16,14 +16,14 @@ import { useExpense } from '@/context/expense-context';
 import { useAppTheme } from '@/context/theme-context';
 
 export function OnboardingSetup() {
-  const { profile, setProfile } = useExpense();
+  const { profile, setProfile, accounts, addAccount, isHydrated } = useExpense();
   const { isDark } = useAppTheme();
 
   const [name, setName] = useState('');
   const [income, setIncome] = useState('');
   const [currency, setCurrency] = useState('Rs.');
 
-  if (profile.isConfigured) {
+  if (!isHydrated || profile.isConfigured) {
     return null;
   }
 
@@ -32,10 +32,20 @@ export function OnboardingSetup() {
     setProfile({
       name: name.trim() || 'Alex',
       monthlyIncome: parsedIncome > 0 ? parsedIncome : 75000,
+      annualSavingsGoal: parsedIncome > 0 ? parsedIncome * 6 : 450000,
       currency,
       isConfigured: true,
     });
+    if (accounts.length === 0) {
+      addAccount({
+        name: 'Main Account',
+        type: 'spending',
+        openingBalance: parsedIncome > 0 ? parsedIncome : 0,
+        description: 'Personal spending and salary account',
+      });
+    }
   };
+
 
   const isReady = name.trim().length > 0 && income.trim().length > 0;
 

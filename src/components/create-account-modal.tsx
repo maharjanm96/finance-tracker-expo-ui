@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -59,23 +58,13 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
   const isSaveReady = name.trim().length > 0;
 
   return (
-    <View
-      style={[
-        styles.formContainer,
-        isDark ? styles.sheetDark : styles.sheetLight,
-      ]}
-    >
+    <View className="flex-1 bg-white dark:bg-black px-5 pt-3 pb-6 gap-4">
       {/* Header */}
-      <View style={styles.headerRow}>
-        <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-          ]}
-        >
+      <View className="flex-row items-center justify-between pt-1.5">
+        <Text className="text-xl font-bold tracking-tight text-black dark:text-white">
           New Account
         </Text>
-        <Pressable onPress={onClose} hitSlop={12} style={styles.closeBtn}>
+        <Pressable onPress={onClose} hitSlop={12} className="p-1 active:opacity-70">
           <SymbolView
             name={{
               ios: "xmark.circle.fill",
@@ -83,14 +72,14 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
               web: "cancel",
             }}
             size={24}
-            tintColor="#8E8E93"
+            tintColor={isDark ? "#8E8E93" : "#AEAEB2"}
           />
         </Pressable>
       </View>
 
       {/* Starting Balance Input */}
-      <View style={styles.amountInputWrap}>
-        <Text style={styles.currencyPrefix}>Rs.</Text>
+      <View className="flex-row items-center justify-center py-1.5">
+        <Text className="text-3xl font-bold text-[#AB9FF2] mr-1.5">Rs.</Text>
         <TextInput
           value={balance}
           onChangeText={setBalance}
@@ -98,26 +87,18 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
           placeholderTextColor="#8E8E93"
           keyboardType="decimal-pad"
           autoFocus
-          style={[
-            styles.amountInput,
-            isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-          ]}
+          className="text-4xl font-extrabold tracking-tight min-w-[120px] text-center text-black dark:text-white"
         />
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.formScroll}
+        contentContainerStyle={{ gap: 16, paddingBottom: 8 }}
       >
         {/* Account Name */}
-        <View style={styles.inputGroup}>
-          <Text
-            style={[
-              styles.label,
-              isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-            ]}
-          >
+        <View className="gap-2">
+          <Text className="text-[11px] font-bold tracking-wider text-neutral-500 dark:text-neutral-400 uppercase">
             ACCOUNT NAME
           </Text>
           <TextInput
@@ -125,22 +106,13 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
             onChangeText={setName}
             placeholder="e.g. Nabil Salary, Daily Cash"
             placeholderTextColor="#8E8E93"
-            style={[
-              styles.textInput,
-              isDark ? styles.inputDark : styles.inputLight,
-              isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-            ]}
+            className="h-12 rounded-2xl px-4 text-base bg-[#F5F5F5] dark:bg-[#1C1C1E] text-black dark:text-white border border-black/5 dark:border-white/10"
           />
         </View>
 
         {/* Institution / Bank */}
-        <View style={styles.inputGroup}>
-          <Text
-            style={[
-              styles.label,
-              isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-            ]}
-          >
+        <View className="gap-2">
+          <Text className="text-[11px] font-bold tracking-wider text-neutral-500 dark:text-neutral-400 uppercase">
             INSTITUTION / BANK (OPTIONAL)
           </Text>
           <TextInput
@@ -148,28 +120,19 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
             onChangeText={setInstitution}
             placeholder="e.g. Global IME, NIC Asia, Cash"
             placeholderTextColor="#8E8E93"
-            style={[
-              styles.textInput,
-              isDark ? styles.inputDark : styles.inputLight,
-              isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-            ]}
+            className="h-12 rounded-2xl px-4 text-base bg-[#F5F5F5] dark:bg-[#1C1C1E] text-black dark:text-white border border-black/5 dark:border-white/10"
           />
         </View>
 
         {/* Account Type Selector */}
-        <View style={styles.inputGroup}>
-          <Text
-            style={[
-              styles.label,
-              isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-            ]}
-          >
+        <View className="gap-2">
+          <Text className="text-[11px] font-bold tracking-wider text-neutral-500 dark:text-neutral-400 uppercase">
             ACCOUNT TYPE
           </Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.typeChips}
+            contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
           >
             {ACCOUNT_TYPES.map((t) => {
               const isSelected = selectedType === t.type;
@@ -177,14 +140,11 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
                 <Pressable
                   key={t.type}
                   onPress={() => setSelectedType(t.type)}
-                  style={[
-                    styles.typeChip,
-                    isDark ? styles.chipDark : styles.chipLight,
-                    isSelected &&
-                      (isDark
-                        ? styles.chipSelectedDark
-                        : styles.chipSelectedLight),
-                  ]}
+                  className={`flex-row items-center px-3.5 py-2 rounded-2xl gap-1.5 ${
+                    isSelected
+                      ? "bg-[#AB9FF2]"
+                      : "bg-[#f5f5f5] dark:bg-[#1C1C1E]"
+                  }`}
                 >
                   <SymbolView
                     name={{
@@ -202,16 +162,11 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
                     }
                   />
                   <Text
-                    style={[
-                      styles.typeChipText,
+                    className={`text-[13px] ${
                       isSelected
-                        ? isDark
-                          ? styles.chipTextSelectedDark
-                          : styles.chipTextSelectedLight
-                        : isDark
-                          ? styles.chipTextInactiveDark
-                          : styles.chipTextInactiveLight,
-                    ]}
+                        ? "text-black font-bold"
+                        : "text-neutral-600 dark:text-neutral-400 font-medium"
+                    }`}
                   >
                     {t.label}
                   </Text>
@@ -226,14 +181,11 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
       <Pressable
         onPress={handleSave}
         disabled={!isSaveReady}
-        style={({ pressed }) => [
-          styles.saveBtn,
-          isDark ? styles.saveBtnDark : styles.saveBtnLight,
-          !isSaveReady && styles.saveBtnDisabled,
-          pressed && { opacity: 0.85 },
-        ]}
+        className={`h-[52px] rounded-2xl items-center justify-center mt-1 bg-[#AB9FF2] active:opacity-85 ${
+          !isSaveReady ? "opacity-35" : ""
+        }`}
       >
-        <Text style={isDark ? styles.saveBtnTextDark : styles.saveBtnTextLight}>
+        <Text className="text-black text-[17px] font-bold">
           Create Account
         </Text>
       </Pressable>
@@ -262,164 +214,3 @@ export function CreateAccountModal({
     </BottomSheet>
   );
 }
-
-const styles = StyleSheet.create({
-  formContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 24,
-    gap: 16,
-  },
-  sheetDark: {
-    backgroundColor: "#121214",
-  },
-  sheetLight: {
-    backgroundColor: "#FFFFFF",
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 6,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    letterSpacing: -0.3,
-  },
-  closeBtn: {
-    padding: 4,
-  },
-  amountInputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 6,
-  },
-  currencyPrefix: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#AB9FF2",
-    marginRight: 6,
-  },
-  amountInput: {
-    fontSize: 36,
-    fontWeight: "800",
-    letterSpacing: -1,
-    minWidth: 120,
-    textAlign: "center",
-  },
-  formScroll: {
-    gap: 16,
-    paddingBottom: 8,
-  },
-  inputGroup: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.6,
-  },
-  textInput: {
-    height: 48,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    borderWidth: 1,
-  },
-  inputDark: {
-    backgroundColor: "#1C1C1E",
-    borderColor: "rgba(255, 255, 255, 0.12)",
-  },
-  inputLight: {
-    backgroundColor: "#F5F5F5",
-    borderColor: "rgba(0, 0, 0, 0.08)",
-  },
-  typeChips: {
-    gap: 8,
-    paddingVertical: 4,
-  },
-  typeChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 18,
-    borderWidth: 1,
-    gap: 6,
-  },
-  typeChipText: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  chipDark: {
-    backgroundColor: "#1C1C1E",
-    borderColor: "rgba(255, 255, 255, 0.12)",
-  },
-  chipLight: {
-    backgroundColor: "#f5f5f5ff",
-    borderColor: "rgba(0, 0, 0, 0)",
-  },
-  chipSelectedDark: {
-    backgroundColor: "#AB9FF2",
-    borderColor: "#AB9FF2",
-  },
-  chipSelectedLight: {
-    backgroundColor: "#AB9FF2",
-    borderColor: "#AB9FF2",
-  },
-  chipTextSelectedDark: {
-    color: "#000000",
-    fontWeight: "700",
-  },
-  chipTextSelectedLight: {
-    color: "#000000",
-    fontWeight: "700",
-  },
-  chipTextInactiveDark: {
-    color: "#8E8E93",
-  },
-  chipTextInactiveLight: {
-    color: "#6C6C70",
-  },
-  saveBtn: {
-    height: 52,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 4,
-  },
-  saveBtnDark: {
-    backgroundColor: "#AB9FF2",
-  },
-  saveBtnLight: {
-    backgroundColor: "#AB9FF2",
-  },
-  saveBtnDisabled: {
-    opacity: 0.35,
-  },
-  saveBtnTextDark: {
-    color: "#000000",
-    fontSize: 17,
-    fontWeight: "700",
-  },
-  saveBtnTextLight: {
-    color: "#000000",
-    fontSize: 17,
-    fontWeight: "700",
-  },
-  textPrimaryDark: {
-    color: "#FFFFFF",
-  },
-  textPrimaryLight: {
-    color: "#000000",
-  },
-  textSecondaryDark: {
-    color: "#8E8E93",
-  },
-  textSecondaryLight: {
-    color: "#6C6C70",
-  },
-});

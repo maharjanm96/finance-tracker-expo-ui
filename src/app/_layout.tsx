@@ -10,6 +10,8 @@ import AppTabs from "@/components/app-tabs";
 import { ExpenseProvider } from "@/context/expense-context";
 import { ThemeProvider, useAppTheme } from "@/context/theme-context";
 
+import "../global.css";
+
 SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {

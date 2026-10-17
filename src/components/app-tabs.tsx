@@ -1,368 +1,151 @@
-import { Tabs } from "expo-router";
-import { SymbolView } from "expo-symbols";
-import React, { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import {
-  Animated,
-  LayoutChangeEvent,
-  Platform,
-  Pressable,
+  Dimensions,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { NativeGlassView } from "@/components/native-glass";
+import HomeScreen from "@/app/index";
+import ProfileScreen from "@/app/profile";
+import AnalyticsScreen from "@/app/search";
+import TransactionsScreen from "@/app/transactions";
+import { AddTransactionModal } from "@/components/add-transaction-modal";
+import { CreateAccountModal } from "@/components/create-account-modal";
+import { AccountSelectorSheet } from "@/components/navigation/account-selector-sheet";
+import { BottomFloatingBar } from "@/components/navigation/bottom-floating-bar";
+import { TopChipHeader } from "@/components/navigation/top-chip-header";
 import { useAppTheme } from "@/context/theme-context";
 
-type TabBarProps = Parameters<
-  NonNullable<React.ComponentProps<typeof Tabs>["tabBar"]>
->[0];
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-function InstagramCapsuleTabBar({
-  state,
-  descriptors,
-  navigation,
-}: TabBarProps) {
-  const insets = useSafeAreaInsets();
+export default function AppTabs() {
   const { isDark } = useAppTheme();
-  const [containerWidth, setContainerWidth] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAccountSheet, setShowAccountSheet] = useState(false);
+  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
 
-  // Filter out any hidden screens (e.g. href: null)
-  const visibleRoutes = state.routes.filter((route) => {
-    const { options } = descriptors[route.key];
-    return (options as { href?: string | null })?.href !== null;
-  });
+  const scrollRef = useRef<ScrollView>(null);
 
-  const activeVisibleIndex = visibleRoutes.findIndex(
-    (route) => route.key === state.routes[state.index]?.key,
-  );
-
-  const safeActiveIndex = Math.max(0, activeVisibleIndex);
-  const [slideAnim] = useState(() => new Animated.Value(safeActiveIndex));
-
-  useEffect(() => {
-    if (activeVisibleIndex >= 0) {
-      Animated.spring(slideAnim, {
-        toValue: activeVisibleIndex,
-        tension: 100,
-        friction: 12,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [activeVisibleIndex, slideAnim]);
-
-  const numTabs = visibleRoutes.length;
-  // Outer capsule padding is 6 on each side
-  const innerWidth = containerWidth > 12 ? containerWidth - 12 : 0;
-  const tabWidth = numTabs > 0 ? innerWidth / numTabs : 0;
-
-  // Active pill indicator dimensions (matching the Instagram stadium pill)
-  const pillPaddingX = 8;
-  const indicatorWidth =
-    tabWidth > pillPaddingX * 2 ? tabWidth - pillPaddingX * 2 : 0;
-
-  const translateX =
-    visibleRoutes.length > 0 && tabWidth > 0
-      ? slideAnim.interpolate({
-          inputRange: visibleRoutes.map((_, i) => i),
-          outputRange: visibleRoutes.map((_, i) => i * tabWidth + pillPaddingX),
-        })
-      : 0;
-
-  const onLayout = (e: LayoutChangeEvent) => {
-    setContainerWidth(e.nativeEvent.layout.width);
+  const handleSelectTab = (index: number) => {
+    setActiveTab(index);
+    scrollRef.current?.scrollTo({
+      x: index * SCREEN_WIDTH,
+      animated: true,
+    });
   };
 
-  const activeIconColor = isDark ? "#FFFFFF" : "#000000";
-  const inactiveIconColor = isDark ? "#FFFFFF" : "#000000";
+  const handleScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetX = e.nativeEvent.contentOffset.x;
+    const pageIndex = Math.round(offsetX / SCREEN_WIDTH);
+    if (pageIndex >= 0 && pageIndex <= 3 && pageIndex !== activeTab) {
+      setActiveTab(pageIndex);
+    }
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    // If the user starts searching and isn't on Transactions, automatically slide to Transactions
+    if (query.trim().length > 0 && activeTab !== 1) {
+      handleSelectTab(1);
+    }
+  };
 
   return (
     <View
-      pointerEvents="box-none"
-      style={[
-        styles.barWrapper,
-        {
-          bottom: Platform.OS === "ios" ? Math.max(insets.bottom + 8, 22) : 22,
-        },
-      ]}
+      className="flex-1 bg-bg-light dark:bg-bg-dark"
+      style={styles.container}
     >
-      {/* Outer shadow anchor */}
-      <View
-        style={[
-          styles.shadowAnchor,
-          isDark ? styles.shadowDark : styles.shadowLight,
-        ]}
+      {/* ─── Top Phantom Chip Navigation Header ─── */}
+      <TopChipHeader
+        activeTab={activeTab}
+        onSelectTab={handleSelectTab}
+        onPressWallet={() => setShowAccountSheet(true)}
+      />
+
+      {/* ─── Horizontal Swiping Screen Pager ─── */}
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        bounces={false}
+        onMomentumScrollEnd={handleScrollEnd}
+        scrollEventThrottle={16}
+        style={styles.pagerScrollView}
       >
-        {/* Inner Floating Capsule */}
-        <View
-          onLayout={onLayout}
-          style={[
-            styles.capsuleContainer,
-            isDark ? styles.capsuleDark : styles.capsuleLight,
-          ]}
-        >
-          {/* iOS Translucent Glass Blur Backdrop */}
-          <NativeGlassView
-            glassEffectStyle="regular"
-            tintColor={
-              isDark ? "rgba(22, 23, 26, 0.94)" : "rgba(255, 255, 255, 0.94)"
-            }
-            intensity={95}
-            blurTint={
-              isDark ? "systemChromeMaterialDark" : "systemChromeMaterialLight"
-            }
-            style={StyleSheet.absoluteFill}
+        {/* Screen 0: Home */}
+        <View style={{ width: SCREEN_WIDTH }}>
+          <HomeScreen
+            onNavigateToTab={handleSelectTab}
+            onOpenAddTransaction={() => setShowAddModal(true)}
           />
-
-          {/* Active Stadium Pill (Instagram style highlight) */}
-          {indicatorWidth > 0 && (
-            <Animated.View
-              style={[
-                styles.activePillIndicator,
-                isDark ? styles.activePillDark : styles.activePillLight,
-                {
-                  width: indicatorWidth,
-                  transform: [{ translateX }],
-                },
-              ]}
-            />
-          )}
-
-          {/* Icon Tab Buttons (Pure icons, no labels) */}
-          {visibleRoutes.map((route) => {
-            const isFocused = state.routes[state.index]?.key === route.key;
-            const { options } = descriptors[route.key];
-
-            const onPress = () => {
-              const event = navigation.emit({
-                type: "tabPress",
-                target: route.key,
-                canPreventDefault: true,
-              });
-
-              if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate(route.name);
-              }
-            };
-
-            const onLongPress = () => {
-              navigation.emit({
-                type: "tabLongPress",
-                target: route.key,
-              });
-            };
-
-            return (
-              <Pressable
-                key={route.key}
-                accessibilityRole="button"
-                accessibilityState={isFocused ? { selected: true } : {}}
-                accessibilityLabel={
-                  options.tabBarAccessibilityLabel ?? `${route.name} tab`
-                }
-                testID={options.tabBarButtonTestID}
-                onPress={onPress}
-                onLongPress={onLongPress}
-                style={({ pressed }) => [
-                  styles.tabButton,
-                  pressed && styles.tabButtonPressed,
-                ]}
-              >
-                <View style={styles.iconContainer}>
-                  {options.tabBarIcon
-                    ? options.tabBarIcon({
-                        focused: isFocused,
-                        color: isFocused ? activeIconColor : inactiveIconColor,
-                        size: 22,
-                      })
-                    : null}
-                  {/* Subtle red notification dot on Settings tab like Instagram UI */}
-                </View>
-              </Pressable>
-            );
-          })}
         </View>
-      </View>
+
+        {/* Screen 1: Transactions */}
+        <View style={{ width: SCREEN_WIDTH }}>
+          <TransactionsScreen
+            externalSearchQuery={searchQuery}
+            onOpenAddTransaction={() => setShowAddModal(true)}
+          />
+        </View>
+
+        {/* Screen 2: Analytics */}
+        <View style={{ width: SCREEN_WIDTH }}>
+          <AnalyticsScreen />
+        </View>
+
+        {/* Screen 3: Profile */}
+        <View style={{ width: SCREEN_WIDTH }}>
+          <ProfileScreen />
+        </View>
+      </ScrollView>
+
+      {/* ─── Bottom Floating Stadium Search Bar & Plus Button ─── */}
+      <BottomFloatingBar
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
+        onPressAdd={() => setShowAddModal(true)}
+        onFocusSearch={() => {
+          if (activeTab !== 1) {
+            handleSelectTab(1);
+          }
+        }}
+      />
+
+      {/* ─── Global Add Transaction Modal ─── */}
+      <AddTransactionModal
+        visible={showAddModal}
+        initialType="expense"
+        onClose={() => setShowAddModal(false)}
+      />
+
+      {/* ─── "Combined Account ⌵" Account Selector Bottom Sheet ─── */}
+      <AccountSelectorSheet
+        visible={showAccountSheet}
+        onClose={() => setShowAccountSheet(false)}
+        onOpenCreateAccount={() => setShowCreateAccountModal(true)}
+      />
+
+      {/* ─── Add New Account Modal ─── */}
+      <CreateAccountModal
+        visible={showCreateAccountModal}
+        onClose={() => setShowCreateAccountModal(false)}
+      />
     </View>
   );
 }
 
-export default function AppTabs() {
-  return (
-    <Tabs
-      tabBar={(props) => <InstagramCapsuleTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color, focused }) => (
-            <SymbolView
-              name={{
-                ios: focused ? "house.fill" : "house",
-                android: "home",
-                web: "home",
-              }}
-              size={26}
-              tintColor={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="transactions"
-        options={{
-          title: "Transactions",
-          tabBarIcon: ({ color, focused }) => (
-            <SymbolView
-              name={{
-                ios: focused ? "list.bullet.rectangle.fill" : "list.bullet.rectangle",
-                android: "receipt_long",
-                web: "receipt_long",
-              }}
-              size={26}
-              tintColor={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="search"
-        options={{
-          title: "Analytics",
-          tabBarIcon: ({ color, focused }) => (
-            <SymbolView
-              name={{
-                ios: focused ? "chart.bar.fill" : "chart.bar",
-                android: "insights",
-                web: "insights",
-              }}
-              size={26}
-              tintColor={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color, focused }) => (
-            <SymbolView
-              name={{
-                ios: focused ? "person.crop.circle.fill" : "person.crop.circle",
-                android: "account_circle",
-                web: "account_circle",
-              }}
-              size={26}
-              tintColor={color}
-            />
-          ),
-        }}
-      />
-    </Tabs>
-  );
-}
-
 const styles = StyleSheet.create({
-  barWrapper: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 999,
-  },
-  shadowAnchor: {
-    width: 340,
-    maxWidth: "85%",
-    height: 60,
-    borderRadius: 28,
-  },
-  shadowLight: {
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000000",
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.1,
-        shadowRadius: 16,
-      },
-      android: {
-        elevation: 6,
-      },
-      web: {
-        boxShadow: "0 6px 20px rgba(0, 0, 0, 0.08)",
-      },
-    }),
-  },
-  shadowDark: {
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.5,
-        shadowRadius: 24,
-      },
-      android: {
-        elevation: 8,
-      },
-      web: {
-        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.45)",
-      },
-    }),
-  },
-  capsuleContainer: {
-    width: "100%",
-    height: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 28,
-    paddingHorizontal: 6,
-    overflow: "hidden",
-    position: "relative",
-  },
-  capsuleLight: {
-    borderWidth: 1,
-    borderColor: "rgba(0, 0, 0, 0.08)",
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-  },
-  capsuleDark: {
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.12)",
-    backgroundColor: "#16171A",
-  },
-  activePillIndicator: {
-    position: "absolute",
-    top: 5,
-    bottom: 5,
-    left: 6,
-    borderRadius: 23,
-  },
-  activePillDark: {
-    backgroundColor: "#3A3B3E", // Instagram iOS charcoal gray stadium pill
-  },
-  activePillLight: {
-    backgroundColor: "#E5E5EA", // Clean monochrome light stadium pill
-  },
-  tabButton: {
+  container: {
     flex: 1,
-    height: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 2,
-  },
-  tabButtonPressed: {
-    opacity: 0.75,
-    transform: [{ scale: 0.94 }],
-  },
-  iconContainer: {
     position: "relative",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 28,
-    height: 28,
+  },
+  pagerScrollView: {
+    flex: 1,
   },
 });
