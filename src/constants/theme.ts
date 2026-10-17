@@ -7,20 +7,67 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+export const Brand = {
+  perano: '#AB9FF2',     // Primary Purple (Lavender)
+  darkPurple: '#3C315B', // Deep Purple / Martinique
+  fog: '#E2DFFE',        // Soft Lilac Gray
+  magnolia: '#F5F2FF',   // Off-White
+  income: '#2EC08B',     // Cash In Green
+  expense: '#FF3B30',    // Cash Out Red
+} as const;
+
 export const Colors = {
   light: {
     text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    textSecondary: '#6C6C70',
+    background: '#FFFFFF',
+    backgroundElement: '#F5F2FF',
+    backgroundSelected: '#E2DFFE',
+    surface: '#FFFFFF',
+    surfaceSecondary: '#F5F2FF',
+    surfaceMuted: '#E2DFFE',
+    border: 'rgba(0, 0, 0, 0.08)',
+    primary: '#AB9FF2',
+    accent: '#AB9FF2',
+    success: '#2EC08B',
+    income: '#2EC08B',
+    expense: '#FF3B30',
+    capsuleBg: 'rgba(255, 255, 255, 0.92)',
+    capsuleActive: '#F5F2FF',
+    capsuleBorder: 'rgba(0, 0, 0, 0.08)',
+    iconMuted: '#8E8E93',
+    iconActive: '#000000',
+    iconBg: '#F5F2FF',
+    accentBlue: '#AB9FF2',
+    accentGreen: '#2EC08B',
+    accentRed: '#FF3B30',
+    badgeRed: '#FF3B30',
   },
   dark: {
-    text: '#ffffff',
+    text: '#FFFFFF',
+    textSecondary: '#8E8E93',
     background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    backgroundElement: '#1C1C1E',
+    backgroundSelected: '#2C2C2E',
+    surface: '#121214',
+    surfaceSecondary: '#1C1C1E',
+    surfaceMuted: '#2C2C2E',
+    border: 'rgba(255, 255, 255, 0.12)',
+    primary: '#AB9FF2',
+    accent: '#AB9FF2',
+    success: '#2EC08B',
+    income: '#2EC08B',
+    expense: '#FF3B30',
+    capsuleBg: 'rgba(18, 18, 20, 0.90)',
+    capsuleActive: 'rgba(255, 255, 255, 0.14)',
+    capsuleBorder: 'rgba(255, 255, 255, 0.12)',
+    iconMuted: '#8E8E93',
+    iconActive: '#FFFFFF',
+    iconBg: '#1C1C1E',
+    accentBlue: '#AB9FF2',
+    accentGreen: '#2EC08B',
+    accentRed: '#FF453A',
+    badgeRed: '#FF3B30',
   },
 } as const;
 

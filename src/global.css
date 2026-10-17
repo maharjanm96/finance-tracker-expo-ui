@@ -1,9 +1,46 @@
 :root {
+  /* Typography */
   --font-display:
-    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
-    Segoe UI Symbol, Noto Color Emoji;
+    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji,
+    Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
-  --font-serif: Georgia, 'Times New Roman', serif;
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono,
+    Courier New, monospace;
+  --font-rounded:
+    "SF Pro Rounded", "Hiragino Maru Gothic ProN", Meiryo, "MS PGothic",
+    sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+
+  /* Brand Palette */
+  --brand-perano: #ab9ff2; /* Primary Purple Accent */
+  --brand-dark-purple: #3c315b; /* Deep Purple / Martinique */
+  --brand-fog: #e2dffe; /* Soft Lilac Gray */
+  --brand-magnolia: #f5f2ff; /* Off-White */
+
+  /* Cash Flow Semantics */
+  --color-income: #2ec08b; /* Green */
+  --color-expense: #ff3b30; /* Red */
+
+  /* Light Theme - Clean White */
+  --bg-light: #ffffff;
+  --surface-light: #ffffff;
+  --text-light: #000000;
+  --text-secondary-light: #6c6c70;
+  --border-light: rgba(0, 0, 0, 0.08);
+
+  /* Dark Theme - Pure Black */
+  --bg-dark: #000000;
+  --surface-dark: #121214;
+  --text-dark: #ffffff;
+  --text-secondary-dark: #8e8e93;
+  --border-dark: rgba(255, 255, 255, 0.12);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000000;
+  color: #ffffff;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
