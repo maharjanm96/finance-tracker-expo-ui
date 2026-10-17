@@ -1,13 +1,15 @@
 import { BlurMethod, BlurTargetView, BlurTint, BlurView } from "expo-blur";
+import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
   Animated,
   Platform,
   StyleSheet,
-  useColorScheme,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { useAppTheme } from "@/context/theme-context";
 
 export { BlurTargetView };
 
@@ -63,8 +65,7 @@ export function BlurredStatusBar({
   extraHeight = 0,
 }: BlurredStatusBarProps) {
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme !== "light";
+  const { isDark } = useAppTheme();
 
   const defaultTop = Platform.OS === "ios" ? 44 : 24;
   const barHeight = Math.max(insets.top, defaultTop) + extraHeight;
@@ -77,19 +78,25 @@ export function BlurredStatusBar({
       })
     : 1;
 
-  const resolvedTint = tint ?? (isDark ? "dark" : "light");
+  const resolvedTint =
+    tint ??
+    (isDark
+      ? (Platform.OS === "ios" ? "systemChromeMaterialDark" : "dark")
+      : (Platform.OS === "ios" ? "systemChromeMaterialLight" : "light"));
 
   return (
-    <Animated.View
-      pointerEvents="none"
-      style={[
-        styles.container,
-        {
-          height: barHeight,
-          opacity,
-        },
-      ]}
-    >
+    <>
+      <StatusBar style={isDark ? "light" : "dark"} />
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.container,
+          {
+            height: barHeight,
+            opacity,
+          },
+        ]}
+      >
       {/* Official Expo BlurView with full iOS & Android BlurTargetView support */}
       <BlurView
         intensity={intensity}
@@ -124,6 +131,7 @@ export function BlurredStatusBar({
         ]}
       />
     </Animated.View>
+    </>
   );
 }
 

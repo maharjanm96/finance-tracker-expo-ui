@@ -1,7 +1,6 @@
-import { SymbolView } from 'expo-symbols';
-import React, { useMemo, useRef, useState } from 'react';
+import { SymbolView } from "expo-symbols";
+import { useMemo, useRef, useState } from "react";
 import {
-  Alert,
   Animated,
   Platform,
   Pressable,
@@ -10,36 +9,34 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AddTransactionModal } from '@/components/add-transaction-modal';
-import { BlurTargetView, BlurredStatusBar } from '@/components/blurred-status-bar';
-import { TransactionItem } from '@/components/transaction-item';
-import { BottomTabInset, MaxContentWidth } from '@/constants/theme';
-import { useExpense } from '@/context/expense-context';
-import { useAppTheme } from '@/context/theme-context';
-import { formatCurrency } from '@/domain/formatters';
-import { Transaction, TransactionType } from '@/domain/types';
+import { AddTransactionModal } from "@/components/add-transaction-modal";
+import {
+  BlurTargetView,
+  BlurredStatusBar,
+} from "@/components/blurred-status-bar";
+import { TransactionDetailsModal } from "@/components/transaction-details-modal";
+import { TransactionItem } from "@/components/transaction-item";
+import { BottomTabInset, MaxContentWidth } from "@/constants/theme";
+import { useExpense } from "@/context/expense-context";
+import { useAppTheme } from "@/context/theme-context";
+import { Transaction, TransactionType } from "@/domain/types";
 
-type FilterType = 'all' | TransactionType;
+type FilterType = "all" | TransactionType;
 
 export default function TransactionsScreen() {
   const insets = useSafeAreaInsets();
   const { isDark } = useAppTheme();
-  const {
-    transactions,
-    accounts,
-    selectedAccountId,
-    selectAccount,
-    deleteTransaction,
-  } = useExpense();
+  const { transactions, accounts, selectedAccountId, selectAccount } =
+    useExpense();
 
   const [scrollY] = useState(() => new Animated.Value(0));
   const blurTargetRef = useRef<View | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<FilterType>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<FilterType>("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
@@ -55,7 +52,7 @@ export default function TransactionsScreen() {
       }
 
       // 2. Type filter
-      if (filterType !== 'all' && tx.type !== filterType) {
+      if (filterType !== "all" && tx.type !== filterType) {
         return false;
       }
 
@@ -86,33 +83,17 @@ export default function TransactionsScreen() {
     return groups;
   }, [filteredTransactions]);
 
-  const handleDeletePrompt = (tx: Transaction) => {
-    Alert.alert(
-      'Delete Transaction',
-      `Are you sure you want to delete "${tx.title}" (${formatCurrency(tx.amount)})?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            deleteTransaction(tx.id);
-            if (selectedTx?.id === tx.id) setSelectedTx(null);
-          },
-        },
-      ]
-    );
-  };
-
   return (
-    <View style={[styles.screen, isDark ? styles.screenDark : styles.screenLight]}>
+    <View
+      style={[styles.screen, isDark ? styles.screenDark : styles.screenLight]}
+    >
       <BlurTargetView ref={blurTargetRef} style={styles.blurTarget}>
         <Animated.ScrollView
           style={styles.scrollView}
           contentContainerStyle={[
             styles.scrollContent,
             {
-              paddingTop: insets.top + (Platform.OS === 'ios' ? 14 : 24),
+              paddingTop: insets.top + (Platform.OS === "ios" ? 14 : 24),
               paddingBottom: insets.bottom + BottomTabInset + 44,
             },
           ]}
@@ -120,16 +101,29 @@ export default function TransactionsScreen() {
           scrollEventThrottle={16}
           onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: true }
-          )}>
+            { useNativeDriver: true },
+          )}
+        >
           <View style={styles.contentWrapper}>
             {/* Header */}
             <View style={styles.headerRow}>
               <View>
-                <Text style={[styles.headerSubtitle, isDark ? styles.textSecondaryDark : styles.textSecondaryLight]}>
+                <Text
+                  style={[
+                    styles.headerSubtitle,
+                    isDark
+                      ? styles.textSecondaryDark
+                      : styles.textSecondaryLight,
+                  ]}
+                >
                   LEDGER & HISTORY
                 </Text>
-                <Text style={[styles.headerTitle, isDark ? styles.textPrimaryDark : styles.textPrimaryLight]}>
+                <Text
+                  style={[
+                    styles.headerTitle,
+                    isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
+                  ]}
+                >
                   Transactions
                 </Text>
               </View>
@@ -140,9 +134,10 @@ export default function TransactionsScreen() {
                   styles.addBtnCircle,
                   isDark ? styles.addBtnDark : styles.addBtnLight,
                   pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] },
-                ]}>
+                ]}
+              >
                 <SymbolView
-                  name={{ ios: 'plus', android: 'add', web: 'add' }}
+                  name={{ ios: "plus", android: "add", web: "add" }}
                   size={18}
                   tintColor="#000000"
                 />
@@ -150,9 +145,18 @@ export default function TransactionsScreen() {
             </View>
 
             {/* Search Input Bar */}
-            <View style={[styles.searchBar, isDark ? styles.cardDark : styles.cardLight]}>
+            <View
+              style={[
+                styles.searchBar,
+                isDark ? styles.cardDark : styles.cardLight,
+              ]}
+            >
               <SymbolView
-                name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
+                name={{
+                  ios: "magnifyingglass",
+                  android: "search",
+                  web: "search",
+                }}
                 size={18}
                 tintColor="#8E8E93"
               />
@@ -161,12 +165,19 @@ export default function TransactionsScreen() {
                 onChangeText={setSearchQuery}
                 placeholder="Search transactions, notes..."
                 placeholderTextColor="#8E8E93"
-                style={[styles.searchInput, isDark ? styles.textPrimaryDark : styles.textPrimaryLight]}
+                style={[
+                  styles.searchInput,
+                  isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
+                ]}
               />
               {searchQuery.length > 0 && (
-                <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
+                <Pressable onPress={() => setSearchQuery("")} hitSlop={8}>
                   <SymbolView
-                    name={{ ios: 'xmark.circle.fill', android: 'cancel', web: 'cancel' }}
+                    name={{
+                      ios: "xmark.circle.fill",
+                      android: "cancel",
+                      web: "cancel",
+                    }}
                     size={16}
                     tintColor="#8E8E93"
                   />
@@ -176,57 +187,81 @@ export default function TransactionsScreen() {
 
             {/* Type Filter Chips (All, Expense, Income, Transfer) */}
             <View style={styles.filterRow}>
-              {(['all', 'expense', 'income', 'transfer'] as FilterType[]).map((ft) => {
-                const isSelected = filterType === ft;
-                const label =
-                  ft === 'all'
-                    ? 'All'
-                    : ft === 'expense'
-                    ? 'Expenses'
-                    : ft === 'income'
-                    ? 'Income'
-                    : 'Transfers';
+              {(["all", "expense", "income", "transfer"] as FilterType[]).map(
+                (ft) => {
+                  const isSelected = filterType === ft;
+                  const label =
+                    ft === "all"
+                      ? "All"
+                      : ft === "expense"
+                        ? "Expenses"
+                        : ft === "income"
+                          ? "Income"
+                          : "Transfers";
 
-                return (
-                  <Pressable
-                    key={ft}
-                    onPress={() => setFilterType(ft)}
-                    style={[
-                      styles.filterChip,
-                      isDark ? styles.chipDark : styles.chipLight,
-                      isSelected && (isDark ? styles.chipSelectedDark : styles.chipSelectedLight),
-                    ]}>
-                    <Text
+                  return (
+                    <Pressable
+                      key={ft}
+                      onPress={() => setFilterType(ft)}
                       style={[
-                        styles.filterChipText,
-                        isSelected
-                          ? (isDark ? styles.chipTextSelectedDark : styles.chipTextSelectedLight)
-                          : (isDark ? styles.chipTextInactiveDark : styles.chipTextInactiveLight),
-                      ]}>
-                      {label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+                        styles.filterChip,
+                        isDark ? styles.chipDark : styles.chipLight,
+                        isSelected &&
+                          (isDark
+                            ? styles.chipSelectedDark
+                            : styles.chipSelectedLight),
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.filterChipText,
+                          isSelected
+                            ? isDark
+                              ? styles.chipTextSelectedDark
+                              : styles.chipTextSelectedLight
+                            : isDark
+                              ? styles.chipTextInactiveDark
+                              : styles.chipTextInactiveLight,
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                },
+              )}
             </View>
 
             {/* Account Selector Chips */}
             <View style={styles.accountFilterWrap}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.accountChipsScroll}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.accountChipsScroll}
+              >
                 <Pressable
                   onPress={() => selectAccount(null)}
                   style={[
                     styles.accountChip,
                     isDark ? styles.chipDark : styles.chipLight,
-                    selectedAccountId === null && (isDark ? styles.chipSelectedDark : styles.chipSelectedLight),
-                  ]}>
+                    selectedAccountId === null &&
+                      (isDark
+                        ? styles.chipSelectedDark
+                        : styles.chipSelectedLight),
+                  ]}
+                >
                   <Text
                     style={[
                       styles.accountChipText,
                       selectedAccountId === null
-                        ? (isDark ? styles.chipTextSelectedDark : styles.chipTextSelectedLight)
-                        : (isDark ? styles.chipTextInactiveDark : styles.chipTextInactiveLight),
-                    ]}>
+                        ? isDark
+                          ? styles.chipTextSelectedDark
+                          : styles.chipTextSelectedLight
+                        : isDark
+                          ? styles.chipTextInactiveDark
+                          : styles.chipTextInactiveLight,
+                    ]}
+                  >
                     All Accounts
                   </Text>
                 </Pressable>
@@ -240,15 +275,24 @@ export default function TransactionsScreen() {
                       style={[
                         styles.accountChip,
                         isDark ? styles.chipDark : styles.chipLight,
-                        isSelected && (isDark ? styles.chipSelectedDark : styles.chipSelectedLight),
-                      ]}>
+                        isSelected &&
+                          (isDark
+                            ? styles.chipSelectedDark
+                            : styles.chipSelectedLight),
+                      ]}
+                    >
                       <Text
                         style={[
                           styles.accountChipText,
                           isSelected
-                            ? (isDark ? styles.chipTextSelectedDark : styles.chipTextSelectedLight)
-                            : (isDark ? styles.chipTextInactiveDark : styles.chipTextInactiveLight),
-                        ]}>
+                            ? isDark
+                              ? styles.chipTextSelectedDark
+                              : styles.chipTextSelectedLight
+                            : isDark
+                              ? styles.chipTextInactiveDark
+                              : styles.chipTextInactiveLight,
+                        ]}
+                      >
                         {acc.name}
                       </Text>
                     </Pressable>
@@ -259,31 +303,65 @@ export default function TransactionsScreen() {
 
             {/* Date-Grouped Transaction List */}
             {groupedTransactions.length === 0 ? (
-              <View style={[styles.emptyContainer, isDark ? styles.cardDark : styles.cardLight]}>
+              <View
+                style={[
+                  styles.emptyContainer,
+                  isDark ? styles.cardDark : styles.cardLight,
+                ]}
+              >
                 <SymbolView
-                  name={{ ios: 'doc.text.magnifyingglass', android: 'find_in_page', web: 'find_in_page' }}
+                  name={{
+                    ios: "doc.text.magnifyingglass",
+                    android: "find_in_page",
+                    web: "find_in_page",
+                  }}
                   size={36}
                   tintColor="#8E8E93"
                 />
-                <Text style={[styles.emptyTitle, isDark ? styles.textPrimaryDark : styles.textPrimaryLight]}>
+                <Text
+                  style={[
+                    styles.emptyTitle,
+                    isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
+                  ]}
+                >
                   No Transactions Found
                 </Text>
-                <Text style={[styles.emptySubtitle, isDark ? styles.textSecondaryDark : styles.textSecondaryLight]}>
-                  Try clearing your search query or switching your account filter.
+                <Text
+                  style={[
+                    styles.emptySubtitle,
+                    isDark
+                      ? styles.textSecondaryDark
+                      : styles.textSecondaryLight,
+                  ]}
+                >
+                  Try clearing your search query or switching your account
+                  filter.
                 </Text>
               </View>
             ) : (
               groupedTransactions.map((group) => (
                 <View key={group.date} style={styles.dateGroup}>
-                  <Text style={[styles.dateGroupLabel, isDark ? styles.textSecondaryDark : styles.textSecondaryLight]}>
+                  <Text
+                    style={[
+                      styles.dateGroupLabel,
+                      isDark
+                        ? styles.textSecondaryDark
+                        : styles.textSecondaryLight,
+                    ]}
+                  >
                     {group.date.toUpperCase()}
                   </Text>
-                  <View style={[styles.tableContainer, isDark ? styles.cardDark : styles.cardLight]}>
+                  <View
+                    style={[
+                      styles.tableContainer,
+                      isDark ? styles.cardDark : styles.cardLight,
+                    ]}
+                  >
                     {group.items.map((tx, idx) => (
                       <TransactionItem
                         key={tx.id}
                         transaction={tx}
-                        onPress={() => handleDeletePrompt(tx)}
+                        onPress={() => setSelectedTx(tx)}
                         showDivider={idx < group.items.length - 1}
                       />
                     ))}
@@ -303,6 +381,13 @@ export default function TransactionsScreen() {
         visible={showAddModal}
         onClose={() => setShowAddModal(false)}
       />
+
+      {/* Transaction Details Bottom Modal */}
+      <TransactionDetailsModal
+        visible={selectedTx !== null}
+        transaction={selectedTx}
+        onClose={() => setSelectedTx(null)}
+      />
     </View>
   );
 }
@@ -312,10 +397,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   screenDark: {
-    backgroundColor: '#000000',
+    backgroundColor: "#000000",
   },
   screenLight: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   blurTarget: {
     flex: 1,
@@ -324,28 +409,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 16,
   },
   contentWrapper: {
-    width: '100%',
+    width: "100%",
     maxWidth: MaxContentWidth,
     gap: 16,
   },
   headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 6,
   },
   headerSubtitle: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0.8,
   },
   headerTitle: {
     fontSize: 30,
-    fontWeight: '800',
+    fontWeight: "800",
     letterSpacing: -0.6,
     marginTop: 2,
   },
@@ -353,12 +438,12 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#AB9FF2',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#AB9FF2",
     ...Platform.select({
       ios: {
-        shadowColor: '#000000',
+        shadowColor: "#000000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
         shadowRadius: 8,
@@ -369,14 +454,14 @@ const styles = StyleSheet.create({
     }),
   },
   addBtnDark: {
-    backgroundColor: '#AB9FF2',
+    backgroundColor: "#AB9FF2",
   },
   addBtnLight: {
-    backgroundColor: '#AB9FF2',
+    backgroundColor: "#AB9FF2",
   },
   searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     height: 48,
     borderRadius: 16,
     paddingHorizontal: 14,
@@ -386,23 +471,23 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   filterRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   filterChip: {
-    flex: 1,
-    height: 36,
-    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 16,
     borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   filterChipText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   accountFilterWrap: {
     marginTop: -4,
@@ -414,42 +499,42 @@ const styles = StyleSheet.create({
   accountChip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
   },
   accountChipText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   chipDark: {
-    backgroundColor: '#1C1C1E',
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: "#1C1C1E",
+    borderColor: "rgba(255, 255, 255, 0.12)",
   },
   chipLight: {
-    backgroundColor: '#F5F2FF',
-    borderColor: 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: "#f5f5f5ff",
+    borderColor: "rgba(0, 0, 0, 0)",
   },
   chipSelectedDark: {
-    backgroundColor: '#AB9FF2',
-    borderColor: '#AB9FF2',
+    backgroundColor: "#AB9FF2",
+    borderColor: "#AB9FF2",
   },
   chipSelectedLight: {
-    backgroundColor: '#AB9FF2',
-    borderColor: '#AB9FF2',
+    backgroundColor: "#AB9FF2",
+    borderColor: "#AB9FF2",
   },
   chipTextSelectedDark: {
-    color: '#000000',
-    fontWeight: '700',
+    color: "#000000",
+    fontWeight: "700",
   },
   chipTextSelectedLight: {
-    color: '#000000',
-    fontWeight: '700',
+    color: "#000000",
+    fontWeight: "700",
   },
   chipTextInactiveDark: {
-    color: '#8E8E93',
+    color: "#8E8E93",
   },
   chipTextInactiveLight: {
-    color: '#6C6C70',
+    color: "#6C6C70",
   },
   dateGroup: {
     gap: 8,
@@ -457,18 +542,18 @@ const styles = StyleSheet.create({
   },
   dateGroupLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0.8,
     paddingHorizontal: 4,
   },
   tableContainer: {
     borderRadius: 22,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderWidth: 1,
   },
   emptyContainer: {
     padding: 40,
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: 22,
     borderWidth: 1,
     gap: 10,
@@ -476,31 +561,31 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   emptySubtitle: {
     fontSize: 13,
-    textAlign: 'center',
+    textAlign: "center",
     maxWidth: 260,
   },
   cardDark: {
-    backgroundColor: '#121214',
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: "#121214",
+    borderColor: "rgba(255, 255, 255, 0.12)",
   },
   cardLight: {
-    backgroundColor: '#FFFFFF',
-    borderColor: 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: "#f5f5f5ff",
+    borderColor: "rgba(0, 0, 0, 0)",
   },
   textPrimaryDark: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
   textPrimaryLight: {
-    color: '#000000',
+    color: "#000000",
   },
   textSecondaryDark: {
-    color: '#8E8E93',
+    color: "#8E8E93",
   },
   textSecondaryLight: {
-    color: '#6C6C70',
+    color: "#6C6C70",
   },
 });

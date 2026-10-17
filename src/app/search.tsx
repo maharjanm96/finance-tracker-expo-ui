@@ -224,9 +224,16 @@ export default function AnalyticsScreen() {
                     <Text style={[styles.flowLabel, isDark ? styles.textPrimaryDark : styles.textPrimaryLight]}>
                       Income
                     </Text>
-                    <Text style={[styles.flowAmount, { color: '#2EC08B' }]}>
-                      +{formatCurrency(monthlyIncome)}
-                    </Text>
+                    <View style={styles.flowAmountRow}>
+                      <SymbolView
+                        name={{ ios: 'arrow.up', android: 'arrow_upward', web: 'arrow_upward' }}
+                        size={11}
+                        tintColor="#2EC08B"
+                      />
+                      <Text style={[styles.flowAmount, { color: '#2EC08B' }]}>
+                        {formatCurrency(monthlyIncome)}
+                      </Text>
+                    </View>
                   </View>
                   <View style={[styles.barTrack, isDark ? styles.trackDark : styles.trackLight]}>
                     <View style={[styles.barFill, { width: `${incomeBarWidth}%`, backgroundColor: '#2EC08B' }]} />
@@ -239,9 +246,16 @@ export default function AnalyticsScreen() {
                     <Text style={[styles.flowLabel, isDark ? styles.textPrimaryDark : styles.textPrimaryLight]}>
                       Expenses
                     </Text>
-                    <Text style={[styles.flowAmount, { color: '#FF3B30' }]}>
-                      -{formatCurrency(monthlyExpenses)}
-                    </Text>
+                    <View style={styles.flowAmountRow}>
+                      <SymbolView
+                        name={{ ios: 'arrow.down', android: 'arrow_downward', web: 'arrow_downward' }}
+                        size={11}
+                        tintColor="#FF3B30"
+                      />
+                      <Text style={[styles.flowAmount, { color: '#FF3B30' }]}>
+                        {formatCurrency(monthlyExpenses)}
+                      </Text>
+                    </View>
                   </View>
                   <View style={[styles.barTrack, isDark ? styles.trackDark : styles.trackLight]}>
                     <View style={[styles.barFill, { width: `${expenseBarWidth}%`, backgroundColor: '#FF3B30' }]} />
@@ -254,13 +268,24 @@ export default function AnalyticsScreen() {
                 <Text style={[styles.footerLabel, isDark ? styles.textSecondaryDark : styles.textSecondaryLight]}>
                   Net Surplus
                 </Text>
-                <Text
-                  style={[
-                    styles.footerValue,
-                    { color: monthlySavings >= 0 ? '#2EC08B' : '#FF3B30' },
-                  ]}>
-                  {monthlySavings >= 0 ? '+' : '-'}{formatCurrency(Math.abs(monthlySavings))}
-                </Text>
+                <View style={styles.flowAmountRow}>
+                  <SymbolView
+                    name={{
+                      ios: monthlySavings >= 0 ? 'arrow.up' : 'arrow.down',
+                      android: monthlySavings >= 0 ? 'arrow_upward' : 'arrow_downward',
+                      web: monthlySavings >= 0 ? 'arrow_upward' : 'arrow_downward',
+                    }}
+                    size={12}
+                    tintColor={monthlySavings >= 0 ? '#2EC08B' : '#FF3B30'}
+                  />
+                  <Text
+                    style={[
+                      styles.footerValue,
+                      { color: monthlySavings >= 0 ? '#2EC08B' : '#FF3B30' },
+                    ]}>
+                    {formatCurrency(Math.abs(monthlySavings))}
+                  </Text>
+                </View>
               </View>
             </View>
 
@@ -524,6 +549,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
+  flowAmountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   barTrack: {
     height: 8,
     borderRadius: 4,
@@ -663,8 +693,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   chipLight: {
-    backgroundColor: '#FFFFFF',
-    borderColor: 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: '#f5f5f5ff',
+    borderColor: 'rgba(0, 0, 0, 0)',
   },
   chipSelectedDark: {
     backgroundColor: '#AB9FF2',
@@ -693,8 +723,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   cardLight: {
-    backgroundColor: '#FFFFFF',
-    borderColor: 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: '#f5f5f5ff',
+    borderColor: 'rgba(0, 0, 0, 0)',
   },
   textPrimaryDark: {
     color: '#FFFFFF',

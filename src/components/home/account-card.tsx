@@ -1,6 +1,7 @@
 import { SymbolView } from "expo-symbols";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { formatCurrency } from "@/domain/formatters";
 import { Account } from "@/domain/types";
@@ -37,10 +38,26 @@ export function AccountCard({
   onSelect,
 }: AccountCardProps) {
   const { isDark } = useAppTheme();
+  const { deleteAccount } = useExpense();
 
   const iconInfo = TYPE_ICONS[account.type] ?? {
     sf: "tray.fill",
     material: "inbox",
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      `Are you sure you want to delete "${account.name}"? All transactions linked to this account will also be deleted.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteAccount(account.id),
+        },
+      ],
+    );
   };
 
   return (
@@ -85,29 +102,48 @@ export function AccountCard({
           </Text>
         </View>
 
-        {isSelected ? (
-          <View style={styles.selectedPill}>
-            <SymbolView
-              name={{
-                ios: "checkmark.circle.fill",
-                android: "check_circle",
-                web: "check_circle",
-              }}
-              size={14}
-              tintColor="#AB9FF2"
-            />
-            <Text style={styles.selectedPillText}>Active Filter</Text>
-          </View>
-        ) : (
-          <Text
-            style={[
-              styles.tapHint,
-              isDark ? styles.textMutedDark : styles.textMutedLight,
-            ]}
+        <View style={styles.topRightActions}>
+          {isSelected ? (
+            <View style={styles.selectedPill}>
+              <SymbolView
+                name={{
+                  ios: "checkmark.circle.fill",
+                  android: "check_circle",
+                  web: "check_circle",
+                }}
+                size={14}
+                tintColor="#AB9FF2"
+              />
+              <Text style={styles.selectedPillText}>Active</Text>
+            </View>
+          ) : (
+            <Text
+              style={[
+                styles.tapHint,
+                isDark ? styles.textMutedDark : styles.textMutedLight,
+              ]}
+            >
+              Tap to filter
+            </Text>
+          )}
+
+          <Pressable
+            hitSlop={10}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleDeleteAccount();
+            }}
+            style={styles.deleteAccountBtn}
+            accessibilityRole="button"
+            accessibilityLabel={`Delete account ${account.name}`}
           >
-            Tap to filter
-          </Text>
-        )}
+            <SymbolView
+              name={{ ios: "trash", android: "delete", web: "delete" }}
+              size={15}
+              tintColor={isDark ? "#8E8E93" : "#AEAEB2"}
+            />
+          </Pressable>
+        </View>
       </View>
 
       {/* Account Title */}
@@ -148,17 +184,30 @@ export function AccountCard({
         >
           Spent this month
         </Text>
-        <Text
-          style={[
-            styles.footerValue,
-            {
-              color:
-                monthlyExpense > 0 ? "#FF3B30" : isDark ? "#8E8E93" : "#6C6C70",
-            },
-          ]}
-        >
-          {monthlyExpense > 0 ? `-${formatCurrency(monthlyExpense)}` : "Rs. 0"}
-        </Text>
+        <View style={styles.footerValueRow}>
+          {monthlyExpense > 0 && (
+            <SymbolView
+              name={{
+                ios: "arrow.down",
+                android: "arrow_downward",
+                web: "arrow_downward",
+              }}
+              size={11}
+              tintColor="#FF3B30"
+            />
+          )}
+          <Text
+            style={[
+              styles.footerValue,
+              {
+                color:
+                  monthlyExpense > 0 ? "#FF3B30" : isDark ? "#8E8E93" : "#6C6C70",
+              },
+            ]}
+          >
+            {formatCurrency(monthlyExpense)}
+          </Text>
+        </View>
       </View>
     </Pressable>
   );
@@ -234,6 +283,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#AB9FF2",
   },
+  topRightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  deleteAccountBtn: {
+    padding: 3,
+  },
   tapHint: {
     fontSize: 11,
     fontWeight: "500",
@@ -274,6 +331,11 @@ const styles = StyleSheet.create({
   footerValue: {
     fontSize: 13,
     fontWeight: "700",
+  },
+  footerValueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
   },
   textPrimaryDark: {
     color: "#FFFFFF",

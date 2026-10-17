@@ -182,8 +182,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   cardLight: {
-    backgroundColor: '#FFFFFF',
-    borderColor: 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: '#f5f5f5ff',
+    borderColor: 'rgba(0, 0, 0, 0)',
   },
   iconCircle: {
     width: 56,

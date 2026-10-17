@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C1C1E',
   },
   btnLight: {
-    backgroundColor: '#F5F2FF',
+    backgroundColor: '#f5f5f5ff',
   },
   smallBtnText: {
     fontSize: 12,

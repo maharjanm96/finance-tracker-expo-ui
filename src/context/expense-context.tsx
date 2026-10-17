@@ -84,13 +84,14 @@ interface ExpenseContextType {
   selectAccount: (id: string | null) => void;
   setProfile: (profile: Partial<UserProfile>) => void;
   addTransaction: (
-    tx: Omit<Transaction, "id" | "timestamp"> & { timestamp?: number }
+    tx: Omit<Transaction, "id" | "timestamp"> & { timestamp?: number },
   ) => void;
   editTransaction: (id: string, tx: Partial<Transaction>) => void;
   deleteTransaction: (id: string) => void;
   addAccount: (account: Omit<Account, "id">) => void;
   editAccount: (id: string, account: Partial<Account>) => void;
   archiveAccount: (id: string) => void;
+  deleteAccount: (id: string) => void;
   getAccountById: (id: string) => Account | undefined;
   getAccountBalance: (id: string) => number;
   resetAllData: () => void;
@@ -109,7 +110,7 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
   const [transactions, setTransactions] =
     useState<Transaction[]>(INITIAL_TRANSACTIONS);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-    null
+    null,
   );
 
   const selectedAccount =
@@ -130,11 +131,11 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
   // 3. Annual goal progress
   const annualSavings = calculateNetSavings(
     calculateIncome(transactions, null),
-    calculateExpenses(transactions, null)
+    calculateExpenses(transactions, null),
   );
   const annualGoalProgress = calculateGoalProgress(
     annualSavings,
-    profile.annualSavingsGoal
+    profile.annualSavingsGoal,
   );
 
   // 4. Scoped transactions list
@@ -158,7 +159,7 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addTransaction = (
-    tx: Omit<Transaction, "id" | "timestamp"> & { timestamp?: number }
+    tx: Omit<Transaction, "id" | "timestamp"> & { timestamp?: number },
   ) => {
     const newTx: Transaction = {
       ...tx,
@@ -170,7 +171,7 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
 
   const editTransaction = (id: string, updated: Partial<Transaction>) => {
     setTransactions((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updated } : t))
+      prev.map((t) => (t.id === id ? { ...t, ...updated } : t)),
     );
   };
 
@@ -188,17 +189,29 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
 
   const editAccount = (id: string, updated: Partial<Account>) => {
     setAccounts((prev) =>
-      prev.map((acc) => (acc.id === id ? { ...acc, ...updated } : acc))
+      prev.map((acc) => (acc.id === id ? { ...acc, ...updated } : acc)),
     );
   };
 
   const archiveAccount = (id: string) => {
     setAccounts((prev) =>
-      prev.map((acc) => (acc.id === id ? { ...acc, isArchived: true } : acc))
+      prev.map((acc) => (acc.id === id ? { ...acc, isArchived: true } : acc)),
     );
     if (selectedAccountId === id) {
       setSelectedAccountId(null);
     }
+  };
+
+  const deleteAccount = (id: string) => {
+    if (selectedAccountId === id) {
+      setSelectedAccountId(null);
+    }
+    setAccounts((prev) => prev.filter((acc) => acc.id !== id));
+    setTransactions((prev) =>
+      prev.filter(
+        (tx) => tx.sourceAccountId !== id && tx.destinationAccountId !== id,
+      ),
+    );
   };
 
   const getAccountById = (id: string) => {
@@ -231,7 +244,7 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
     profile.monthlyIncome > 0
       ? Math.min(
           100,
-          Math.round((monthlyExpenses / profile.monthlyIncome) * 100)
+          Math.round((monthlyExpenses / profile.monthlyIncome) * 100),
         )
       : 0;
 
@@ -261,6 +274,7 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
         addAccount,
         editAccount,
         archiveAccount,
+        deleteAccount,
         getAccountById,
         getAccountBalance,
         resetAllData,

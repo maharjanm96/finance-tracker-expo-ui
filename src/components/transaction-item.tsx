@@ -1,5 +1,5 @@
 import { SymbolView } from "expo-symbols";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { CATEGORY_ICONS, useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
@@ -44,6 +44,21 @@ export function TransactionItem({
   } else if (sourceAccount) {
     subtitleText = `${sourceAccount.name} • ${transaction.category} • ${transaction.date}`;
   }
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Transaction",
+      `Are you sure you want to delete "${transaction.title}" (${formatCurrency(transaction.amount)})?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteTransaction(transaction.id),
+        },
+      ],
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -94,30 +109,47 @@ export function TransactionItem({
           </Text>
         </View>
 
-        {/* Amount: Income Green, Expense Red, Transfer Purple */}
+        {/* Amount: Income Green with up arrow, Expense Red with down arrow, Transfer Purple */}
         <View style={styles.amountCol}>
-          <Text
-            style={[
-              styles.amountText,
-              {
-                color: isTransfer
-                  ? "#AB9FF2"
-                  : isIncome
-                    ? "#2EC08B"
-                    : "#FF3B30",
-              },
-            ]}
-          >
-            {isTransfer ? "" : isIncome ? "+" : "-"}
-            {formatCurrency(transaction.amount)}
-          </Text>
+          <View style={styles.amountRow}>
+            {!isTransfer && (
+              <SymbolView
+                name={{
+                  ios: isIncome ? "arrow.up" : "arrow.down",
+                  android: isIncome ? "arrow_upward" : "arrow_downward",
+                  web: isIncome ? "arrow_upward" : "arrow_downward",
+                }}
+                size={11}
+                tintColor={isIncome ? "#2EC08B" : "#FF3B30"}
+              />
+            )}
+            <Text
+              style={[
+                styles.amountText,
+                {
+                  color: isTransfer
+                    ? "#AB9FF2"
+                    : isIncome
+                      ? "#2EC08B"
+                      : "#FF3B30",
+                },
+              ]}
+            >
+              {formatCurrency(transaction.amount)}
+            </Text>
+          </View>
         </View>
 
         {/* Quick Delete Trash Button */}
         <Pressable
-          hitSlop={8}
-          onPress={() => deleteTransaction(transaction.id)}
+          hitSlop={10}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleDelete();
+          }}
           style={styles.deleteBtn}
+          accessibilityRole="button"
+          accessibilityLabel={`Delete transaction ${transaction.title}`}
         >
           <SymbolView
             name={{ ios: "trash", android: "delete", web: "delete" }}
@@ -178,6 +210,11 @@ const styles = StyleSheet.create({
   },
   amountCol: {
     alignItems: "flex-end",
+  },
+  amountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
   },
   amountText: {
     fontSize: 15,

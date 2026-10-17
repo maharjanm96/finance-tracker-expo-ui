@@ -359,8 +359,8 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255, 255, 255, 0.12)",
   },
   chipLight: {
-    backgroundColor: "#F5F5F5",
-    borderColor: "rgba(0, 0, 0, 0.08)",
+    backgroundColor: "#f5f5f5ff",
+    borderColor: "rgba(0, 0, 0, 0)",
   },
   chipSelectedDark: {
     backgroundColor: "#AB9FF2",

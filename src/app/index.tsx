@@ -20,11 +20,12 @@ import { CreateAccountModal } from "@/components/create-account-modal";
 import { AccountStack } from "@/components/home/account-stack";
 import { MonthlySummary } from "@/components/home/monthly-summary";
 import { OnboardingSetup } from "@/components/onboarding-setup";
+import { TransactionDetailsModal } from "@/components/transaction-details-modal";
 import { TransactionItem } from "@/components/transaction-item";
 import { BottomTabInset, MaxContentWidth } from "@/constants/theme";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
-import { TransactionType } from "@/domain/types";
+import { Transaction, TransactionType } from "@/domain/types";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -37,6 +38,7 @@ export default function HomeScreen() {
 
   const [modalType, setModalType] = useState<TransactionType | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -203,6 +205,7 @@ export default function HomeScreen() {
                     <TransactionItem
                       key={tx.id}
                       transaction={tx}
+                      onPress={() => setSelectedTx(tx)}
                       showDivider={idx < recentItems.length - 1}
                     />
                   ))
@@ -230,6 +233,13 @@ export default function HomeScreen() {
       <CreateAccountModal
         visible={showAccountModal}
         onClose={() => setShowAccountModal(false)}
+      />
+
+      {/* Transaction Details Bottom Modal */}
+      <TransactionDetailsModal
+        visible={selectedTx !== null}
+        transaction={selectedTx}
+        onClose={() => setSelectedTx(null)}
       />
     </View>
   );
