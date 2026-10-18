@@ -25,7 +25,7 @@ interface SearchSheetModalProps {
 
 export function SearchSheetModal({ visible, onClose }: SearchSheetModalProps) {
   const { isDark } = useAppTheme();
-  const { transactions, accounts } = useExpense();
+  const { transactions, accounts, currencySymbol } = useExpense();
   const [query, setQuery] = useState("");
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
@@ -211,7 +211,7 @@ export function SearchSheetModal({ visible, onClose }: SearchSheetModalProps) {
                             style={{ color: amountColor }}
                           >
                             {isIncome ? "+" : isTransfer ? "" : "-"}
-                            {formatCurrency(tx.amount)}
+                            {formatCurrency(tx.amount, currencySymbol)}
                           </Text>
                           <Text className="text-[11px] text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
                             {tx.date}

@@ -56,12 +56,12 @@ export function TopChipHeader({
     <>
       <StatusBar style={isDark ? "light" : "dark"} />
       <View
-        className="absolute top-0 left-0 right-0 z-30 overflow-hidden border-b border-black/5 dark:border-white/10"
+        className="absolute top-0 left-0 right-0 z-30 overflow-hidden"
         style={{ paddingTop: topInset }}
       >
         {/* ─── Frosted Glass Blur Backdrop covering status bar and header ─── */}
         <BlurView
-          intensity={Platform.OS === "ios" ? 75 : 85}
+          intensity={Platform.OS === "ios" ? 40 : 85}
           tint={isDark ? "dark" : "light"}
           style={StyleSheet.absoluteFill}
         />

@@ -2,6 +2,11 @@ import type { SymbolViewProps } from "expo-symbols";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 import {
+  CurrencyInfo,
+  DEFAULT_CURRENCY,
+  getCurrencyInfo,
+} from "@/constants/currencies";
+import {
   calculateAccountBalance,
   calculateCombinedBalance,
   calculateExpenses,
@@ -93,6 +98,11 @@ interface ExpenseContextType {
   selectedAccount: Account | null;
   isHydrated: boolean;
 
+  // Global Currency (reactive across all screens)
+  currency: string;
+  currencySymbol: string;
+  currencyInfo: CurrencyInfo;
+
   // Derived financial metrics
   combinedBalance: number;
   scopedBalance: number;
@@ -176,6 +186,11 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
   const selectedAccount =
     accounts.find((acc) => acc.id === selectedAccountId) ?? null;
 
+  // Reactive Currency derived from profile
+  const currencyInfo = getCurrencyInfo(profile.currency);
+  const currencySymbol = currencyInfo.symbol;
+  const currency = currencyInfo.code;
+
   // 1. Balances
   const combinedBalance = calculateCombinedBalance(accounts, transactions);
   const scopedBalance = selectedAccount
@@ -225,9 +240,10 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateCurrency = (currency: string) => {
-    setActiveCurrency(currency);
-    setProfile({ currency });
+  const updateCurrency = (newCurrency: string) => {
+    const info = getCurrencyInfo(newCurrency);
+    setActiveCurrency(info.symbol);
+    setProfile({ currency: info.code });
   };
 
   const addTransaction = (
@@ -352,6 +368,9 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
         selectedAccountId,
         selectedAccount,
         isHydrated,
+        currency,
+        currencySymbol,
+        currencyInfo,
         combinedBalance,
         scopedBalance,
         monthlyIncome,

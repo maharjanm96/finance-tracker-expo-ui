@@ -22,7 +22,7 @@ function TransactionDetailsContent({
   transaction: Transaction;
   onClose: () => void;
 }) {
-  const { deleteTransaction, accounts } = useExpense();
+  const { deleteTransaction, accounts, currencySymbol } = useExpense();
   const { isDark } = useAppTheme();
 
   const isTransfer = transaction.type === "transfer";
@@ -45,7 +45,7 @@ function TransactionDetailsContent({
   const handleDelete = () => {
     Alert.alert(
       "Delete Transaction",
-      `Are you sure you want to delete "${transaction.title}" (${formatCurrency(transaction.amount)})?`,
+      `Are you sure you want to delete "${transaction.title}" (${formatCurrency(transaction.amount, currencySymbol)})?`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -108,7 +108,7 @@ function TransactionDetailsContent({
               className="text-4xl font-extrabold tracking-tight"
               style={{ color: amountColor }}
             >
-              {formatCurrency(transaction.amount)}
+              {formatCurrency(transaction.amount, currencySymbol)}
             </Text>
           </View>
           <View

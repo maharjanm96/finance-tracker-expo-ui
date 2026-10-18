@@ -8,14 +8,13 @@ import {
 import { NativeGlassView } from '@/components/native-glass';
 import { useExpense } from '@/context/expense-context';
 import { useAppTheme } from '@/context/theme-context';
+import { formatCurrency } from '@/domain/formatters';
 
 export function ExpenseHeroCard() {
-  const { profile, totalSpent, remainingBalance, percentSpent } = useExpense();
+  const { profile, totalSpent, remainingBalance, percentSpent, currencySymbol } = useExpense();
   const { isDark } = useAppTheme();
 
-  const formatCurrency = (val: number) => {
-    return `${profile.currency} ${val.toLocaleString()}`;
-  };
+  const formatAmt = (val: number) => formatCurrency(val, currencySymbol);
 
   const isLowBalance = percentSpent > 85;
 
@@ -51,7 +50,7 @@ export function ExpenseHeroCard() {
 
       {/* Hero Remaining Balance */}
       <Text className="text-4xl font-extrabold tracking-tight text-text-primary-light dark:text-text-primary-dark">
-        {formatCurrency(remainingBalance)}
+        {formatAmt(remainingBalance)}
       </Text>
 
       {/* Minimalist Progress Track (Perano Primary Purple) */}
@@ -72,7 +71,7 @@ export function ExpenseHeroCard() {
             Total Spent
           </Text>
           <Text className="text-lg font-bold tracking-tight text-text-primary-light dark:text-text-primary-dark">
-            {formatCurrency(totalSpent)}
+            {formatAmt(totalSpent)}
           </Text>
         </View>
 
@@ -83,7 +82,7 @@ export function ExpenseHeroCard() {
             Monthly Income
           </Text>
           <Text className="text-lg font-bold tracking-tight text-emerald-500 dark:text-emerald-400">
-            {formatCurrency(profile.monthlyIncome)}
+            {formatAmt(profile.monthlyIncome)}
           </Text>
         </View>
       </View>

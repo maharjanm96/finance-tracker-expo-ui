@@ -74,7 +74,7 @@ export function BottomFloatingBar({
 
   const bottomInset =
     Platform.OS === "ios" ? Math.max(insets.bottom + 6, 16) : 18;
-  const blurHeight = bottomInset + 48 + 14;
+  const blurHeight = bottomInset + 48 + 10;
 
   const openMenu = () => {
     setIsOpen(true);
@@ -206,7 +206,7 @@ export function BottomFloatingBar({
         ]}
       >
         <BlurView
-          intensity={Platform.OS === "ios" ? 75 : 85}
+          intensity={Platform.OS === "ios" ? 40 : 85}
           tint={isDark ? "dark" : "light"}
           style={StyleSheet.absoluteFill}
         />

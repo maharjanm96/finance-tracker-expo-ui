@@ -104,7 +104,10 @@ export default function AnalyticsScreen() {
     monthlySavings,
     savingsRate,
     annualGoalProgress,
+    currencySymbol,
   } = useExpense();
+
+  const formatAmt = (val: number) => formatCurrency(val, currencySymbol);
 
   const [scrollY] = useState(() => new Animated.Value(0));
   const blurTargetRef = useRef<View | null>(null);
@@ -755,9 +758,7 @@ export default function AnalyticsScreen() {
                     SPENDING ACTIVITY
                   </Text>
                   <Text className="text-2xl font-extrabold tracking-tight text-text-primary-light dark:text-text-primary-dark">
-                    {formatCurrency(
-                      activeBucket?.expense ?? totalPeriodExpense,
-                    )}
+                    {formatAmt(activeBucket?.expense ?? totalPeriodExpense)}
                   </Text>
                   <Text className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">
                     {activeBucket?.label ?? "Selected Period"}
@@ -936,7 +937,7 @@ export default function AnalyticsScreen() {
                     className="bg-brand-dark-purple dark:bg-chip-dark border border-transparent dark:border-brand-perano/40 px-2 py-0.5 rounded-lg shadow-sm items-center"
                   >
                     <Text className="text-[10px] font-bold text-white dark:text-brand-perano">
-                      {formatCurrency(activePoint.bucket.expense)}
+                      {formatAmt(activePoint.bucket.expense)}
                     </Text>
                   </View>
                 )}
@@ -949,7 +950,7 @@ export default function AnalyticsScreen() {
                       onPress={() => setSelectedBarIndex(pt.index)}
                       className="flex-1 h-full"
                       accessibilityRole="button"
-                      accessibilityLabel={`${pt.bucket.fullLabel}: ${formatCurrency(pt.bucket.expense)}`}
+                      accessibilityLabel={`${pt.bucket.fullLabel}: ${formatAmt(pt.bucket.expense)}`}
                     />
                   ))}
                 </View>
@@ -1006,7 +1007,7 @@ export default function AnalyticsScreen() {
                   Daily Avg
                 </Text>
                 <Text className="text-base font-bold text-text-primary-light dark:text-text-primary-dark">
-                  {formatCurrency(dailyAverageSpend)}
+                  {formatAmt(dailyAverageSpend)}
                 </Text>
                 <Text className="text-[11px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                   per day
@@ -1035,7 +1036,7 @@ export default function AnalyticsScreen() {
                   Total
                 </Text>
                 <Text className="text-base font-bold text-text-primary-light dark:text-text-primary-dark">
-                  {formatCurrency(totalPeriodExpense)}
+                  {formatAmt(totalPeriodExpense)}
                 </Text>
                 <Text className="text-[11px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                   this {timeRange}
@@ -1147,7 +1148,7 @@ export default function AnalyticsScreen() {
                                   {item.category}
                                 </Text>
                                 <Text className="text-sm font-bold text-text-primary-light dark:text-text-primary-dark">
-                                  {formatCurrency(item.amount)}
+                                  {formatAmt(item.amount)}
                                 </Text>
                               </View>
 
@@ -1218,7 +1219,7 @@ export default function AnalyticsScreen() {
                         tintColor="#2EC08B"
                       />
                       <Text className="text-sm font-bold text-emerald-500 dark:text-emerald-400">
-                        {formatCurrency(monthlyIncome)}
+                        {formatAmt(monthlyIncome)}
                       </Text>
                     </View>
                   </View>
@@ -1253,7 +1254,7 @@ export default function AnalyticsScreen() {
                         tintColor="#FF3B30"
                       />
                       <Text className="text-sm font-bold text-rose-500 dark:text-rose-400">
-                        {formatCurrency(monthlyExpenses)}
+                        {formatAmt(monthlyExpenses)}
                       </Text>
                     </View>
                   </View>
@@ -1296,7 +1297,7 @@ export default function AnalyticsScreen() {
                         : "text-rose-500 dark:text-rose-400"
                     }`}
                   >
-                    {formatCurrency(Math.abs(monthlySavings))}
+                    {formatAmt(Math.abs(monthlySavings))}
                   </Text>
                 </View>
               </View>
@@ -1319,7 +1320,7 @@ export default function AnalyticsScreen() {
                     Total Saved YTD
                   </Text>
                   <Text className="text-base font-bold text-text-primary-light dark:text-text-primary-dark mt-0.5">
-                    {formatCurrency(monthlySavings > 0 ? monthlySavings : 0)}
+                    {formatAmt(monthlySavings > 0 ? monthlySavings : 0)}
                   </Text>
                 </View>
                 <View className="items-end">
@@ -1327,7 +1328,7 @@ export default function AnalyticsScreen() {
                     Target Goal
                   </Text>
                   <Text className="text-base font-bold text-text-primary-light dark:text-text-primary-dark mt-0.5">
-                    {formatCurrency(profile.annualSavingsGoal)}
+                    {formatAmt(profile.annualSavingsGoal)}
                   </Text>
                 </View>
               </View>

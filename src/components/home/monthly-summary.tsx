@@ -15,6 +15,7 @@ export function MonthlySummary() {
     monthlyExpenses,
     monthlySavings,
     savingsRate,
+    currencySymbol,
   } = useExpense();
 
   // Monthly savings goal calculation based on annual profile goal
@@ -107,7 +108,7 @@ export function MonthlySummary() {
               numberOfLines={1}
               className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text-primary-light dark:text-text-primary-dark"
             >
-              {formatCurrency(monthlySavings, profile.currency)}
+              {formatCurrency(monthlySavings, currencySymbol)}
             </Text>
 
             {/* Compact Goal Progress Track */}
@@ -120,7 +121,7 @@ export function MonthlySummary() {
               </View>
               <Text className="text-[10px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                 {goalPercentage}% of goal (
-                {formatCurrency(monthlyGoal, profile.currency)})
+                {formatCurrency(monthlyGoal, currencySymbol)})
               </Text>
             </View>
           </View>
@@ -152,7 +153,7 @@ export function MonthlySummary() {
                 numberOfLines={1}
                 className="text-[13px] font-bold text-income"
               >
-                +{formatCurrency(monthlyIncome, profile.currency)}
+                +{formatCurrency(monthlyIncome, currencySymbol)}
               </Text>
             </View>
 
@@ -178,7 +179,7 @@ export function MonthlySummary() {
                 numberOfLines={1}
                 className="text-[13px] font-bold text-expense"
               >
-                -{formatCurrency(monthlyExpenses, profile.currency)}
+                -{formatCurrency(monthlyExpenses, currencySymbol)}
               </Text>
             </View>
 

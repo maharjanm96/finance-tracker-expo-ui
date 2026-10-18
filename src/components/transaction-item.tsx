@@ -17,7 +17,7 @@ export function TransactionItem({
   onPress,
   showDivider = true,
 }: TransactionItemProps) {
-  const { deleteTransaction, accounts } = useExpense();
+  const { deleteTransaction, accounts, currencySymbol } = useExpense();
   const { isDark } = useAppTheme();
 
   const isTransfer = transaction.type === "transfer";
@@ -48,7 +48,7 @@ export function TransactionItem({
   const handleDelete = () => {
     Alert.alert(
       "Delete Transaction",
-      `Are you sure you want to delete "${transaction.title}" (${formatCurrency(transaction.amount)})?`,
+      `Are you sure you want to delete "${transaction.title}" (${formatCurrency(transaction.amount, currencySymbol)})?`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -119,7 +119,7 @@ export function TransactionItem({
                     : "#FF3B30",
               }}
             >
-              {formatCurrency(transaction.amount)}
+              {formatCurrency(transaction.amount, currencySymbol)}
             </Text>
           </View>
         </View>

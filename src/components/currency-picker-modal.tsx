@@ -26,7 +26,7 @@ export function CurrencyPickerModal({
   const currentInfo = getCurrencyInfo(profile.currency);
 
   const handleSelect = (item: CurrencyInfo) => {
-    updateCurrency(item.symbol);
+    updateCurrency(item.code);
     onSelectCurrency?.(item);
     onClose();
   };

@@ -23,9 +23,8 @@ function CreateAccountForm({
   account?: Account | null;
   onClose: () => void;
 }) {
-  const { addAccount, editAccount, profile } = useExpense();
+  const { addAccount, editAccount, profile, currencyInfo } = useExpense();
   const { isDark } = useAppTheme();
-  const currencyInfo = getCurrencyInfo(profile.currency);
 
   const isEditing = Boolean(account);
 

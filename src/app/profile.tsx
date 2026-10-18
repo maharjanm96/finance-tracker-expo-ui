@@ -2,6 +2,7 @@ import { SymbolView } from "expo-symbols";
 import { useState } from "react";
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,6 +14,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CreateAccountModal } from "@/components/create-account-modal";
+import { CurrencyPickerModal } from "@/components/currency-picker-modal";
 import { AppButton } from "@/components/ui/app-button";
 import { getAccountTypeIcon } from "@/constants/account-types";
 import { useExpense } from "@/context/expense-context";
@@ -35,7 +37,11 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
     resetAllData,
     getAccountBalance,
     deleteAccount,
+    currencySymbol,
+    currencyInfo,
   } = useExpense();
+
+  const [showCurrencyModal, setShowCurrencyModal] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(profile.name);
@@ -157,7 +163,7 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
               numberOfLines={1}
               className="text-[13px] font-medium text-text-secondary-light dark:text-text-secondary-dark mt-0.5"
             >
-              Income: {formatCurrency(profile.monthlyIncome)} / mo
+              Income: {formatCurrency(profile.monthlyIncome, currencySymbol)} / mo
             </Text>
           </View>
           <Pressable
@@ -295,7 +301,7 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
 
                       <View className="flex-row items-center gap-2.5 shrink-0">
                         <Text className="text-sm font-extrabold text-text-light dark:text-text-dark mr-0.5">
-                          {formatCurrency(balance)}
+                          {formatCurrency(balance, currencySymbol)}
                         </Text>
                         <Pressable
                           hitSlop={10}
@@ -413,6 +419,44 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
           </View>
         </View>
 
+        {/* ─── Currency Settings ─── */}
+        <View className="gap-2.5">
+          <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-1">
+            CURRENCY
+          </Text>
+          <Pressable
+            onPress={() => setShowCurrencyModal(true)}
+            className="p-4 rounded-3xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 flex-row items-center justify-between active:opacity-80"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-8 h-8 rounded-full overflow-hidden bg-black/5 dark:bg-white/10 items-center justify-center shrink-0">
+                <Image
+                  source={currencyInfo.flag}
+                  className="w-8 h-8 rounded-full"
+                  resizeMode="cover"
+                />
+              </View>
+              <View>
+                <Text className="text-[15px] font-bold text-text-light dark:text-text-dark">
+                  {currencyInfo.name} ({currencyInfo.code})
+                </Text>
+                <Text className="text-[12px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
+                  Active Symbol: {currencySymbol}
+                </Text>
+              </View>
+            </View>
+            <SymbolView
+              name={{
+                ios: "chevron.right",
+                android: "keyboard_arrow_right",
+                web: "keyboard_arrow_right",
+              }}
+              size={14}
+              tintColor={isDark ? "#989BA5" : "#8E8E93"}
+            />
+          </Pressable>
+        </View>
+
         {/* ─── 5. Preferences & Alerts ─── */}
         {/* <View className="gap-2.5">
           <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-1">
@@ -469,6 +513,11 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
           setShowAddAccountModal(false);
           setEditingAccount(null);
         }}
+      />
+      {/* Currency Picker Modal */}
+      <CurrencyPickerModal
+        visible={showCurrencyModal}
+        onClose={() => setShowCurrencyModal(false)}
       />
     </KeyboardAvoidingView>
   );

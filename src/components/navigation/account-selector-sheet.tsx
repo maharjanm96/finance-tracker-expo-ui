@@ -30,10 +30,10 @@ export function AccountSelectorSheet({
     selectAccount,
     getAccountBalance,
     combinedBalance,
+    currencyInfo,
   } = useExpense();
 
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
-  const currencyInfo = getCurrencyInfo(profile.currency);
   const activeAccounts = accounts.filter((a) => !a.isArchived);
 
   return (

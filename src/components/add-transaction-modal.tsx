@@ -177,9 +177,9 @@ function AddTransactionForm({
     addTransaction,
     profile,
     getAccountBalance,
+    currencyInfo,
   } = useExpense();
   const { isDark } = useAppTheme();
-  const currencyInfo = getCurrencyInfo(profile.currency);
 
   const activeAccounts = accounts.filter((a) => !a.isArchived);
 

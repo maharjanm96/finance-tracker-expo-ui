@@ -26,8 +26,13 @@ export default function TransactionsScreen({
 }: TransactionsScreenProps = {}) {
   const insets = useSafeAreaInsets();
   const { isDark } = useAppTheme();
-  const { transactions, accounts, selectedAccountId, selectAccount } =
-    useExpense();
+  const {
+    transactions,
+    accounts,
+    selectedAccountId,
+    selectAccount,
+    currencySymbol,
+  } = useExpense();
 
   const [scrollY] = useState(() => new Animated.Value(0));
   const blurTargetRef = useRef<View | null>(null);
@@ -84,7 +89,7 @@ export default function TransactionsScreen({
       }
     });
     return groups;
-  }, [filteredTransactions]);
+  }, [filteredTransactions, currencySymbol]);
 
   return (
     <View className="flex-1 bg-bg-light dark:bg-bg-dark">

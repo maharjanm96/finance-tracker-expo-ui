@@ -12,38 +12,40 @@ export function getActiveCurrency(): string {
 }
 
 export function formatCurrency(amount: number, currency?: string): string {
-  const curr = currency ?? activeCurrencySymbol;
+  const info = getCurrencyInfo(currency ?? activeCurrencySymbol);
+  const symbol = info.symbol;
   const rounded = Math.round(amount);
 
   const locale =
-    curr === "$" || curr === "A$"
+    info.code === "USD" || symbol === "$" || symbol === "A$"
       ? "en-US"
-      : curr === "£"
+      : info.code === "GBP" || symbol === "£"
         ? "en-GB"
-        : curr === "¥"
+        : info.code === "CNY" || symbol === "¥"
           ? "zh-CN"
           : "en-IN"; // South Asian grouping standard for NPR/INR
 
   const formatted = rounded.toLocaleString(locale);
-  return `${curr} ${formatted}`;
+  return `${symbol} ${formatted}`;
 }
 
 export function formatCompactCurrency(
   amount: number,
   currency?: string,
 ): string {
-  const curr = currency ?? activeCurrencySymbol;
+  const info = getCurrencyInfo(currency ?? activeCurrencySymbol);
+  const symbol = info.symbol;
   const abs = Math.abs(amount);
   if (abs >= 10000000) {
-    return `${curr} ${(amount / 10000000).toFixed(1)}Cr`;
+    return `${symbol} ${(amount / 10000000).toFixed(1)}Cr`;
   }
   if (abs >= 100000) {
-    return `${curr} ${(amount / 100000).toFixed(1)}L`;
+    return `${symbol} ${(amount / 100000).toFixed(1)}L`;
   }
   if (abs >= 1000) {
-    return `${curr} ${(amount / 1000).toFixed(1)}k`;
+    return `${symbol} ${(amount / 1000).toFixed(1)}k`;
   }
-  return formatCurrency(amount, curr);
+  return formatCurrency(amount, symbol);
 }
 
 export function formatPercentage(value: number): string {

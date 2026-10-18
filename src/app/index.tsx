@@ -15,7 +15,6 @@ import { getTopHeaderPadding } from "@/components/navigation/top-chip-header";
 import { OnboardingSetup } from "@/components/onboarding-setup";
 import { TransactionDetailsModal } from "@/components/transaction-details-modal";
 import { TransactionItem } from "@/components/transaction-item";
-import { getCurrencyInfo } from "@/constants/currencies";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { Transaction, TransactionType } from "@/domain/types";
@@ -26,15 +25,13 @@ interface HomeScreenProps {
   onPressWallet?: () => void;
 }
 
-export default function HomeScreen({
-  onNavigateToTab,
-  onPressWallet,
-}: HomeScreenProps = {}) {
+export default function HomeScreen({ onNavigateToTab }: HomeScreenProps = {}) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark } = useAppTheme();
 
-  const { profile, scopedTransactions, selectedAccount } = useExpense();
+  const { profile, scopedTransactions, selectedAccount, currencyInfo } =
+    useExpense();
   const [scrollY] = useState(() => new Animated.Value(0));
   const blurTargetRef = useRef<View | null>(null);
 
@@ -46,7 +43,6 @@ export default function HomeScreen({
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
-  const currencyInfo = getCurrencyInfo(profile.currency);
   const recentItems = scopedTransactions.slice(0, 5);
 
   return (

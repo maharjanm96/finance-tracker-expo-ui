@@ -185,9 +185,8 @@ export function AccountCard({
   isCombined,
 }: AccountCardProps) {
   const { isDark } = useAppTheme();
-  const { profile } = useExpense();
+  const { currencyInfo } = useExpense();
 
-  const currencyInfo = getCurrencyInfo(account.currency || profile.currency);
   const cardSuffix = getCardSuffix(account.id, isCombined);
 
   // Gradient themes:
