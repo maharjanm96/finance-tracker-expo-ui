@@ -1,18 +1,21 @@
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useRef, useState } from "react";
-import { Animated, Pressable, Text, View } from "react-native";
+import { Animated, Image, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddTransactionModal } from "@/components/add-transaction-modal";
 import { BlurTargetView } from "@/components/blurred-status-bar";
 import { CreateAccountModal } from "@/components/create-account-modal";
+import { CurrencyPickerModal } from "@/components/currency-picker-modal";
+import { AccountCarousel } from "@/components/home/account-carousel";
 import { MonthlySummary } from "@/components/home/monthly-summary";
 import { AccountSelectorSheet } from "@/components/navigation/account-selector-sheet";
 import { getTopHeaderPadding } from "@/components/navigation/top-chip-header";
 import { OnboardingSetup } from "@/components/onboarding-setup";
 import { TransactionDetailsModal } from "@/components/transaction-details-modal";
 import { TransactionItem } from "@/components/transaction-item";
+import { getCurrencyInfo } from "@/constants/currencies";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { Transaction, TransactionType } from "@/domain/types";
@@ -40,8 +43,10 @@ export default function HomeScreen({
   const [modalType, setModalType] = useState<TransactionType | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showAccountSelector, setShowAccountSelector] = useState(false);
+  const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
+  const currencyInfo = getCurrencyInfo(profile.currency);
   const recentItems = scopedTransactions.slice(0, 5);
 
   return (
@@ -51,7 +56,7 @@ export default function HomeScreen({
           style={{ flex: 1 }}
           contentContainerStyle={{
             paddingTop: topHeaderPadding,
-            paddingBottom: 110,
+            paddingBottom: 140,
             alignItems: "center",
           }}
           scrollIndicatorInsets={{ top: topHeaderPadding, bottom: 90 }}
@@ -63,20 +68,39 @@ export default function HomeScreen({
           )}
         >
           <View className="w-full max-w-[800px] px-4 gap-5">
-            {/* Wallet Selector Row below Avatar */}
-            <View className="flex-row items-center mt-2 px-0.5">
+            {/* Top Bar: Clean Title & Global Functional Currency Flag Pill */}
+            <View className="flex-row items-center justify-between mt-2 px-0.5">
+              <View>
+                <Text className="text-2xl font-black tracking-tight text-text-light dark:text-text-dark">
+                  Hello,
+                </Text>
+                <Text className="text-2xl font-black tracking-tight text-text-light dark:text-text-dark">
+                  {profile.name}
+                </Text>
+                <Text className="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
+                  {selectedAccount
+                    ? `Filtering • ${selectedAccount.name}`
+                    : "Overview • All Accounts"}
+                </Text>
+              </View>
+
+              {/* Functional Global Currency Flag Pill */}
               <Pressable
-                onPress={onPressWallet ?? (() => setShowAccountSelector(true))}
-                className="flex-row items-center gap-1.5 py-1 px-2 -ml-2 rounded-lg active:opacity-70 max-w-[80%]"
+                hitSlop={8}
+                onPress={() => setShowCurrencyModal(true)}
+                className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/10 active:opacity-75 shadow-2xs"
                 accessibilityRole="button"
-                accessibilityLabel="Account wallet selector"
+                accessibilityLabel={`Current currency: ${currencyInfo.code}. Tap to change`}
               >
-                <Text
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                  className="text-[16px] font-bold tracking-tight text-text-light dark:text-text-dark"
-                >
-                  {selectedAccount ? selectedAccount.name : "Combined Account"}
+                <View className="w-4.5 h-4.5 rounded-full overflow-hidden bg-black/5 dark:bg-white/10 items-center justify-center shrink-0">
+                  <Image
+                    source={currencyInfo.flag}
+                    className="w-4.5 h-4.5 rounded-full"
+                    resizeMode="cover"
+                  />
+                </View>
+                <Text className="text-xs font-bold text-text-primary-light dark:text-text-primary-dark">
+                  {currencyInfo.code}
                 </Text>
                 <SymbolView
                   name={{
@@ -84,16 +108,19 @@ export default function HomeScreen({
                     android: "keyboard_arrow_down",
                     web: "keyboard_arrow_down",
                   }}
-                  size={14}
-                  tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
+                  size={11}
+                  tintColor={isDark ? "#989BA5" : "#6C6C70"}
                 />
               </Pressable>
             </View>
 
-            {/* ─── 1. Monthly Financial Snapshot Hero ─── */}
+            {/* ─── 1. Horizontal Account Card Carousel ─── */}
+            <AccountCarousel onAddAccount={() => setShowAccountModal(true)} />
+
+            {/* ─── 2. Monthly Financial Snapshot Hero ─── */}
             <MonthlySummary />
 
-            {/* ─── 2. Scoped Recent Transactions ─── */}
+            {/* ─── 3. Scoped Recent Transactions ─── */}
             <View className="gap-2.5">
               <View className="flex-row items-center justify-between px-1">
                 <View>
@@ -191,6 +218,12 @@ export default function HomeScreen({
         visible={selectedTx !== null}
         transaction={selectedTx}
         onClose={() => setSelectedTx(null)}
+      />
+
+      {/* Currency Picker Modal */}
+      <CurrencyPickerModal
+        visible={showCurrencyModal}
+        onClose={() => setShowCurrencyModal(false)}
       />
     </View>
   );

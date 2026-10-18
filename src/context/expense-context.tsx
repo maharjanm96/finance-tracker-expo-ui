@@ -10,6 +10,7 @@ import {
   calculateNetSavings,
   calculateSavingsRate,
 } from "@/domain/finance-calculations";
+import { setActiveCurrency } from "@/domain/formatters";
 import {
   Account,
   ExpenseCategory,
@@ -88,6 +89,7 @@ interface ExpenseContextType {
   // Mutators
   selectAccount: (id: string | null) => void;
   setProfile: (profile: Partial<UserProfile>) => void;
+  updateCurrency: (currency: string) => void;
   addTransaction: (
     tx: Omit<Transaction, "id" | "timestamp"> & { timestamp?: number },
   ) => void;
@@ -130,6 +132,9 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
 
       if (savedProfile) {
         setProfileState(savedProfile);
+        if (savedProfile.currency) {
+          setActiveCurrency(savedProfile.currency);
+        }
       }
       if (savedAccounts) {
         setAccounts(savedAccounts);
@@ -188,8 +193,16 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
     setProfileState((prev) => {
       const next = { ...prev, ...newProfile };
       StorageService.saveProfile(next);
+      if (next.currency) {
+        setActiveCurrency(next.currency);
+      }
       return next;
     });
+  };
+
+  const updateCurrency = (currency: string) => {
+    setActiveCurrency(currency);
+    setProfile({ currency });
   };
 
   const addTransaction = (
@@ -326,6 +339,7 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
         recentTransactions,
         selectAccount,
         setProfile,
+        updateCurrency,
         addTransaction,
         editTransaction,
         deleteTransaction,

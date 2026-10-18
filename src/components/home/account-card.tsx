@@ -1,6 +1,8 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView } from "expo-symbols";
-import { Alert, Pressable, Text, View } from "react-native";
+import { DimensionValue, Pressable, Text, View } from "react-native";
 
+import { getCurrencyInfo } from "@/constants/currencies";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { formatCurrency } from "@/domain/formatters";
@@ -9,9 +11,11 @@ import { Account } from "@/domain/types";
 interface AccountCardProps {
   account: Account;
   balance: number;
-  monthlyExpense: number;
+  monthlyExpense?: number;
   isSelected: boolean;
   onSelect: () => void;
+  width?: DimensionValue;
+  isCombined?: boolean;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -22,156 +26,284 @@ const TYPE_LABELS: Record<string, string> = {
   investment: "Investment",
 };
 
-const TYPE_ICONS: Record<string, { sf: string; material: string }> = {
-  savings: { sf: "building.columns.fill", material: "account_balance" },
-  spending: { sf: "creditcard.fill", material: "payment" },
-  emergency: { sf: "shield.fill", material: "security" },
-  cash: { sf: "banknote.fill", material: "attach_money" },
-  investment: { sf: "chart.line.uptrend.xyaxis", material: "trending_up" },
-};
+/**
+ * Realistic tactile EMV Chip with circuit geometry & contactless wave icon
+ */
+function EmvChip({
+  isDark,
+  isCombined,
+}: {
+  isDark: boolean;
+  isCombined?: boolean;
+}) {
+  return (
+    <View className="flex-row items-center gap-2.5">
+      {/* Metallic Chip Graphic */}
+      <View
+        className="w-9 h-6.5 rounded-md justify-between p-1 border overflow-hidden"
+        style={{
+          backgroundColor: isDark
+            ? isCombined
+              ? "#3B3258"
+              : "#2A2821"
+            : isCombined
+              ? "#EAE5FA"
+              : "#F4EBD0",
+          borderColor: isDark
+            ? isCombined
+              ? "#7A6BA8"
+              : "#6B5E38"
+            : isCombined
+              ? "#AB9FF2"
+              : "#D4AF37",
+        }}
+      >
+        <View className="flex-row justify-between">
+          <View
+            className="w-2.5 h-1.5 rounded-[2px] border"
+            style={{
+              borderColor: isDark
+                ? isCombined
+                  ? "#9E8DD4"
+                  : "#8A7947"
+                : isCombined
+                  ? "#8C7FD4"
+                  : "#C5A030",
+            }}
+          />
+          <View
+            className="w-2.5 h-1.5 rounded-[2px] border"
+            style={{
+              borderColor: isDark
+                ? isCombined
+                  ? "#9E8DD4"
+                  : "#8A7947"
+                : isCombined
+                  ? "#8C7FD4"
+                  : "#C5A030",
+            }}
+          />
+        </View>
+        <View
+          className="h-[0.5px] w-full"
+          style={{
+            backgroundColor: isDark
+              ? isCombined
+                ? "#7A6BA8"
+                : "#6B5E38"
+              : isCombined
+                ? "#AB9FF2"
+                : "#D4AF37",
+          }}
+        />
+        <View className="flex-row justify-between">
+          <View
+            className="w-2.5 h-1.5 rounded-[2px] border"
+            style={{
+              borderColor: isDark
+                ? isCombined
+                  ? "#9E8DD4"
+                  : "#8A7947"
+                : isCombined
+                  ? "#8C7FD4"
+                  : "#C5A030",
+            }}
+          />
+          <View
+            className="w-2.5 h-1.5 rounded-[2px] border"
+            style={{
+              borderColor: isDark
+                ? isCombined
+                  ? "#9E8DD4"
+                  : "#8A7947"
+                : isCombined
+                  ? "#8C7FD4"
+                  : "#C5A030",
+            }}
+          />
+        </View>
+      </View>
+
+      {/* Contactless waves icon */}
+      <SymbolView
+        name={{
+          ios: "wave.3.right",
+          android: "contactless",
+          web: "contactless",
+        }}
+        size={15}
+        tintColor={isDark ? "#989BA5" : "#6C6C70"}
+      />
+    </View>
+  );
+}
+
+/**
+ * Modern overlapping dual-circle debit card network badge
+ */
+function CardBrandIcon({ isCombined }: { isCombined?: boolean }) {
+  return (
+    <View className="flex-row items-center -space-x-2">
+      <View
+        className="w-5.5 h-5.5 rounded-full opacity-90 shadow-2xs"
+        style={{
+          backgroundColor: isCombined ? "#AB9FF2" : "#AB9FF2",
+        }}
+      />
+      <View
+        className="w-5.5 h-5.5 rounded-full"
+        style={{
+          backgroundColor: isCombined
+            ? "rgba(60, 49, 91, 0.75)"
+            : "rgba(60, 49, 91, 0.7)",
+        }}
+      />
+    </View>
+  );
+}
+
+/**
+ * Generate a consistent 4-digit card suffix from account ID
+ */
+function getCardSuffix(accountId: string, isCombined?: boolean): string {
+  if (isCombined) return "ALL";
+  const digits = accountId.replace(/\D/g, "");
+  if (digits.length >= 4) return digits.slice(-4);
+  let hash = 0;
+  for (let i = 0; i < accountId.length; i++) {
+    hash = (hash * 31 + accountId.charCodeAt(i)) % 9000;
+  }
+  return String(1000 + hash);
+}
 
 export function AccountCard({
   account,
   balance,
-  monthlyExpense,
   isSelected,
   onSelect,
+  width,
+  isCombined,
 }: AccountCardProps) {
   const { isDark } = useAppTheme();
-  const { deleteAccount } = useExpense();
+  const { profile } = useExpense();
 
-  const iconInfo = TYPE_ICONS[account.type] ?? {
-    sf: "tray.fill",
-    material: "inbox",
-  };
+  const currencyInfo = getCurrencyInfo(account.currency || profile.currency);
+  const cardSuffix = getCardSuffix(account.id, isCombined);
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      "Delete Account",
-      `Are you sure you want to delete "${account.name}"? All transactions linked to this account will also be deleted.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => deleteAccount(account.id),
-        },
-      ],
-    );
-  };
+  // Gradient themes:
+  // Combined card gets a signature deep amethyst / perano metallic tone
+  // Individual cards get sleek charcoal titanium
+  const gradientColors = isCombined
+    ? isDark
+      ? isSelected
+        ? (["#362E52", "#231F35", "#161520"] as const)
+        : (["#2A253C", "#1E1A2B", "#14131C"] as const)
+      : isSelected
+        ? (["#FFFFFF", "#F5F2FF", "#EBE4FC"] as const)
+        : (["#FFFFFF", "#F8F6FD", "#EFF0F7"] as const)
+    : isDark
+      ? isSelected
+        ? (["#2E2A42", "#1F1F2A", "#15161A"] as const)
+        : (["#252731", "#1C1E24", "#131417"] as const)
+      : isSelected
+        ? (["#FFFFFF", "#F6F4FF", "#ECE7FC"] as const)
+        : (["#FFFFFF", "#F8F9FA", "#EEF1F5"] as const);
 
   return (
     <Pressable
       onPress={onSelect}
-      className={`rounded-[20px] p-4 border-[1.5px] gap-2.5 active:opacity-85 ${
-        isSelected
-          ? "bg-[#AB9FF2]/10 border-[#AB9FF2]"
-          : "bg-[#f5f5f5] dark:bg-[#121214] border-transparent"
-      }`}
+      className="rounded-[24px] overflow-hidden active:scale-[0.985] transition-all"
+      style={{
+        width: width ?? "100%",
+        height: 195,
+        shadowColor: isSelected ? "#AB9FF2" : "#000000",
+        shadowOffset: { width: 0, height: isSelected ? 8 : 4 },
+        shadowOpacity: isSelected
+          ? isDark
+            ? 0.35
+            : 0.22
+          : isDark
+            ? 0.25
+            : 0.08,
+        shadowRadius: isSelected ? 16 : 8,
+        elevation: isSelected ? 8 : 3,
+      }}
       accessibilityRole="button"
-      accessibilityLabel={`${account.name}, balance ${formatCurrency(balance)}, ${isSelected ? "selected" : "not selected"}`}
+      accessibilityLabel={`${account.name}, balance ${formatCurrency(balance, currencyInfo.symbol)}, ${isSelected ? "selected active account" : ""}`}
     >
-      {/* Top row: Type badge & Selected state indicator */}
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center gap-2">
-          <View className="w-8 h-8 rounded-full items-center justify-center bg-black/5 dark:bg-white/10">
-            <SymbolView
-              name={{
-                ios: iconInfo.sf as any,
-                android: iconInfo.material as any,
-                web: iconInfo.material as any,
-              }}
-              size={18}
-              tintColor={isDark ? "#FFFFFF" : "#000000"}
-            />
-          </View>
-          <Text className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-            {TYPE_LABELS[account.type] ?? "Account"}
-          </Text>
-        </View>
-
-        <View className="flex-row items-center gap-2">
-          {isSelected ? (
-            <View className="flex-row items-center gap-1 bg-[#AB9FF2]/15 px-2.5 py-1 rounded-full">
-              <SymbolView
-                name={{
-                  ios: "checkmark.circle.fill",
-                  android: "check_circle",
-                  web: "check_circle",
-                }}
-                size={14}
-                tintColor="#AB9FF2"
-              />
-              <Text className="text-xs font-bold text-[#AB9FF2]">Active</Text>
-            </View>
-          ) : (
-            <Text className="text-xs font-medium text-neutral-400 dark:text-neutral-600">
-              Tap to filter
-            </Text>
-          )}
-
-          <Pressable
-            hitSlop={10}
-            onPress={(e) => {
-              e.stopPropagation();
-              handleDeleteAccount();
-            }}
-            className="p-1 ml-1 active:opacity-60"
-            accessibilityRole="button"
-            accessibilityLabel={`Delete account ${account.name}`}
-          >
-            <SymbolView
-              name={{ ios: "trash", android: "delete", web: "delete" }}
-              size={15}
-              tintColor={isDark ? "#8E8E93" : "#AEAEB2"}
-            />
-          </Pressable>
-        </View>
-      </View>
-
-      {/* Account Title */}
-      <Text
-        numberOfLines={1}
-        className="text-base font-bold text-black dark:text-white tracking-tight"
+      <LinearGradient
+        colors={gradientColors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          flex: 1,
+          width: "100%",
+          height: "100%",
+          padding: 20,
+          justifyContent: "space-between",
+          borderRadius: 24,
+        }}
+        className={`border ${
+          isSelected
+            ? "border-brand-perano"
+            : isDark
+              ? "border-white/10"
+              : "border-black/5"
+        }`}
       >
-        {account.name}
-      </Text>
+        {/* ─── 1. Top Row: EMV Chip & Contactless on Left, Card Brand Network on Right ─── */}
+        <View className="flex-row items-center justify-between">
+          <EmvChip isDark={isDark} isCombined={isCombined} />
+          <CardBrandIcon isCombined={isCombined} />
+        </View>
 
-      {/* Main Account Balance */}
-      <View className="flex-row items-baseline">
-        <Text className="text-2xl font-extrabold tracking-tight text-black dark:text-white">
-          {formatCurrency(balance)}
-        </Text>
-      </View>
-
-      {/* Footer stats: monthly outflow */}
-      <View className="flex-row items-center justify-between pt-2.5 mt-1 border-t border-black/5 dark:border-white/10">
-        <Text className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-          Spent this month
-        </Text>
-        <View className="flex-row items-center gap-1">
-          {monthlyExpense > 0 && (
-            <SymbolView
-              name={{
-                ios: "arrow.down",
-                android: "arrow_downward",
-                web: "arrow_downward",
-              }}
-              size={11}
-              tintColor="#FF3B30"
-            />
-          )}
+        {/* ─── 2. Middle Section: Giant Minimalist Balance & Masked Card Digits ─── */}
+        <View className="gap-1 my-0.5">
           <Text
-            className="text-xs font-semibold"
-            style={{
-              color:
-                monthlyExpense > 0 ? "#FF3B30" : isDark ? "#8E8E93" : "#6C6C70",
-            }}
+            numberOfLines={1}
+            className="text-3xl font-extrabold tracking-tight text-text-primary-light dark:text-text-primary-dark"
           >
-            {formatCurrency(monthlyExpense)}
+            {formatCurrency(balance, currencyInfo.symbol)}
+          </Text>
+
+          {/* Masked Card Number */}
+          <Text className="text-[11px] font-semibold tracking-[3px] text-text-secondary-light/70 dark:text-text-secondary-dark/70 font-mono">
+            •••• •••• •••• {cardSuffix}
           </Text>
         </View>
-      </View>
+
+        {/* ─── 3. Bottom Row: Account Details (Left) & Active Status Badge (Right) ─── */}
+        <View className="flex-row items-center justify-between pt-0.5">
+          {/* Account Title & Subtitle */}
+          <View className="flex-1 mr-3">
+            <Text
+              numberOfLines={1}
+              className="text-[15px] font-bold text-text-primary-light dark:text-text-primary-dark tracking-tight"
+            >
+              {account.name}
+            </Text>
+            <Text
+              numberOfLines={1}
+              className="text-[10px] font-bold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark mt-0.5"
+            >
+              {isCombined
+                ? account.institution || "Combined Portfolio"
+                : (TYPE_LABELS[account.type] ?? "Account") +
+                  (account.institution ? ` • ${account.institution}` : "")}
+            </Text>
+          </View>
+
+          {/* Right: Active Status Badge (No delete icon on card) */}
+          {isSelected && (
+            <View className="flex-row items-center gap-1.5 bg-brand-perano/20 px-2 py-1 rounded-full border border-brand-perano/35">
+              <View className="w-1 h-1 rounded-full bg-brand-perano" />
+              <Text className="text-[9px] font-extrabold tracking-wider text-brand-dark-purple dark:text-brand-perano">
+                ACTIVE
+              </Text>
+            </View>
+          )}
+        </View>
+      </LinearGradient>
     </Pressable>
   );
 }
