@@ -27,6 +27,7 @@ import { CATEGORY_ICONS, useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { calculateCategoryBreakdown } from "@/domain/finance-calculations";
 import { formatCurrency, formatPercentage } from "@/domain/formatters";
+import { Transaction } from "@/domain/types";
 
 type TimeRange = "week" | "month" | "ytd";
 
@@ -38,10 +39,36 @@ interface GraphBucket {
   txCount: number;
 }
 
-function createSmoothPath(pts: { x: number; y: number }[]): string {
+function getTxTimestamp(tx: Transaction): number {
+  if (
+    typeof tx.timestamp === "number" &&
+    !isNaN(tx.timestamp) &&
+    tx.timestamp > 0
+  ) {
+    return tx.timestamp;
+  }
+  if (tx.date === "Today") {
+    return Date.now();
+  }
+  if (tx.date === "Yesterday") {
+    return Date.now() - 86400000;
+  }
+  const parsed = Date.parse(tx.date);
+  if (!isNaN(parsed)) {
+    return parsed;
+  }
+  return Date.now();
+}
+
+function createSmoothPath(
+  pts: { x: number; y: number }[],
+  minY: number,
+  maxY: number,
+): string {
   if (pts.length === 0) return "";
   if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
 
+  const clampY = (val: number) => Math.max(minY, Math.min(maxY, val));
   let path = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
 
   for (let i = 0; i < pts.length - 1; i++) {
@@ -51,10 +78,10 @@ function createSmoothPath(pts: { x: number; y: number }[]): string {
     const p3 = pts[i + 2 < pts.length ? i + 2 : i + 1];
 
     const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp1y = clampY(p1.y + (p2.y - p0.y) / 6);
 
     const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    const cp2y = clampY(p2.y - (p3.y - p1.y) / 6);
 
     path += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
   }
@@ -87,8 +114,8 @@ export default function AnalyticsScreen() {
 
   const topHeaderPadding = getTopHeaderPadding(insets.top);
 
-  // Filter transactions for analytics
-  const filteredTxs = useMemo(() => {
+  // Filter transactions for analytics by selected account
+  const accountFilteredTxs = useMemo(() => {
     return transactions.filter((tx) => {
       if (selectedAccountId) {
         const matches =
@@ -100,22 +127,188 @@ export default function AnalyticsScreen() {
     });
   }, [transactions, selectedAccountId]);
 
-  // Category breakdown
-  const categoryBreakdown = useMemo(() => {
-    return calculateCategoryBreakdown(filteredTxs, selectedAccountId);
-  }, [filteredTxs, selectedAccountId]);
+  // Compute precise period boundaries for week, month, and YTD
+  const { currentStart, currentEnd, prevStart, prevEnd } = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const currentDayIdx = now.getDay(); // 0 is Sunday, 6 is Saturday
 
-  // Total expense from filtered transactions
-  const totalFilteredExpense = useMemo(() => {
-    return filteredTxs
+    if (timeRange === "week") {
+      // Current week: Sunday 00:00:00.000 to next Sunday 00:00:00.000
+      const cStart = new Date(now);
+      cStart.setDate(now.getDate() - currentDayIdx);
+      cStart.setHours(0, 0, 0, 0);
+
+      const cEnd = new Date(cStart);
+      cEnd.setDate(cStart.getDate() + 7);
+
+      const pStart = new Date(cStart);
+      pStart.setDate(cStart.getDate() - 7);
+
+      const pEnd = new Date(cStart);
+
+      return {
+        currentStart: cStart,
+        currentEnd: cEnd,
+        prevStart: pStart,
+        prevEnd: pEnd,
+      };
+    }
+
+    if (timeRange === "month") {
+      // Current month: 1st of month to 1st of next month
+      const cStart = new Date(currentYear, currentMonth, 1, 0, 0, 0, 0);
+      const cEnd = new Date(currentYear, currentMonth + 1, 1, 0, 0, 0, 0);
+
+      const pStart = new Date(currentYear, currentMonth - 1, 1, 0, 0, 0, 0);
+      const pEnd = cStart;
+
+      return {
+        currentStart: cStart,
+        currentEnd: cEnd,
+        prevStart: pStart,
+        prevEnd: pEnd,
+      };
+    }
+
+    // YTD: Jan 1 of current year to Jan 1 of next year
+    const cStart = new Date(currentYear, 0, 1, 0, 0, 0, 0);
+    const cEnd = new Date(currentYear + 1, 0, 1, 0, 0, 0, 0);
+
+    const pStart = new Date(currentYear - 1, 0, 1, 0, 0, 0, 0);
+    const pEnd = cStart;
+
+    return {
+      currentStart: cStart,
+      currentEnd: cEnd,
+      prevStart: pStart,
+      prevEnd: pEnd,
+    };
+  }, [timeRange]);
+
+  // Transactions in current active timeRange
+  const periodFilteredTxs = useMemo(() => {
+    const startMs = currentStart.getTime();
+    const endMs = currentEnd.getTime();
+    return accountFilteredTxs.filter((tx) => {
+      const t = getTxTimestamp(tx);
+      return t >= startMs && t < endMs;
+    });
+  }, [accountFilteredTxs, currentStart, currentEnd]);
+
+  // Transactions in previous period (for trend comparison)
+  const prevPeriodFilteredTxs = useMemo(() => {
+    const startMs = prevStart.getTime();
+    const endMs = prevEnd.getTime();
+    return accountFilteredTxs.filter((tx) => {
+      const t = getTxTimestamp(tx);
+      return t >= startMs && t < endMs;
+    });
+  }, [accountFilteredTxs, prevStart, prevEnd]);
+
+  // Total expense in current period
+  const totalPeriodExpense = useMemo(() => {
+    return periodFilteredTxs
       .filter((tx) => tx.type === "expense")
       .reduce((sum, tx) => sum + tx.amount, 0);
-  }, [filteredTxs]);
+  }, [periodFilteredTxs]);
+
+  // Total income in current period
+  const totalPeriodIncome = useMemo(() => {
+    return periodFilteredTxs
+      .filter((tx) => tx.type === "income")
+      .reduce((sum, tx) => sum + tx.amount, 0);
+  }, [periodFilteredTxs]);
+
+  // Effective income for this period (from transactions if recorded, else from user's configured monthly income)
+  const effectivePeriodIncome = useMemo(() => {
+    if (totalPeriodIncome > 0) return totalPeriodIncome;
+    const baseMonthly =
+      monthlyIncome > 0 ? monthlyIncome : profile.monthlyIncome;
+    if (baseMonthly > 0) {
+      if (timeRange === "week") return Math.round(baseMonthly / 4.33);
+      if (timeRange === "month") return baseMonthly;
+      return baseMonthly * (new Date().getMonth() + 1);
+    }
+    return 0;
+  }, [totalPeriodIncome, monthlyIncome, profile.monthlyIncome, timeRange]);
+
+  // Total expense in previous period
+  const totalPrevPeriodExpense = useMemo(() => {
+    return prevPeriodFilteredTxs
+      .filter((tx) => tx.type === "expense")
+      .reduce((sum, tx) => sum + tx.amount, 0);
+  }, [prevPeriodFilteredTxs]);
+
+  // Performance badge: Always displays an icon and percentage of income or expense
+  const performanceBadge = useMemo(() => {
+    // 1. If income is available, calculate percentage of income spent
+    if (effectivePeriodIncome > 0) {
+      const pctOfIncome = Math.round(
+        (totalPeriodExpense / effectivePeriodIncome) * 100,
+      );
+      const isUnder = pctOfIncome <= 100;
+      return {
+        text: `${pctOfIncome}% of income`,
+        isPositive: isUnder,
+        tintColor: isUnder ? "#2EC08B" : "#FF3B30",
+        bgClass: isUnder ? "bg-emerald-500/15" : "bg-rose-500/15",
+        textClass: isUnder
+          ? "text-emerald-500 dark:text-emerald-400"
+          : "text-rose-500 dark:text-rose-400",
+      };
+    }
+
+    // 2. If trend vs previous period is available
+    if (totalPrevPeriodExpense > 0) {
+      const diff = totalPeriodExpense - totalPrevPeriodExpense;
+      const pct = Math.round((diff / totalPrevPeriodExpense) * 100);
+      const isDecrease = pct <= 0;
+      return {
+        text: `${pct > 0 ? "+" : ""}${pct}% vs last ${timeRange}`,
+        isPositive: isDecrease,
+        tintColor: isDecrease ? "#2EC08B" : "#FF3B30",
+        bgClass: isDecrease ? "bg-emerald-500/15" : "bg-rose-500/15",
+        textClass: isDecrease
+          ? "text-emerald-500 dark:text-emerald-400"
+          : "text-rose-500 dark:text-rose-400",
+      };
+    }
+
+    // 3. Fallback when neither income nor previous period exists
+    const isZero = totalPeriodExpense === 0;
+    return {
+      text: isZero ? "0% of income" : "100% expense",
+      isPositive: isZero,
+      tintColor: isZero ? "#2EC08B" : "#FF3B30",
+      bgClass: isZero ? "bg-emerald-500/15" : "bg-rose-500/15",
+      textClass: isZero
+        ? "text-emerald-500 dark:text-emerald-400"
+        : "text-rose-500 dark:text-rose-400",
+    };
+  }, [
+    effectivePeriodIncome,
+    totalPeriodExpense,
+    totalPrevPeriodExpense,
+    timeRange,
+  ]);
+
+  // Category breakdown (uses periodFilteredTxs; falls back to all-time account if period has no expenses)
+  const categoryBreakdown = useMemo(() => {
+    const periodBreakdown = calculateCategoryBreakdown(
+      periodFilteredTxs,
+      selectedAccountId,
+    );
+    if (periodBreakdown.length > 0) return periodBreakdown;
+    return calculateCategoryBreakdown(accountFilteredTxs, selectedAccountId);
+  }, [periodFilteredTxs, accountFilteredTxs, selectedAccountId]);
 
   // Compute graph data buckets based on selected timeRange (Starts with SUNDAY)
   const graphBuckets: GraphBucket[] = useMemo(() => {
-    const expenseTxs = filteredTxs.filter((tx) => tx.type === "expense");
-    const incomeTxs = filteredTxs.filter((tx) => tx.type === "income");
+    const expenseTxs = accountFilteredTxs.filter((tx) => tx.type === "expense");
+    const incomeTxs = accountFilteredTxs.filter((tx) => tx.type === "income");
+    const now = new Date();
 
     if (timeRange === "week") {
       // Week starts with SUNDAY (Sunday = 0 in JS Date)
@@ -129,29 +322,37 @@ export default function AnalyticsScreen() {
         "Friday",
         "Saturday",
       ];
-      const now = new Date();
       const currentDayIdx = now.getDay(); // 0 is Sunday, 6 is Saturday
 
+      // Start of current week: Sunday 00:00:00.000
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - currentDayIdx);
+      startOfWeek.setHours(0, 0, 0, 0);
+
       return days.map((day, idx) => {
-        // Match transactions belonging to this day of week
+        const dayStart = new Date(startOfWeek);
+        dayStart.setDate(startOfWeek.getDate() + idx);
+        dayStart.setHours(0, 0, 0, 0);
+
+        const dayEnd = new Date(dayStart);
+        dayEnd.setDate(dayStart.getDate() + 1);
+
+        const dayStartMs = dayStart.getTime();
+        const dayEndMs = dayEnd.getTime();
+
+        // Match actual transactions belonging to this day of the current week
         const dayExpenses = expenseTxs.filter((tx) => {
-          const d = new Date(tx.timestamp || Date.now());
-          return d.getDay() === idx;
+          const t = getTxTimestamp(tx);
+          return t >= dayStartMs && t < dayEndMs;
         });
 
         const dayIncomes = incomeTxs.filter((tx) => {
-          const d = new Date(tx.timestamp || Date.now());
-          return d.getDay() === idx;
+          const t = getTxTimestamp(tx);
+          return t >= dayStartMs && t < dayEndMs;
         });
 
-        let totalExp = dayExpenses.reduce((s, tx) => s + tx.amount, 0);
+        const totalExp = dayExpenses.reduce((s, tx) => s + tx.amount, 0);
         const totalInc = dayIncomes.reduce((s, tx) => s + tx.amount, 0);
-
-        // If user has minimal transactions, seed a realistic visual curve based on actual total
-        if (expenseTxs.length <= 1 && totalFilteredExpense > 0) {
-          const weights = [0.1, 0.12, 0.18, 0.15, 0.22, 0.28, 0.2];
-          totalExp = Math.round(totalFilteredExpense * (weights[idx] ?? 0.15));
-        }
 
         return {
           label: day,
@@ -164,68 +365,142 @@ export default function AnalyticsScreen() {
     }
 
     if (timeRange === "month") {
-      const weeks = ["Week 1", "Week 2", "Week 3", "Week 4"];
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      const currentWeekIdx = Math.min(3, Math.floor((now.getDate() - 1) / 7));
+
+      const weeks = [
+        {
+          label: "Week 1",
+          fullLabel: "Week 1 (Day 1-7)",
+          startDay: 1,
+          endDay: 7,
+        },
+        {
+          label: "Week 2",
+          fullLabel: "Week 2 (Day 8-14)",
+          startDay: 8,
+          endDay: 14,
+        },
+        {
+          label: "Week 3",
+          fullLabel: "Week 3 (Day 15-21)",
+          startDay: 15,
+          endDay: 21,
+        },
+        {
+          label: "Week 4",
+          fullLabel: "Week 4 (Day 22+)",
+          startDay: 22,
+          endDay: 32,
+        },
+      ];
+
       return weeks.map((w, idx) => {
         const weekTxs = expenseTxs.filter((tx) => {
-          const d = new Date(tx.timestamp || Date.now());
+          const t = getTxTimestamp(tx);
+          const d = new Date(t);
+          if (
+            d.getFullYear() !== currentYear ||
+            d.getMonth() !== currentMonth
+          ) {
+            return false;
+          }
           const dateNum = d.getDate();
-          const bucketIdx = Math.min(3, Math.floor((dateNum - 1) / 7));
-          return bucketIdx === idx;
+          return dateNum >= w.startDay && dateNum <= w.endDay;
         });
 
-        let totalExp = weekTxs.reduce((s, tx) => s + tx.amount, 0);
-        if (expenseTxs.length <= 1 && totalFilteredExpense > 0) {
-          const weights = [0.22, 0.35, 0.28, 0.15];
-          totalExp = Math.round(totalFilteredExpense * (weights[idx] ?? 0.25));
-        }
+        const weekIncomes = incomeTxs.filter((tx) => {
+          const t = getTxTimestamp(tx);
+          const d = new Date(t);
+          if (
+            d.getFullYear() !== currentYear ||
+            d.getMonth() !== currentMonth
+          ) {
+            return false;
+          }
+          const dateNum = d.getDate();
+          return dateNum >= w.startDay && dateNum <= w.endDay;
+        });
+
+        const totalExp = weekTxs.reduce((s, tx) => s + tx.amount, 0);
+        const totalInc = weekIncomes.reduce((s, tx) => s + tx.amount, 0);
 
         return {
-          label: `W${idx + 1}`,
-          fullLabel: w,
+          label: w.label,
+          fullLabel: `${w.fullLabel}${idx === currentWeekIdx ? " (Current)" : ""}`,
           expense: totalExp,
-          income: 0,
+          income: totalInc,
           txCount: weekTxs.length,
         };
       });
     }
 
-    // YTD: 6 bi-monthly periods
-    const months = ["Jan", "Mar", "May", "Jul", "Sep", "Nov"];
-    const fullMonths = [
-      "January",
-      "March",
-      "May",
-      "July",
-      "September",
-      "November",
+    // YTD: 4 Quarters of current year
+    const currentYear = now.getFullYear();
+    const currentPeriodIdx = Math.min(3, Math.floor(now.getMonth() / 3));
+
+    const periods = [
+      {
+        label: "Quarter 1",
+        fullLabel: "Quarter 1 (Jan - Mar)",
+        startMonth: 0,
+        endMonth: 2,
+      },
+      {
+        label: "Quarter 2",
+        fullLabel: "Quarter 2 (Apr - Jun)",
+        startMonth: 3,
+        endMonth: 5,
+      },
+      {
+        label: "Quarter 3",
+        fullLabel: "Quarter 3 (Jul - Sep)",
+        startMonth: 6,
+        endMonth: 8,
+      },
+      {
+        label: "Quarter 4",
+        fullLabel: "Quarter 4 (Oct - Dec)",
+        startMonth: 9,
+        endMonth: 11,
+      },
     ];
 
-    return months.map((m, idx) => {
-      const monthTxs = expenseTxs.filter((tx) => {
-        const d = new Date(tx.timestamp || Date.now());
-        const txMonth = d.getMonth();
-        return Math.floor(txMonth / 2) === idx;
+    return periods.map((p, idx) => {
+      const periodExpenses = expenseTxs.filter((tx) => {
+        const t = getTxTimestamp(tx);
+        const d = new Date(t);
+        if (d.getFullYear() !== currentYear) return false;
+        const m = d.getMonth();
+        return m >= p.startMonth && m <= p.endMonth;
       });
 
-      let totalExp = monthTxs.reduce((s, tx) => s + tx.amount, 0);
-      if (expenseTxs.length <= 1 && totalFilteredExpense > 0) {
-        const weights = [0.15, 0.2, 0.18, 0.3, 0.25, 0.22];
-        totalExp = Math.round(totalFilteredExpense * (weights[idx] ?? 0.2));
-      }
+      const periodIncomes = incomeTxs.filter((tx) => {
+        const t = getTxTimestamp(tx);
+        const d = new Date(t);
+        if (d.getFullYear() !== currentYear) return false;
+        const m = d.getMonth();
+        return m >= p.startMonth && m <= p.endMonth;
+      });
+
+      const totalExp = periodExpenses.reduce((s, tx) => s + tx.amount, 0);
+      const totalInc = periodIncomes.reduce((s, tx) => s + tx.amount, 0);
 
       return {
-        label: m,
-        fullLabel: fullMonths[idx],
+        label: p.label,
+        fullLabel: `${p.fullLabel}${idx === currentPeriodIdx ? " (Current)" : ""}`,
         expense: totalExp,
-        income: 0,
-        txCount: monthTxs.length,
+        income: totalInc,
+        txCount: periodExpenses.length,
       };
     });
-  }, [filteredTxs, timeRange, totalFilteredExpense]);
+  }, [accountFilteredTxs, timeRange]);
 
   // Max expense value for scaling the line graph
   const maxBucketExpense = useMemo(() => {
-    const maxVal = Math.max(...graphBuckets.map((b) => b.expense), 1);
+    const maxVal = Math.max(...graphBuckets.map((b) => b.expense), 0);
+    if (maxVal === 0) return 100;
     if (maxVal <= 100) return 100;
     if (maxVal <= 500) return 500;
     if (maxVal <= 1000) return 1000;
@@ -253,7 +528,10 @@ export default function AnalyticsScreen() {
     });
   }, [graphBuckets, chartWidth, maxBucketExpense]);
 
-  const linePath = useMemo(() => createSmoothPath(points), [points]);
+  const linePath = useMemo(
+    () => createSmoothPath(points, topPadding - 4, chartHeight - bottomPadding),
+    [points],
+  );
 
   const areaPath = useMemo(() => {
     if (points.length === 0) return "";
@@ -263,20 +541,40 @@ export default function AnalyticsScreen() {
     return `${linePath} L ${last.x.toFixed(1)} ${groundY} L ${first.x.toFixed(1)} ${groundY} Z`;
   }, [linePath, points]);
 
-  // Active point index
-  const activeIndex =
-    selectedBarIndex !== null ? selectedBarIndex : graphBuckets.length - 1;
-  const activePoint = points[activeIndex];
+  // Default active index matches current day (for week), current week (for month), or current quarter (for ytd)
+  const defaultIndex = useMemo(() => {
+    const now = new Date();
+    if (timeRange === "week") {
+      return now.getDay(); // 0 is Sunday, 6 is Saturday
+    }
+    if (timeRange === "month") {
+      const dateNum = now.getDate();
+      return Math.min(3, Math.floor((dateNum - 1) / 7));
+    }
+    // ytd (Quarters: Q1=0, Q2=1, Q3=2, Q4=3)
+    return Math.min(3, Math.floor(now.getMonth() / 3));
+  }, [timeRange]);
+
+  // Active point index (defaults to Today/Current instead of hardcoded last index)
+  const activeIndex = useMemo(() => {
+    const maxIdx = Math.max(0, graphBuckets.length - 1);
+    if (selectedBarIndex !== null) {
+      return Math.min(Math.max(0, selectedBarIndex), maxIdx);
+    }
+    return Math.min(Math.max(0, defaultIndex), maxIdx);
+  }, [selectedBarIndex, defaultIndex, graphBuckets.length]);
+
+  const activePoint = points[activeIndex] ?? points[0];
   const activeBucket =
-    activePoint?.bucket ?? graphBuckets[graphBuckets.length - 1];
+    activePoint?.bucket ?? graphBuckets[activeIndex] ?? graphBuckets[0];
 
   // Daily average spend calculation
   const dailyAverageSpend = useMemo(() => {
     const daysInPeriod =
-      timeRange === "week" ? 7 : timeRange === "month" ? 30 : 180;
-    const avg = totalFilteredExpense / daysInPeriod;
+      timeRange === "week" ? 7 : timeRange === "month" ? 30 : 365;
+    const avg = totalPeriodExpense / daysInPeriod;
     return Math.round(avg);
-  }, [totalFilteredExpense, timeRange]);
+  }, [totalPeriodExpense, timeRange]);
 
   // Top category
   const topCategory = categoryBreakdown[0];
@@ -357,21 +655,20 @@ export default function AnalyticsScreen() {
             </View>
 
             {/* Account Filter Chips */}
-            <View className="-mt-1">
+            <View>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
+                contentContainerStyle={{ gap: 8 }}
               >
                 <Pressable
-                  onPress={() => {
-                    selectAccount(null);
-                    setSelectedBarIndex(null);
-                  }}
-                  className={`flex-row items-center gap-1.5 px-3.5 py-1.5 rounded-full border transition-all active:opacity-80 ${
+                  onPress={() => selectAccount(null)}
+                  className={`flex-row items-center gap-2 px-3.5 py-2 rounded-full border active:opacity-80 ${
                     selectedAccountId === null
-                      ? "bg-brand-perano border-brand-perano dark:bg-brand-perano/20 dark:border-brand-perano"
-                      : "bg-card-light dark:bg-card-dark border-black/5 dark:border-white/10"
+                      ? "bg-brand-perano border-brand-perano"
+                      : isDark
+                        ? "bg-chip-dark border-white/5"
+                        : "bg-chip-light border-black/5"
                   }`}
                 >
                   <SymbolView
@@ -380,25 +677,25 @@ export default function AnalyticsScreen() {
                       android: "dashboard",
                       web: "dashboard",
                     }}
-                    size={13}
+                    size={14}
                     tintColor={
                       selectedAccountId === null
-                        ? isDark
-                          ? "#AB9FF2"
-                          : "#1E1F24"
+                        ? "#1E1F24"
                         : isDark
-                          ? "#989BA5"
-                          : "#8E8E93"
+                          ? "#E4E5EB"
+                          : "#1E1F24"
                     }
                   />
                   <Text
-                    className={`text-xs font-semibold ${
+                    className={`text-[13px] font-bold ${
                       selectedAccountId === null
-                        ? "text-brand-dark-purple dark:text-brand-perano font-bold"
-                        : "text-text-secondary-light dark:text-text-secondary-dark"
+                        ? "text-brand-dark-purple"
+                        : isDark
+                          ? "text-text-secondary-dark"
+                          : "text-text-secondary-light"
                     }`}
                   >
-                    Combined (All Accounts)
+                    All Accounts
                   </Text>
                 </Pressable>
 
@@ -408,14 +705,13 @@ export default function AnalyticsScreen() {
                   return (
                     <Pressable
                       key={acc.id}
-                      onPress={() => {
-                        selectAccount(acc.id);
-                        setSelectedBarIndex(null);
-                      }}
-                      className={`flex-row items-center gap-1.5 px-3.5 py-1.5 rounded-full border transition-all active:opacity-80 ${
+                      onPress={() => selectAccount(acc.id)}
+                      className={`flex-row items-center gap-2 px-3.5 py-2 rounded-full border active:opacity-80 ${
                         isSelected
-                          ? "bg-brand-perano border-brand-perano dark:bg-brand-perano/20 dark:border-brand-perano"
-                          : "bg-card-light dark:bg-card-dark border-black/5 dark:border-white/10"
+                          ? "bg-brand-perano border-brand-perano"
+                          : isDark
+                            ? "bg-chip-dark border-white/5"
+                            : "bg-chip-light border-black/5"
                       }`}
                     >
                       <SymbolView
@@ -424,22 +720,22 @@ export default function AnalyticsScreen() {
                           android: accIcon.android,
                           web: accIcon.web,
                         }}
-                        size={13}
+                        size={14}
                         tintColor={
                           isSelected
-                            ? isDark
-                              ? "#AB9FF2"
-                              : "#1E1F24"
+                            ? "#1E1F24"
                             : isDark
-                              ? "#989BA5"
-                              : "#8E8E93"
+                              ? "#E4E5EB"
+                              : "#1E1F24"
                         }
                       />
                       <Text
-                        className={`text-xs font-semibold ${
+                        className={`text-[13px] font-bold ${
                           isSelected
-                            ? "text-brand-dark-purple dark:text-brand-perano font-bold"
-                            : "text-text-secondary-light dark:text-text-secondary-dark"
+                            ? "text-brand-dark-purple"
+                            : isDark
+                              ? "text-text-secondary-dark"
+                              : "text-text-secondary-light"
                         }`}
                       >
                         {acc.name}
@@ -460,30 +756,40 @@ export default function AnalyticsScreen() {
                   </Text>
                   <Text className="text-2xl font-extrabold tracking-tight text-text-primary-light dark:text-text-primary-dark">
                     {formatCurrency(
-                      activeBucket?.expense ?? totalFilteredExpense,
+                      activeBucket?.expense ?? totalPeriodExpense,
                     )}
                   </Text>
                   <Text className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">
-                    {activeBucket?.fullLabel ?? "Selected Period"}
+                    {activeBucket?.label ?? "Selected Period"}
                     {activeBucket && activeBucket.txCount > 0
                       ? ` • ${activeBucket.txCount} transaction${activeBucket.txCount > 1 ? "s" : ""}`
                       : ""}
                   </Text>
                 </View>
 
-                {/* Savings / Trend Badge */}
-                <View className="bg-emerald-500/15 px-3 py-1.5 rounded-full flex-row items-center gap-1.5">
+                {/* Savings / Trend Badge: Shows trend icon and % of income or expense */}
+                <View
+                  className={`px-3 py-1.5 rounded-full flex-row items-center gap-1.5 ${performanceBadge.bgClass}`}
+                >
                   <SymbolView
                     name={{
-                      ios: "arrow.down.right",
-                      android: "arrow_downward",
-                      web: "arrow_downward",
+                      ios: performanceBadge.isPositive
+                        ? "chart.line.downtrend.xyaxis"
+                        : "chart.line.uptrend.xyaxis",
+                      android: performanceBadge.isPositive
+                        ? "trending_down"
+                        : "trending_up",
+                      web: performanceBadge.isPositive
+                        ? "trending_down"
+                        : "trending_up",
                     }}
                     size={11}
-                    tintColor="#2EC08B"
+                    tintColor={performanceBadge.tintColor}
                   />
-                  <Text className="text-xs font-bold text-emerald-500 dark:text-emerald-400">
-                    -8% vs last {timeRange}
+                  <Text
+                    className={`text-xs font-bold ${performanceBadge.textClass}`}
+                  >
+                    {performanceBadge.text}
                   </Text>
                 </View>
               </View>
@@ -678,16 +984,17 @@ export default function AnalyticsScreen() {
                 <Text className="text-[11px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                   💡 Tap points along the curve to inspect spending
                 </Text>
-                {selectedBarIndex !== null && (
-                  <Pressable
-                    onPress={() => setSelectedBarIndex(null)}
-                    className="px-2 py-0.5 rounded-md bg-black/5 dark:bg-white/10"
-                  >
-                    <Text className="text-[11px] font-semibold text-brand-dark-purple dark:text-brand-perano">
-                      Reset
-                    </Text>
-                  </Pressable>
-                )}
+                {selectedBarIndex !== null &&
+                  selectedBarIndex !== defaultIndex && (
+                    <Pressable
+                      onPress={() => setSelectedBarIndex(null)}
+                      className="px-2.5 py-1 rounded-full bg-brand-perano/20 border border-brand-perano/30 active:opacity-70"
+                    >
+                      <Text className="text-[11px] font-bold text-brand-dark-purple dark:text-brand-perano">
+                        {timeRange === "week" ? "Today" : "Current"}
+                      </Text>
+                    </Pressable>
+                  )}
               </View>
             </View>
 
@@ -709,7 +1016,7 @@ export default function AnalyticsScreen() {
               {/* Top Category */}
               <View className="flex-1 rounded-2xl p-3.5 bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 gap-1">
                 <Text className="text-[11px] font-bold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
-                  Top Category
+                  Category
                 </Text>
                 <Text
                   numberOfLines={1}
@@ -722,16 +1029,16 @@ export default function AnalyticsScreen() {
                 </Text>
               </View>
 
-              {/* Savings Rate */}
+              {/* Period Total */}
               <View className="flex-1 rounded-2xl p-3.5 bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 gap-1">
                 <Text className="text-[11px] font-bold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
-                  Saved
+                  Total
                 </Text>
-                <Text className="text-base font-bold text-emerald-500 dark:text-emerald-400">
-                  {savingsRate !== null ? `${savingsRate}%` : "0%"}
+                <Text className="text-base font-bold text-text-primary-light dark:text-text-primary-dark">
+                  {formatCurrency(totalPeriodExpense)}
                 </Text>
                 <Text className="text-[11px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
-                  of income
+                  this {timeRange}
                 </Text>
               </View>
             </View>
