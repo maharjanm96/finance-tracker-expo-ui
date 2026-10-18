@@ -1,13 +1,7 @@
 import { BottomSheet, RNHostView } from "@expo/ui";
 import { SymbolView } from "expo-symbols";
 import { useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { AppButton } from "@/components/ui/app-button";
 import { getCurrencyInfo } from "@/constants/currencies";
@@ -67,7 +61,11 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
         <Text className="text-xl font-bold tracking-tight text-text-primary-light dark:text-text-primary-dark">
           New Account
         </Text>
-        <Pressable onPress={onClose} hitSlop={12} className="p-1 active:opacity-70">
+        <Pressable
+          onPress={onClose}
+          hitSlop={12}
+          className="p-1 active:opacity-70"
+        >
           <SymbolView
             name={{
               ios: "xmark.circle.fill",
@@ -111,7 +109,7 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
             onChangeText={setName}
             placeholder="e.g. Nabil Salary, Daily Cash"
             placeholderTextColor={isDark ? "#6C6C70" : "#AEAEB2"}
-            className="h-12 rounded-2xl px-4 text-base bg-card-light dark:bg-card-dark text-text-primary-light dark:text-text-primary-dark border border-black/5 dark:border-white/10"
+            className="h-12 rounded-2xl px-4 text-[15px] font-semibold bg-card-light dark:bg-card-dark text-text-primary-light dark:text-text-primary-dark border border-black/5 dark:border-white/10"
           />
         </View>
 
@@ -120,12 +118,13 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
           <Text className="text-[11px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase">
             INSTITUTION / BANK (OPTIONAL)
           </Text>
+
           <TextInput
             value={institution}
             onChangeText={setInstitution}
             placeholder="e.g. Global IME, NIC Asia, Cash"
             placeholderTextColor={isDark ? "#6C6C70" : "#AEAEB2"}
-            className="h-12 rounded-2xl px-4 text-base bg-card-light dark:bg-card-dark text-text-primary-light dark:text-text-primary-dark border border-black/5 dark:border-white/10"
+            className="h-12 rounded-2xl px-4 text-[15px] font-semibold bg-card-light dark:bg-card-dark text-text-primary-light dark:text-text-primary-dark border border-black/5 dark:border-white/10"
           />
         </View>
 
@@ -159,11 +158,7 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
                     }}
                     size={14}
                     tintColor={
-                      isSelected
-                        ? "#1E1F24"
-                        : isDark
-                          ? "#E4E5EB"
-                          : "#1E1F24"
+                      isSelected ? "#1E1F24" : isDark ? "#E4E5EB" : "#1E1F24"
                     }
                   />
                   <Text

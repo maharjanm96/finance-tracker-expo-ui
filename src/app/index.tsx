@@ -88,7 +88,7 @@ export default function HomeScreen({
               <Pressable
                 hitSlop={8}
                 onPress={() => setShowCurrencyModal(true)}
-                className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/10 active:opacity-75 shadow-2xs"
+                className="flex-row items-center gap-1.5 px-2.5 py-3 rounded-full bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/10 active:opacity-75 shadow-2xs"
                 accessibilityRole="button"
                 accessibilityLabel={`Current currency: ${currencyInfo.code}. Tap to change`}
               >

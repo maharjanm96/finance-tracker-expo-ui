@@ -34,6 +34,7 @@ export interface Transaction {
   category: ExpenseCategory;
   date: string; // YYYY-MM-DD or formatted display
   timestamp: number;
+  time?: string;
   sourceAccountId: string;
   destinationAccountId?: string; // required for transfer
   note?: string;

@@ -70,9 +70,9 @@ export function AppButton({
   switch (variant) {
     case "danger":
       containerVariantClass =
-        "bg-red-500/10 dark:bg-red-500/15 border border-red-500/20";
-      textVariantClass = "text-[#FF3B30]";
-      defaultIconColor = "#FF3B30";
+        "bg-red-500 dark:bg-red-500 border border-red-500/20";
+      textVariantClass = "text-text-dark dark:text-text-light";
+      defaultIconColor = isDark ? "#1E1F24" : "#E4E5EB";
       break;
     case "secondary":
       containerVariantClass =

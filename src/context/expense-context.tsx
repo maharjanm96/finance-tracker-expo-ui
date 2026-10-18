@@ -56,7 +56,7 @@ export const DEFAULT_PROFILE: UserProfile = {
   name: "",
   monthlyIncome: 0,
   annualSavingsGoal: 0,
-  currency: "Rs.",
+  currency: "NPR",
   isConfigured: false,
 };
 
@@ -359,7 +359,6 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
     </ExpenseContext.Provider>
   );
 }
-
 
 export function useExpense() {
   const context = useContext(ExpenseContext);

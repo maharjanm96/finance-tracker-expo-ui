@@ -5,7 +5,7 @@ import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { AppButton } from "@/components/ui/app-button";
 import { CATEGORY_ICONS, useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
-import { formatCurrency } from "@/domain/formatters";
+import { formatCurrency, formatTransactionDateTime } from "@/domain/formatters";
 import { Transaction } from "@/domain/types";
 
 interface TransactionDetailsModalProps {
@@ -203,13 +203,13 @@ function TransactionDetailsContent({
 
           <View className="h-[0.5px] w-full bg-black/5 dark:border-t dark:border-white/10" />
 
-          {/* Date Row */}
+          {/* Date & Time Row */}
           <View className="flex-row items-center justify-between py-3.5 gap-3">
             <Text className="text-[14px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
-              Date
+              Date & Time
             </Text>
             <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
-              {transaction.date}
+              {formatTransactionDateTime(transaction)}
             </Text>
           </View>
 

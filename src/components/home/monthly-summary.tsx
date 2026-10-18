@@ -31,7 +31,7 @@ export function MonthlySummary() {
 
   // Current month label (e.g. "October 2026")
   const currentMonthName = new Date().toLocaleString("default", {
-    month: "long",
+    month: "short",
   });
 
   // Card gradient themes:
@@ -65,20 +65,13 @@ export function MonthlySummary() {
         className="border border-black/5 dark:border-white/10"
       >
         {/* ─── 1. Header Row: Month / Scope Title & Savings Rate Pill ─── */}
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <View className="w-5.5 h-5.5 rounded-full bg-brand-perano/15 items-center justify-center">
-              <SymbolView
-                name={{
-                  ios: "chart.pie.fill",
-                  android: "donut_large",
-                  web: "donut_large",
-                }}
-                size={12}
-                tintColor="#AB9FF2"
-              />
-            </View>
-            <Text className="text-[11px] font-bold tracking-widest uppercase text-text-secondary-light dark:text-text-secondary-dark">
+        <View className="flex-row items-center justify-between gap-2">
+          <View className="flex-1 mr-2">
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              className="text-[11px] font-bold tracking-widest uppercase text-text-secondary-light dark:text-text-secondary-dark"
+            >
               {selectedAccount
                 ? `${selectedAccount.name} • ${currentMonthName}`
                 : `Monthly Flow • ${currentMonthName}`}
@@ -86,7 +79,7 @@ export function MonthlySummary() {
           </View>
 
           {/* Savings Rate / Filter Pill */}
-          <View className="flex-row items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-perano/15 border border-brand-perano/25">
+          <View className="flex-row items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-perano/15 border border-brand-perano/25 shrink-0">
             <SymbolView
               name={{
                 ios:
@@ -98,7 +91,7 @@ export function MonthlySummary() {
               tintColor="#AB9FF2"
             />
             <Text className="text-[10px] font-extrabold tracking-wider text-brand-dark-purple dark:text-brand-perano">
-              {selectedAccount ? "FILTERED" : savingsRateText}
+              {savingsRateText}
             </Text>
           </View>
         </View>
@@ -140,14 +133,24 @@ export function MonthlySummary() {
             {/* Income Row */}
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center gap-1.5">
-                <View className="w-1.5 h-1.5 rounded-full bg-[#2EC08B]" />
+                <View className="w-4 h-4 rounded-full bg-income/15 items-center justify-center">
+                  <SymbolView
+                    name={{
+                      ios: "arrow.up",
+                      android: "arrow_upward",
+                      web: "arrow_upward",
+                    }}
+                    size={10}
+                    tintColor="#2EC08B"
+                  />
+                </View>
                 <Text className="text-[11px] font-semibold text-text-secondary-light dark:text-text-secondary-dark">
                   Income
                 </Text>
               </View>
               <Text
                 numberOfLines={1}
-                className="text-[13px] font-bold text-[#2EC08B]"
+                className="text-[13px] font-bold text-income"
               >
                 +{formatCurrency(monthlyIncome, profile.currency)}
               </Text>
@@ -156,14 +159,24 @@ export function MonthlySummary() {
             {/* Spent Row */}
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center gap-1.5">
-                <View className="w-1.5 h-1.5 rounded-full bg-[#FF3B30]" />
+                <View className="w-4 h-4 rounded-full bg-expense/15 items-center justify-center">
+                  <SymbolView
+                    name={{
+                      ios: "arrow.down",
+                      android: "arrow_downward",
+                      web: "arrow_downward",
+                    }}
+                    size={10}
+                    tintColor="#FF3B30"
+                  />
+                </View>
                 <Text className="text-[11px] font-semibold text-text-secondary-light dark:text-text-secondary-dark">
-                  Spent
+                  Expense
                 </Text>
               </View>
               <Text
                 numberOfLines={1}
-                className="text-[13px] font-bold text-[#FF3B30]"
+                className="text-[13px] font-bold text-expense"
               >
                 -{formatCurrency(monthlyExpenses, profile.currency)}
               </Text>
@@ -172,7 +185,7 @@ export function MonthlySummary() {
             {/* Expense Ratio Bar */}
             <View className="h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden mt-0.5">
               <View
-                className="h-full rounded-full bg-[#FF3B30]"
+                className="h-full rounded-full bg-expense"
                 style={{
                   width: `${
                     monthlyIncome > 0
