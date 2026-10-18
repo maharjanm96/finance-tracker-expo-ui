@@ -13,7 +13,7 @@ import {
 import { AppButton } from "@/components/ui/app-button";
 import { getAccountTypeIcon } from "@/constants/account-types";
 import { getCurrencyInfo } from "@/constants/currencies";
-import { useExpense } from "@/context/expense-context";
+import { CATEGORY_ICONS, useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { formatCurrency, formatTime } from "@/domain/formatters";
 import { Account, ExpenseCategory, TransactionType } from "@/domain/types";
@@ -24,7 +24,7 @@ interface AddTransactionModalProps {
   initialType?: TransactionType;
 }
 
-const CATEGORIES: ExpenseCategory[] = [
+const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   "Food",
   "Housing",
   "Transportation",
@@ -32,7 +32,16 @@ const CATEGORIES: ExpenseCategory[] = [
   "Entertainment",
   "Bills",
   "Health",
+  "Other",
+];
+
+const INCOME_CATEGORIES: ExpenseCategory[] = [
   "Salary",
+  "Freelance",
+  "Business",
+  "Investment",
+  "Gift",
+  "Rental",
   "Other",
 ];
 
@@ -184,9 +193,24 @@ function AddTransactionForm({
   const [type, setType] = useState<TransactionType>(initialType);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState<ExpenseCategory>("Food");
+  const [category, setCategory] = useState<ExpenseCategory>(
+    initialType === "income" ? "Salary" : "Food",
+  );
   const [sourceAccountId, setSourceAccountId] = useState<string>(defaultSource);
   const [destAccountId, setDestAccountId] = useState<string>(defaultDest);
+
+  const handleTypeChange = (newType: TransactionType) => {
+    setType(newType);
+    if (newType === "expense") {
+      if (!EXPENSE_CATEGORIES.includes(category)) {
+        setCategory("Food");
+      }
+    } else if (newType === "income") {
+      if (!INCOME_CATEGORIES.includes(category)) {
+        setCategory("Salary");
+      }
+    }
+  };
 
   // Picker state for transfer cards
   const [pickerTarget, setPickerTarget] = useState<"source" | "dest" | null>(
@@ -309,7 +333,7 @@ function AddTransactionForm({
           return (
             <Pressable
               key={t}
-              onPress={() => setType(t)}
+              onPress={() => handleTypeChange(t)}
               className={`flex-1 rounded-3xl items-center justify-center active:opacity-80 ${
                 isActive
                   ? t === "expense"
@@ -697,41 +721,61 @@ function AddTransactionForm({
         {!isTransfer && (
           <View className="gap-2">
             <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-0.5">
-              CATEGORY
+              {type === "income" ? "INCOME CATEGORY" : "EXPENSE CATEGORY"}
             </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 8 }}
             >
-              {CATEGORIES.map((cat) => {
-                const isSelected = category === cat;
-                return (
-                  <Pressable
-                    key={cat}
-                    onPress={() => setCategory(cat)}
-                    className={`px-4 py-2.5 rounded-full border active:opacity-80 ${
-                      isSelected
-                        ? "bg-brand-perano border-brand-perano"
-                        : isDark
-                          ? "bg-chip-dark border-white/5"
-                          : "bg-chip-light border-black/5"
-                    }`}
-                  >
-                    <Text
-                      className={`text-[13px] font-bold ${
+              {(type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(
+                (cat) => {
+                  const isSelected = category === cat;
+                  const meta = CATEGORY_ICONS[cat];
+                  return (
+                    <Pressable
+                      key={cat}
+                      onPress={() => setCategory(cat)}
+                      className={`flex-row items-center gap-2 px-3.5 py-2.5 rounded-full border active:opacity-80 ${
                         isSelected
-                          ? "text-brand-dark-purple"
+                          ? "bg-brand-perano border-brand-perano"
                           : isDark
-                            ? "text-text-secondary-dark"
-                            : "text-text-secondary-light"
+                            ? "bg-chip-dark border-white/5"
+                            : "bg-chip-light border-black/5"
                       }`}
                     >
-                      {cat}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+                      {meta && (
+                        <SymbolView
+                          name={{
+                            ios: meta.sf,
+                            android: meta.material,
+                            web: meta.material,
+                          }}
+                          size={14}
+                          tintColor={
+                            isSelected
+                              ? "#1E1F24"
+                              : isDark
+                                ? "#E4E5EB"
+                                : "#1E1F24"
+                          }
+                        />
+                      )}
+                      <Text
+                        className={`text-[13px] font-bold ${
+                          isSelected
+                            ? "text-brand-dark-purple"
+                            : isDark
+                              ? "text-text-secondary-dark"
+                              : "text-text-secondary-light"
+                        }`}
+                      >
+                        {cat}
+                      </Text>
+                    </Pressable>
+                  );
+                },
+              )}
             </ScrollView>
           </View>
         )}

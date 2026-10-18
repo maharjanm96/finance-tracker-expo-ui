@@ -43,6 +43,31 @@ export const CATEGORY_ICONS: Record<ExpenseCategory, CategoryMeta> = {
     material: "account_balance_wallet",
     color: "#10B981",
   },
+  Freelance: {
+    sf: "laptopcomputer",
+    material: "laptop",
+    color: "#06B6D4",
+  },
+  Business: {
+    sf: "briefcase.fill",
+    material: "business_center",
+    color: "#3B82F6",
+  },
+  Investment: {
+    sf: "chart.line.uptrend.xyaxis",
+    material: "trending_up",
+    color: "#8B5CF6",
+  },
+  Gift: {
+    sf: "gift.fill",
+    material: "card_giftcard",
+    color: "#EC4899",
+  },
+  Rental: {
+    sf: "building.2.fill",
+    material: "apartment",
+    color: "#14B8A6",
+  },
   Health: { sf: "heart.fill", material: "favorite", color: "#EF4444" },
   Transfer: {
     sf: "arrow.left.arrow.right",

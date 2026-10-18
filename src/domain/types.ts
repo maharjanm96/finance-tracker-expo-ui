@@ -19,8 +19,13 @@ export type ExpenseCategory =
   | 'Shopping'
   | 'Entertainment'
   | 'Bills'
-  | 'Salary'
   | 'Health'
+  | 'Salary'
+  | 'Freelance'
+  | 'Business'
+  | 'Investment'
+  | 'Gift'
+  | 'Rental'
   | 'Transfer'
   | 'Other';
 
