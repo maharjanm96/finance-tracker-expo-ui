@@ -27,28 +27,28 @@ export interface CategoryMeta {
 }
 
 export const CATEGORY_ICONS: Record<ExpenseCategory, CategoryMeta> = {
-  Food: { sf: "fork.knife", material: "restaurant", color: "#8E8E93" },
-  Housing: { sf: "house.fill", material: "home", color: "#8E8E93" },
+  Food: { sf: "fork.knife", material: "restaurant", color: "#FF9500" },
+  Housing: { sf: "house.fill", material: "home", color: "#6366F1" },
   Transportation: {
     sf: "car.fill",
     material: "directions_car",
-    color: "#8E8E93",
+    color: "#0EA5E9",
   },
-  Shopping: { sf: "bag.fill", material: "shopping_bag", color: "#8E8E93" },
-  Entertainment: { sf: "play.tv.fill", material: "movie", color: "#8E8E93" },
-  Bills: { sf: "doc.text.fill", material: "receipt", color: "#8E8E93" },
+  Shopping: { sf: "bag.fill", material: "shopping_bag", color: "#EC4899" },
+  Entertainment: { sf: "play.tv.fill", material: "movie", color: "#A855F7" },
+  Bills: { sf: "doc.text.fill", material: "receipt", color: "#F59E0B" },
   Salary: {
     sf: "banknote.fill",
     material: "account_balance_wallet",
-    color: "#8E8E93",
+    color: "#10B981",
   },
-  Health: { sf: "heart.fill", material: "favorite", color: "#8E8E93" },
+  Health: { sf: "heart.fill", material: "favorite", color: "#EF4444" },
   Transfer: {
     sf: "arrow.left.arrow.right",
     material: "swap_horiz",
-    color: "#8E8E93",
+    color: "#8B5CF6",
   },
-  Other: { sf: "tag.fill", material: "label", color: "#8E8E93" },
+  Other: { sf: "tag.fill", material: "label", color: "#64748B" },
 };
 
 export const DEFAULT_PROFILE: UserProfile = {

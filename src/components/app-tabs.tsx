@@ -8,8 +8,8 @@ import {
   View,
 } from "react-native";
 
+import AnalyticsScreen from "@/app/analytics";
 import HomeScreen from "@/app/index";
-import AnalyticsScreen from "@/app/search";
 import TransactionsScreen from "@/app/transactions";
 import { AddTransactionModal } from "@/components/add-transaction-modal";
 import { CreateAccountModal } from "@/components/create-account-modal";
@@ -18,13 +18,11 @@ import { BottomFloatingBar } from "@/components/navigation/bottom-floating-bar";
 import { ProfileSheetModal } from "@/components/navigation/profile-sheet-modal";
 import { SearchSheetModal } from "@/components/navigation/search-sheet-modal";
 import { TopChipHeader } from "@/components/navigation/top-chip-header";
-import { useAppTheme } from "@/context/theme-context";
 import { TransactionType } from "@/domain/types";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function AppTabs() {
-  const { isDark } = useAppTheme();
   const [activeTab, setActiveTab] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addTransactionType, setAddTransactionType] =
