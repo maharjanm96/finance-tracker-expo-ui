@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { AppButton } from "@/components/ui/app-button";
+import { getAccountTypeIcon } from "@/constants/account-types";
 import { getCurrencyInfo } from "@/constants/currencies";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
@@ -114,9 +115,9 @@ function AccountPickerModal({
                     <View className="w-9 h-9 rounded-full bg-brand-perano/15 items-center justify-center">
                       <SymbolView
                         name={{
-                          ios: "creditcard.fill",
-                          android: "payment",
-                          web: "payment",
+                          ios: getAccountTypeIcon(acc.type).ios as any,
+                          android: getAccountTypeIcon(acc.type).android,
+                          web: getAccountTypeIcon(acc.type).web,
                         }}
                         size={16}
                         tintColor="#AB9FF2"
@@ -302,14 +303,14 @@ function AddTransactionForm({
       </View>
 
       {/* ─── Type Segmented Selector ─── */}
-      <View className="flex-row p-1 rounded-2xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 h-12">
+      <View className="flex-row p-1 rounded-3xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 h-12">
         {(["expense", "income", "transfer"] as TransactionType[]).map((t) => {
           const isActive = type === t;
           return (
             <Pressable
               key={t}
               onPress={() => setType(t)}
-              className={`flex-1 rounded-xl items-center justify-center active:opacity-80 ${
+              className={`flex-1 rounded-3xl items-center justify-center active:opacity-80 ${
                 isActive
                   ? t === "expense"
                     ? "bg-red-500/15"
@@ -381,9 +382,10 @@ function AddTransactionForm({
                   <View className="w-4.5 h-4.5 rounded-full bg-brand-perano/20 items-center justify-center">
                     <SymbolView
                       name={{
-                        ios: "creditcard.fill",
-                        android: "payment",
-                        web: "payment",
+                        ios: getAccountTypeIcon(sourceAccount?.type).ios as any,
+                        android: getAccountTypeIcon(sourceAccount?.type)
+                          .android,
+                        web: getAccountTypeIcon(sourceAccount?.type).web,
                       }}
                       size={11}
                       tintColor="#AB9FF2"
@@ -508,9 +510,9 @@ function AddTransactionForm({
                   <View className="w-4.5 h-4.5 rounded-full bg-brand-perano/20 items-center justify-center">
                     <SymbolView
                       name={{
-                        ios: "creditcard.fill",
-                        android: "payment",
-                        web: "payment",
+                        ios: getAccountTypeIcon(destAccount?.type).ios as any,
+                        android: getAccountTypeIcon(destAccount?.type).android,
+                        web: getAccountTypeIcon(destAccount?.type).web,
                       }}
                       size={11}
                       tintColor="#AB9FF2"
@@ -576,11 +578,12 @@ function AddTransactionForm({
             >
               {activeAccounts.map((acc) => {
                 const isSelected = sourceAccountId === acc.id;
+                const accIcon = getAccountTypeIcon(acc.type);
                 return (
                   <Pressable
                     key={acc.id}
                     onPress={() => setSourceAccountId(acc.id)}
-                    className={`px-4 py-2.5 rounded-full border active:opacity-80 ${
+                    className={`flex-row items-center gap-2 px-3.5 py-2.5 rounded-full border active:opacity-80 ${
                       isSelected
                         ? "bg-brand-perano border-brand-perano"
                         : isDark
@@ -588,6 +591,17 @@ function AddTransactionForm({
                           : "bg-chip-light border-black/5"
                     }`}
                   >
+                    <SymbolView
+                      name={{
+                        ios: accIcon.ios as any,
+                        android: accIcon.android,
+                        web: accIcon.web,
+                      }}
+                      size={14}
+                      tintColor={
+                        isSelected ? "#1E1F24" : isDark ? "#E4E5EB" : "#1E1F24"
+                      }
+                    />
                     <Text
                       className={`text-[13px] font-bold ${
                         isSelected
@@ -619,11 +633,12 @@ function AddTransactionForm({
             >
               {activeAccounts.map((acc) => {
                 const isSelected = sourceAccountId === acc.id;
+                const accIcon = getAccountTypeIcon(acc.type);
                 return (
                   <Pressable
                     key={acc.id}
                     onPress={() => setSourceAccountId(acc.id)}
-                    className={`px-4 py-2.5 rounded-full border active:opacity-80 ${
+                    className={`flex-row items-center gap-2 px-3.5 py-2.5 rounded-full border active:opacity-80 ${
                       isSelected
                         ? "bg-brand-perano border-brand-perano"
                         : isDark
@@ -631,6 +646,17 @@ function AddTransactionForm({
                           : "bg-chip-light border-black/5"
                     }`}
                   >
+                    <SymbolView
+                      name={{
+                        ios: accIcon.ios as any,
+                        android: accIcon.android,
+                        web: accIcon.web,
+                      }}
+                      size={14}
+                      tintColor={
+                        isSelected ? "#1E1F24" : isDark ? "#E4E5EB" : "#1E1F24"
+                      }
+                    />
                     <Text
                       className={`text-[13px] font-bold ${
                         isSelected

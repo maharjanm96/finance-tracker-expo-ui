@@ -3,6 +3,7 @@ import { SymbolView } from "expo-symbols";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 
 import { AppButton } from "@/components/ui/app-button";
+import { getAccountTypeIcon } from "@/constants/account-types";
 import { CATEGORY_ICONS, useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { formatCurrency, formatTransactionDateTime } from "@/domain/formatters";
@@ -176,18 +177,44 @@ function TransactionDetailsContent({
                 <Text className="text-[14px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                   From
                 </Text>
-                <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
-                  {sourceAccount?.name ?? "Source Account"}
-                </Text>
+                <View className="flex-row items-center gap-2">
+                  <View className="w-7 h-7 rounded-full items-center justify-center bg-black/5 dark:bg-white/10">
+                    <SymbolView
+                      name={{
+                        ios: getAccountTypeIcon(sourceAccount?.type).ios as any,
+                        android: getAccountTypeIcon(sourceAccount?.type).android,
+                        web: getAccountTypeIcon(sourceAccount?.type).web,
+                      }}
+                      size={14}
+                      tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
+                    />
+                  </View>
+                  <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
+                    {sourceAccount?.name ?? "Source Account"}
+                  </Text>
+                </View>
               </View>
               <View className="h-[0.5px] w-full bg-black/5 dark:border-t dark:border-white/10" />
               <View className="flex-row items-center justify-between py-3.5 gap-3">
                 <Text className="text-[14px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                   To
                 </Text>
-                <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
-                  {destAccount?.name ?? "Destination Account"}
-                </Text>
+                <View className="flex-row items-center gap-2">
+                  <View className="w-7 h-7 rounded-full items-center justify-center bg-black/5 dark:bg-white/10">
+                    <SymbolView
+                      name={{
+                        ios: getAccountTypeIcon(destAccount?.type).ios as any,
+                        android: getAccountTypeIcon(destAccount?.type).android,
+                        web: getAccountTypeIcon(destAccount?.type).web,
+                      }}
+                      size={14}
+                      tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
+                    />
+                  </View>
+                  <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
+                    {destAccount?.name ?? "Destination Account"}
+                  </Text>
+                </View>
               </View>
             </>
           ) : (
@@ -195,9 +222,22 @@ function TransactionDetailsContent({
               <Text className="text-[14px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                 Account
               </Text>
-              <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
-                {sourceAccount?.name ?? "Connected Account"}
-              </Text>
+              <View className="flex-row items-center gap-2">
+                <View className="w-7 h-7 rounded-full items-center justify-center bg-black/5 dark:bg-white/10">
+                  <SymbolView
+                    name={{
+                      ios: getAccountTypeIcon(sourceAccount?.type).ios as any,
+                      android: getAccountTypeIcon(sourceAccount?.type).android,
+                      web: getAccountTypeIcon(sourceAccount?.type).web,
+                    }}
+                    size={14}
+                    tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
+                  />
+                </View>
+                <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
+                  {sourceAccount?.name ?? "Connected Account"}
+                </Text>
+              </View>
             </View>
           )}
 

@@ -21,6 +21,7 @@ import Svg, {
 
 import { BlurTargetView } from "@/components/blurred-status-bar";
 import { getTopHeaderPadding } from "@/components/navigation/top-chip-header";
+import { getAccountTypeIcon } from "@/constants/account-types";
 import { MaxContentWidth } from "@/constants/theme";
 import { CATEGORY_ICONS, useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
@@ -367,12 +368,29 @@ export default function AnalyticsScreen() {
                     selectAccount(null);
                     setSelectedBarIndex(null);
                   }}
-                  className={`px-3.5 py-1.5 rounded-full border transition-all ${
+                  className={`flex-row items-center gap-1.5 px-3.5 py-1.5 rounded-full border transition-all active:opacity-80 ${
                     selectedAccountId === null
                       ? "bg-brand-perano border-brand-perano dark:bg-brand-perano/20 dark:border-brand-perano"
                       : "bg-card-light dark:bg-card-dark border-black/5 dark:border-white/10"
                   }`}
                 >
+                  <SymbolView
+                    name={{
+                      ios: "square.grid.2x2.fill",
+                      android: "dashboard",
+                      web: "dashboard",
+                    }}
+                    size={13}
+                    tintColor={
+                      selectedAccountId === null
+                        ? isDark
+                          ? "#AB9FF2"
+                          : "#1E1F24"
+                        : isDark
+                          ? "#989BA5"
+                          : "#8E8E93"
+                    }
+                  />
                   <Text
                     className={`text-xs font-semibold ${
                       selectedAccountId === null
@@ -386,6 +404,7 @@ export default function AnalyticsScreen() {
 
                 {accounts.map((acc) => {
                   const isSelected = selectedAccountId === acc.id;
+                  const accIcon = getAccountTypeIcon(acc.type);
                   return (
                     <Pressable
                       key={acc.id}
@@ -393,12 +412,29 @@ export default function AnalyticsScreen() {
                         selectAccount(acc.id);
                         setSelectedBarIndex(null);
                       }}
-                      className={`px-3.5 py-1.5 rounded-full border transition-all ${
+                      className={`flex-row items-center gap-1.5 px-3.5 py-1.5 rounded-full border transition-all active:opacity-80 ${
                         isSelected
                           ? "bg-brand-perano border-brand-perano dark:bg-brand-perano/20 dark:border-brand-perano"
                           : "bg-card-light dark:bg-card-dark border-black/5 dark:border-white/10"
                       }`}
                     >
+                      <SymbolView
+                        name={{
+                          ios: accIcon.ios as any,
+                          android: accIcon.android,
+                          web: accIcon.web,
+                        }}
+                        size={13}
+                        tintColor={
+                          isSelected
+                            ? isDark
+                              ? "#AB9FF2"
+                              : "#1E1F24"
+                            : isDark
+                              ? "#989BA5"
+                              : "#8E8E93"
+                        }
+                      />
                       <Text
                         className={`text-xs font-semibold ${
                           isSelected

@@ -4,50 +4,68 @@ import { useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { AppButton } from "@/components/ui/app-button";
+import { ACCOUNT_TYPES } from "@/constants/account-types";
 import { getCurrencyInfo } from "@/constants/currencies";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
-import { AccountType } from "@/domain/types";
+import { Account, AccountType } from "@/domain/types";
 
 interface CreateAccountModalProps {
   visible: boolean;
   onClose: () => void;
+  account?: Account | null;
 }
 
-const ACCOUNT_TYPES: { type: AccountType; label: string; icon: string }[] = [
-  { type: "spending", label: "Daily Spending", icon: "creditcard" },
-  { type: "savings", label: "Savings", icon: "building.columns" },
-  { type: "emergency", label: "Emergency Fund", icon: "shield.fill" },
-  {
-    type: "investment",
-    label: "Investment",
-    icon: "chart.line.uptrend.xyaxis",
-  },
-  { type: "cash", label: "Cash Wallet", icon: "banknote" },
-];
-
-function CreateAccountForm({ onClose }: { onClose: () => void }) {
-  const { addAccount, profile } = useExpense();
+function CreateAccountForm({
+  account,
+  onClose,
+}: {
+  account?: Account | null;
+  onClose: () => void;
+}) {
+  const { addAccount, editAccount, profile } = useExpense();
   const { isDark } = useAppTheme();
   const currencyInfo = getCurrencyInfo(profile.currency);
 
-  const [name, setName] = useState("");
-  const [balance, setBalance] = useState("");
-  const [institution, setInstitution] = useState("");
-  const [selectedType, setSelectedType] = useState<AccountType>("spending");
+  const isEditing = Boolean(account);
+
+  const [name, setName] = useState(account?.name ?? "");
+  const [balance, setBalance] = useState(
+    account
+      ? account.openingBalance !== undefined
+        ? account.openingBalance.toString()
+        : ""
+      : "",
+  );
+  const [institution, setInstitution] = useState(
+    account?.institution ?? account?.description ?? "",
+  );
+  const [selectedType, setSelectedType] = useState<AccountType>(
+    account?.type ?? "spending",
+  );
 
   const handleSave = () => {
     const parsedBalance = parseFloat(balance.replace(/[^0-9.]/g, "")) || 0;
     if (name.trim().length === 0) return;
 
-    addAccount({
-      name: name.trim(),
-      type: selectedType,
-      openingBalance: parsedBalance,
-      institution: institution.trim() || undefined,
-      description: institution.trim() || undefined,
-      color: "#AB9FF2",
-    });
+    if (isEditing && account) {
+      editAccount(account.id, {
+        name: name.trim(),
+        type: selectedType,
+        openingBalance: parsedBalance,
+        institution: institution.trim() || undefined,
+        description: institution.trim() || undefined,
+      });
+    } else {
+      addAccount({
+        name: name.trim(),
+        type: selectedType,
+        openingBalance: parsedBalance,
+        institution: institution.trim() || undefined,
+        description: institution.trim() || undefined,
+        color: "#AB9FF2",
+      });
+    }
 
     onClose();
   };
@@ -59,7 +77,7 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
       {/* Header */}
       <View className="flex-row items-center justify-between pt-1.5">
         <Text className="text-xl font-bold tracking-tight text-text-primary-light dark:text-text-primary-dark">
-          New Account
+          {isEditing ? "Edit Account" : "New Account"}
         </Text>
         <Pressable
           onPress={onClose}
@@ -152,9 +170,9 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
                 >
                   <SymbolView
                     name={{
-                      ios: t.icon as any,
-                      android: "account_balance",
-                      web: "account_balance",
+                      ios: t.icon.ios as any,
+                      android: t.icon.android,
+                      web: t.icon.web,
                     }}
                     size={14}
                     tintColor={
@@ -177,13 +195,13 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
         </View>
       </ScrollView>
 
-      {/* Create Button */}
+      {/* Save / Create Button */}
       <AppButton
-        title="Create Account"
+        title={isEditing ? "Save Changes" : "Create Account"}
         icon={{
-          ios: "plus",
-          android: "add",
-          web: "add",
+          ios: isEditing ? "checkmark" : "plus",
+          android: isEditing ? "check" : "add",
+          web: isEditing ? "check" : "add",
         }}
         onPress={handleSave}
         disabled={!isSaveReady}
@@ -196,6 +214,7 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
 export function CreateAccountModal({
   visible,
   onClose,
+  account,
 }: CreateAccountModalProps) {
   const { isDark } = useAppTheme();
 
@@ -209,7 +228,15 @@ export function CreateAccountModal({
       contentPadding={0}
     >
       <RNHostView matchContents={false}>
-        {visible ? <CreateAccountForm onClose={onClose} /> : <View />}
+        {visible ? (
+          <CreateAccountForm
+            key={account?.id ?? "new"}
+            account={account}
+            onClose={onClose}
+          />
+        ) : (
+          <View />
+        )}
       </RNHostView>
     </BottomSheet>
   );

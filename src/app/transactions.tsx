@@ -8,6 +8,7 @@ import { BlurTargetView } from "@/components/blurred-status-bar";
 import { getTopHeaderPadding } from "@/components/navigation/top-chip-header";
 import { TransactionDetailsModal } from "@/components/transaction-details-modal";
 import { TransactionItem } from "@/components/transaction-item";
+import { getAccountTypeIcon } from "@/constants/account-types";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { Transaction, TransactionType } from "@/domain/types";
@@ -162,7 +163,7 @@ export default function TransactionsScreen({
               >
                 <Pressable
                   onPress={() => selectAccount(null)}
-                  className={`px-4 py-2 rounded-full border active:opacity-80 ${
+                  className={`flex-row items-center gap-2 px-3.5 py-2 rounded-full border active:opacity-80 ${
                     selectedAccountId === null
                       ? "bg-brand-perano border-brand-perano"
                       : isDark
@@ -170,6 +171,21 @@ export default function TransactionsScreen({
                         : "bg-chip-light border-black/5"
                   }`}
                 >
+                  <SymbolView
+                    name={{
+                      ios: "square.grid.2x2.fill",
+                      android: "dashboard",
+                      web: "dashboard",
+                    }}
+                    size={14}
+                    tintColor={
+                      selectedAccountId === null
+                        ? "#1E1F24"
+                        : isDark
+                          ? "#E4E5EB"
+                          : "#1E1F24"
+                    }
+                  />
                   <Text
                     className={`text-[13px] font-bold ${
                       selectedAccountId === null
@@ -185,11 +201,12 @@ export default function TransactionsScreen({
 
                 {accounts.map((acc) => {
                   const isSelected = selectedAccountId === acc.id;
+                  const accIcon = getAccountTypeIcon(acc.type);
                   return (
                     <Pressable
                       key={acc.id}
                       onPress={() => selectAccount(acc.id)}
-                      className={`px-4 py-2 rounded-full border active:opacity-80 ${
+                      className={`flex-row items-center gap-2 px-3.5 py-2 rounded-full border active:opacity-80 ${
                         isSelected
                           ? "bg-brand-perano border-brand-perano"
                           : isDark
@@ -197,6 +214,21 @@ export default function TransactionsScreen({
                             : "bg-chip-light border-black/5"
                       }`}
                     >
+                      <SymbolView
+                        name={{
+                          ios: accIcon.ios as any,
+                          android: accIcon.android,
+                          web: accIcon.web,
+                        }}
+                        size={14}
+                        tintColor={
+                          isSelected
+                            ? "#1E1F24"
+                            : isDark
+                              ? "#E4E5EB"
+                              : "#1E1F24"
+                        }
+                      />
                       <Text
                         className={`text-[13px] font-bold ${
                           isSelected

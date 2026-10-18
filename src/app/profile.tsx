@@ -12,12 +12,13 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AppleSwitch } from "@/components/apple-style-kit";
 import { CreateAccountModal } from "@/components/create-account-modal";
 import { AppButton } from "@/components/ui/app-button";
+import { getAccountTypeIcon } from "@/constants/account-types";
 import { useExpense } from "@/context/expense-context";
 import { ThemeMode, useAppTheme } from "@/context/theme-context";
 import { formatCurrency } from "@/domain/formatters";
+import { Account } from "@/domain/types";
 
 interface ProfileScreenProps {
   onClose?: () => void;
@@ -46,6 +47,7 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
   );
   const [notifications, setNotifications] = useState(true);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
 
   const handleDeleteAccount = (accountName: string, accountId: string) => {
     Alert.alert(
@@ -224,7 +226,10 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
               CONNECTED ACCOUNTS ({accounts.length})
             </Text>
             <Pressable
-              onPress={() => setShowAddAccountModal(true)}
+              onPress={() => {
+                setEditingAccount(null);
+                setShowAddAccountModal(true);
+              }}
               className="flex-row items-center gap-1.5 py-1 px-2.5 rounded-full bg-brand-perano/15 active:opacity-70"
             >
               <SymbolView
@@ -253,16 +258,21 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
                 return (
                   <View key={acc.id}>
                     <View className="p-4 flex-row items-center justify-between">
-                      <View className="flex-row items-center gap-3 flex-1 mr-3">
+                      <Pressable
+                        onPress={() => {
+                          setEditingAccount(acc);
+                          setShowAddAccountModal(true);
+                        }}
+                        className="flex-row items-center gap-3 flex-1 mr-3 active:opacity-70"
+                        accessibilityRole="button"
+                        accessibilityLabel={`Edit account ${acc.name}`}
+                      >
                         <View className="w-10 h-10 rounded-2xl bg-black/5 dark:bg-white/10 items-center justify-center shrink-0">
                           <SymbolView
                             name={{
-                              ios:
-                                acc.type === "savings"
-                                  ? "building.columns"
-                                  : "creditcard",
-                              android: "account_balance",
-                              web: "account_balance",
+                              ios: getAccountTypeIcon(acc.type).ios as any,
+                              android: getAccountTypeIcon(acc.type).android,
+                              web: getAccountTypeIcon(acc.type).web,
                             }}
                             size={18}
                             tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
@@ -272,21 +282,41 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
                           <Text
                             numberOfLines={1}
                             ellipsizeMode="tail"
-                            className="text-[15px] font-bold text-text-light dark:text-text-dark"
+                            className="text-xs font-bold text-text-light dark:text-text-dark"
                           >
                             {acc.name}
                           </Text>
-                          <Text className="text-[12px] font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase mt-0.5">
+                          <Text className="text-[10px] font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase mt-0.5">
                             {acc.type}{" "}
                             {acc.institution ? `• ${acc.institution}` : ""}
                           </Text>
                         </View>
-                      </View>
+                      </Pressable>
 
-                      <View className="flex-row items-center gap-3 shrink-0">
-                        <Text className="text-[15px] font-extrabold text-text-light dark:text-text-dark">
+                      <View className="flex-row items-center gap-2.5 shrink-0">
+                        <Text className="text-sm font-extrabold text-text-light dark:text-text-dark mr-0.5">
                           {formatCurrency(balance)}
                         </Text>
+                        <Pressable
+                          hitSlop={10}
+                          onPress={() => {
+                            setEditingAccount(acc);
+                            setShowAddAccountModal(true);
+                          }}
+                          className="p-1 active:opacity-70"
+                          accessibilityRole="button"
+                          accessibilityLabel={`Edit account ${acc.name}`}
+                        >
+                          <SymbolView
+                            name={{
+                              ios: "pencil",
+                              android: "edit",
+                              web: "edit",
+                            }}
+                            size={16}
+                            tintColor={isDark ? "#989BA5" : "#AEAEB2"}
+                          />
+                        </Pressable>
                         <Pressable
                           hitSlop={10}
                           onPress={() => handleDeleteAccount(acc.name, acc.id)}
@@ -384,7 +414,7 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
         </View>
 
         {/* ─── 5. Preferences & Alerts ─── */}
-        <View className="gap-2.5">
+        {/* <View className="gap-2.5">
           <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-1">
             PREFERENCES
           </Text>
@@ -410,7 +440,7 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
               onValueChange={setNotifications}
             />
           </View>
-        </View>
+        </View> */}
 
         {/* ─── 6. Data Management ─── */}
         <View className="gap-2.5 pt-2">
@@ -431,10 +461,14 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
         </View>
       </ScrollView>
 
-      {/* Create Account Modal */}
+      {/* Create / Edit Account Modal */}
       <CreateAccountModal
         visible={showAddAccountModal}
-        onClose={() => setShowAddAccountModal(false)}
+        account={editingAccount}
+        onClose={() => {
+          setShowAddAccountModal(false);
+          setEditingAccount(null);
+        }}
       />
     </KeyboardAvoidingView>
   );

@@ -5,6 +5,7 @@ import { Image, Pressable, ScrollView, Text, View } from "react-native";
 
 import { CurrencyPickerModal } from "@/components/currency-picker-modal";
 import { AppButton } from "@/components/ui/app-button";
+import { getAccountTypeIcon } from "@/constants/account-types";
 import { getCurrencyInfo } from "@/constants/currencies";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
@@ -167,9 +168,9 @@ export function AccountSelectorSheet({
                       <View className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/10 items-center justify-center shrink-0">
                         <SymbolView
                           name={{
-                            ios: "creditcard.fill",
-                            android: "payment",
-                            web: "payment",
+                            ios: getAccountTypeIcon(acc.type).ios as any,
+                            android: getAccountTypeIcon(acc.type).android,
+                            web: getAccountTypeIcon(acc.type).web,
                           }}
                           size={18}
                           tintColor={isDark ? "#E4E5EB" : "#1A1A1E"}
