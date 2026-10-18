@@ -7,19 +7,16 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddTransactionModal } from "@/components/add-transaction-modal";
-import {
-  BlurTargetView,
-  BlurredStatusBar,
-} from "@/components/blurred-status-bar";
+import { BlurTargetView } from "@/components/blurred-status-bar";
+import { getTopHeaderPadding } from "@/components/navigation/top-chip-header";
 import { TransactionDetailsModal } from "@/components/transaction-details-modal";
 import { TransactionItem } from "@/components/transaction-item";
-import { BottomTabInset, MaxContentWidth } from "@/constants/theme";
+import { MaxContentWidth } from "@/constants/theme";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { Transaction, TransactionType } from "@/domain/types";
@@ -43,12 +40,16 @@ export default function TransactionsScreen({
   const [scrollY] = useState(() => new Animated.Value(0));
   const blurTargetRef = useRef<View | null>(null);
 
+  const topHeaderPadding = getTopHeaderPadding(insets.top);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
-  const effectiveSearch = (externalSearchQuery !== undefined ? externalSearchQuery : searchQuery).trim();
+  const effectiveSearch = (
+    externalSearchQuery !== undefined ? externalSearchQuery : searchQuery
+  ).trim();
 
   // Filter transactions
   const filteredTransactions = useMemo(() => {
@@ -94,20 +95,18 @@ export default function TransactionsScreen({
   }, [filteredTransactions]);
 
   return (
-    <View
-      className="flex-1 bg-bg-light dark:bg-bg-dark"
-      style={styles.screen}
-    >
+    <View className="flex-1 bg-bg-light dark:bg-bg-dark" style={styles.screen}>
       <BlurTargetView ref={blurTargetRef} style={styles.blurTarget}>
         <Animated.ScrollView
           style={styles.scrollView}
           contentContainerStyle={[
             styles.scrollContent,
             {
-              paddingTop: 8,
+              paddingTop: topHeaderPadding,
               paddingBottom: 110,
             },
           ]}
+          scrollIndicatorInsets={{ top: topHeaderPadding, bottom: 90 }}
           showsVerticalScrollIndicator={false}
           scrollEventThrottle={16}
           onScroll={Animated.event(
@@ -138,69 +137,6 @@ export default function TransactionsScreen({
                   Transactions
                 </Text>
               </View>
-
-              <Pressable
-                onPress={() => setShowAddModal(true)}
-                style={({ pressed }) => [
-                  styles.addBtnCircle,
-                  isDark ? styles.addBtnDark : styles.addBtnLight,
-                  pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] },
-                ]}
-              >
-                <SymbolView
-                  name={{ ios: "plus", android: "add", web: "add" }}
-                  size={18}
-                  tintColor="#000000"
-                />
-              </Pressable>
-            </View>
-
-            {/* Search Input Bar */}
-            <View
-              style={[
-                styles.searchBar,
-                isDark ? styles.cardDark : styles.cardLight,
-              ]}
-            >
-              <SymbolView
-                name={{
-                  ios: "magnifyingglass",
-                  android: "search",
-                  web: "search",
-                }}
-                size={18}
-                tintColor="#8E8E93"
-              />
-              <TextInput
-                value={externalSearchQuery !== undefined ? externalSearchQuery : searchQuery}
-                onChangeText={(val) => {
-                  setSearchQuery(val);
-                }}
-                placeholder="Search transactions, notes..."
-                placeholderTextColor="#8E8E93"
-                style={[
-                  styles.searchInput,
-                  isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                ]}
-              />
-              {effectiveSearch.length > 0 && (
-                <Pressable
-                  onPress={() => {
-                    setSearchQuery("");
-                  }}
-                  hitSlop={8}
-                >
-                  <SymbolView
-                    name={{
-                      ios: "xmark.circle.fill",
-                      android: "cancel",
-                      web: "cancel",
-                    }}
-                    size={16}
-                    tintColor="#8E8E93"
-                  />
-                </Pressable>
-              )}
             </View>
 
             {/* Type Filter Chips (All, Expense, Income, Transfer) */}
@@ -390,9 +326,6 @@ export default function TransactionsScreen({
           </View>
         </Animated.ScrollView>
       </BlurTargetView>
-
-      {/* Top Status Bar */}
-      <BlurredStatusBar blurTarget={blurTargetRef} scrollY={scrollY} />
 
       {/* Add Transaction Modal */}
       <AddTransactionModal

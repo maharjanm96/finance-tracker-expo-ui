@@ -2,6 +2,7 @@ import { BottomSheet, RNHostView } from "@expo/ui";
 import { SymbolView } from "expo-symbols";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
+import { AppButton } from "@/components/ui/app-button";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { formatCurrency } from "@/domain/formatters";
@@ -157,26 +158,19 @@ export function AccountSelectorSheet({
             })}
 
             {/* 3. New Account Button */}
-            <Pressable
+            <AppButton
+              title="Add New Account"
+              icon={{
+                ios: "plus",
+                android: "add",
+                web: "add",
+              }}
               onPress={() => {
                 onClose();
                 onOpenCreateAccount?.();
               }}
-              className="flex-row items-center justify-center gap-2 h-12 rounded-2xl bg-brand-perano mt-3 active:opacity-80"
-            >
-              <SymbolView
-                name={{
-                  ios: "plus",
-                  android: "add",
-                  web: "add",
-                }}
-                size={20}
-                tintColor={isDark ? "#121316" : "#FFFFFF"}
-              />
-              <Text className="text-sm font-bold text-white dark:text-brand-dark-purple">
-                Add New Account
-              </Text>
-            </Pressable>
+              className="mt-3"
+            />
           </ScrollView>
         </View>
       </RNHostView>

@@ -2,6 +2,7 @@ import { BottomSheet, RNHostView } from "@expo/ui";
 import { SymbolView } from "expo-symbols";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 
+import { AppButton } from "@/components/ui/app-button";
 import { CATEGORY_ICONS, useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { formatCurrency } from "@/domain/formatters";
@@ -229,21 +230,14 @@ function TransactionDetailsContent({
         </View>
 
         {/* Delete Action Button */}
-        <Pressable
+        <AppButton
+          title="Delete Transaction"
+          variant="danger"
+          icon={{ ios: "trash.fill", android: "delete", web: "delete" }}
+          iconSize={20}
           onPress={handleDelete}
-          className="flex-row items-center justify-center h-[52px] rounded-2xl gap-2 mt-1.5 bg-red-500/10 dark:bg-red-500/15 active:opacity-80"
-          accessibilityRole="button"
-          accessibilityLabel="Delete this transaction"
-        >
-          <SymbolView
-            name={{ ios: "trash.fill", android: "delete", web: "delete" }}
-            size={18}
-            tintColor="#FF3B30"
-          />
-          <Text className="text-[#FF3B30] text-base font-bold">
-            Delete Transaction
-          </Text>
-        </Pressable>
+          className="mt-2"
+        />
       </ScrollView>
     </View>
   );

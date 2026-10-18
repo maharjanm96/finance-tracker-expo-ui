@@ -9,11 +9,14 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddTransactionModal } from "@/components/add-transaction-modal";
 import { BlurTargetView } from "@/components/blurred-status-bar";
 import { CreateAccountModal } from "@/components/create-account-modal";
 import { MonthlySummary } from "@/components/home/monthly-summary";
+import { AccountSelectorSheet } from "@/components/navigation/account-selector-sheet";
+import { getTopHeaderPadding } from "@/components/navigation/top-chip-header";
 import { OnboardingSetup } from "@/components/onboarding-setup";
 import { TransactionDetailsModal } from "@/components/transaction-details-modal";
 import { TransactionItem } from "@/components/transaction-item";
@@ -25,43 +28,43 @@ import { Transaction, TransactionType } from "@/domain/types";
 interface HomeScreenProps {
   onNavigateToTab?: (tabIndex: number) => void;
   onOpenAddTransaction?: () => void;
+  onPressWallet?: () => void;
 }
 
-export default function HomeScreen({ onNavigateToTab }: HomeScreenProps = {}) {
+export default function HomeScreen({
+  onNavigateToTab,
+  onPressWallet,
+}: HomeScreenProps = {}) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { isDark } = useAppTheme();
 
   const { profile, scopedTransactions, selectedAccount } = useExpense();
   const [scrollY] = useState(() => new Animated.Value(0));
   const blurTargetRef = useRef<View | null>(null);
 
+  const topHeaderPadding = getTopHeaderPadding(insets.top);
+
   const [modalType, setModalType] = useState<TransactionType | null>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showAccountSelector, setShowAccountSelector] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
-
-  const currentDate = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-  });
 
   const recentItems = scopedTransactions.slice(0, 5);
 
   return (
-    <View
-      className="flex-1 bg-bg-light dark:bg-bg-dark"
-      style={styles.screen}
-    >
+    <View className="flex-1 bg-bg-light dark:bg-bg-dark" style={styles.screen}>
       <BlurTargetView ref={blurTargetRef} style={styles.blurTarget}>
         <Animated.ScrollView
           style={styles.scrollView}
           contentContainerStyle={[
             styles.scrollContent,
             {
-              paddingTop: 8,
+              paddingTop: topHeaderPadding,
               paddingBottom: 110,
             },
           ]}
+          scrollIndicatorInsets={{ top: topHeaderPadding, bottom: 90 }}
           showsVerticalScrollIndicator={false}
           scrollEventThrottle={16}
           onScroll={Animated.event(
@@ -70,6 +73,32 @@ export default function HomeScreen({ onNavigateToTab }: HomeScreenProps = {}) {
           )}
         >
           <View style={styles.contentWrapper}>
+            {/* Wallet Selector Row below Avatar */}
+            <View className="flex-row items-center mt-2.5 px-0.5">
+              <Pressable
+                onPress={onPressWallet ?? (() => setShowAccountSelector(true))}
+                className="flex-row items-center gap-1.5 py-1 px-2 -ml-2 rounded-lg active:opacity-70 max-w-[80%]"
+                accessibilityRole="button"
+                accessibilityLabel="Account wallet selector"
+              >
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  className="text-[16px] font-bold tracking-tight text-text-light dark:text-text-dark"
+                >
+                  {selectedAccount ? selectedAccount.name : "Combined Account"}
+                </Text>
+                <SymbolView
+                  name={{
+                    ios: "chevron.down",
+                    android: "keyboard_arrow_down",
+                    web: "keyboard_arrow_down",
+                  }}
+                  size={14}
+                  tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
+                />
+              </Pressable>
+            </View>
             {/* ─── 1. Monthly Financial Snapshot Hero ─── */}
             <MonthlySummary />
 
@@ -177,9 +206,6 @@ export default function HomeScreen({ onNavigateToTab }: HomeScreenProps = {}) {
         </Animated.ScrollView>
       </BlurTargetView>
 
-      {/* Top Scroll-Reactive Blurred Status Bar */}
-      {/* <BlurredStatusBar blurTarget={blurTargetRef} scrollY={scrollY} /> */}
-
       {/* Initial 2-Step Onboarding Modal */}
       <OnboardingSetup />
 
@@ -201,6 +227,13 @@ export default function HomeScreen({ onNavigateToTab }: HomeScreenProps = {}) {
         visible={selectedTx !== null}
         transaction={selectedTx}
         onClose={() => setSelectedTx(null)}
+      />
+
+      {/* Account Selector Bottom Sheet */}
+      <AccountSelectorSheet
+        visible={showAccountSelector}
+        onClose={() => setShowAccountSelector(false)}
+        onOpenCreateAccount={() => setShowAccountModal(true)}
       />
     </View>
   );

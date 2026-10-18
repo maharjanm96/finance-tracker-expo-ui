@@ -1,11 +1,11 @@
 import { SymbolView } from "expo-symbols";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   Alert,
-  Animated,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
-  StyleSheet,
+  ScrollView,
   Text,
   TextInput,
   View,
@@ -13,17 +13,17 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppleSwitch } from "@/components/apple-style-kit";
-import {
-  BlurTargetView,
-  BlurredStatusBar,
-} from "@/components/blurred-status-bar";
 import { CreateAccountModal } from "@/components/create-account-modal";
-import { BottomTabInset, MaxContentWidth } from "@/constants/theme";
+import { AppButton } from "@/components/ui/app-button";
 import { useExpense } from "@/context/expense-context";
 import { ThemeMode, useAppTheme } from "@/context/theme-context";
 import { formatCurrency } from "@/domain/formatters";
 
-export default function ProfileScreen() {
+interface ProfileScreenProps {
+  onClose?: () => void;
+}
+
+export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
   const insets = useSafeAreaInsets();
   const { isDark, themeMode, setThemeMode } = useAppTheme();
 
@@ -35,9 +35,6 @@ export default function ProfileScreen() {
     getAccountBalance,
     deleteAccount,
   } = useExpense();
-
-  const [scrollY] = useState(() => new Animated.Value(0));
-  const blurTargetRef = useRef<View | null>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(profile.name);
@@ -92,777 +89,353 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
       className="flex-1 bg-bg-light dark:bg-bg-dark"
-      style={styles.screen}
     >
-      <BlurTargetView ref={blurTargetRef} style={styles.blurTarget}>
-        <Animated.ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={[
-            styles.scrollContent,
-            {
-              paddingTop: 10,
-              paddingBottom: 110,
-            },
-          ]}
-          showsVerticalScrollIndicator={false}
-          scrollEventThrottle={16}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: true },
-          )}
-        >
-          <View style={styles.contentWrapper}>
-            <View style={styles.headerRow}>
-              <View>
-                <Text
-                  style={[
-                    styles.headerSubtitle,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
-                  SETTINGS & PROFILE
-                </Text>
-                <Text
-                  style={[
-                    styles.headerTitle,
-                    isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                  ]}
-                >
-                  Account
-                </Text>
-              </View>
-            </View>
+      {/* ─── Top Header Bar ─── */}
+      <View
+        className="px-5 pt-3 pb-3 flex-row items-center justify-between border-b border-black/5 dark:border-white/5"
+        style={{ paddingTop: onClose ? 12 : Math.max(insets.top, 16) }}
+      >
+        <View className="flex-1">
+          <Text className="text-[12px] mt-4 font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase">
+            SETTINGS & PROFILE
+          </Text>
+          <Text className="text-2xl font-black tracking-tight text-text-light dark:text-text-dark mt-0.5">
+            Account
+          </Text>
+        </View>
 
-            {/* Profile Avatar & Info Card */}
-            <View
-              style={[
-                styles.profileCard,
-                isDark ? styles.cardDark : styles.cardLight,
-              ]}
+        {onClose && (
+          <Pressable
+            onPress={onClose}
+            hitSlop={12}
+            className="w-9 h-9 rounded-full items-center justify-center bg-black/5 dark:bg-white/10 active:opacity-70 ml-3"
+            accessibilityRole="button"
+            accessibilityLabel="Close profile"
+          >
+            <SymbolView
+              name={{
+                ios: "xmark",
+                android: "close",
+                web: "close",
+              }}
+              size={18}
+              tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
+            />
+          </Pressable>
+        )}
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 16,
+          paddingBottom: Math.max(insets.bottom + 40, 60),
+          gap: 20,
+        }}
+      >
+        {/* ─── 1. Profile Avatar & Info Card ─── */}
+        <View className="p-4 rounded-3xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 flex-row items-center gap-3.5">
+          <View className="w-14 h-14 rounded-full bg-brand-perano items-center justify-center shadow-xs shrink-0">
+            <Text className="text-2xl font-black text-brand-dark-purple select-none">
+              {(profile.name || "M").charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          <View className="flex-1">
+            <Text
+              numberOfLines={1}
+              className="text-lg font-bold text-text-light dark:text-text-dark tracking-tight"
             >
-              <View style={styles.avatarCircle}>
-                <Text style={styles.avatarText}>
-                  {(profile.name || "M").charAt(0).toUpperCase()}
-                </Text>
-              </View>
-              <View style={styles.profileInfo}>
-                <Text
-                  style={[
-                    styles.profileName,
-                    isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                  ]}
-                >
-                  {profile.name || "User"}
-                </Text>
-                <Text
-                  style={[
-                    styles.profileSubtitle,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
-                  Income: {formatCurrency(profile.monthlyIncome)} / mo • NPR
-                </Text>
-              </View>
-              <Pressable
-                onPress={() => {
-                  if (isEditing) {
-                    handleSaveProfile();
-                  } else {
-                    setEditName(profile.name);
-                    setEditIncome(profile.monthlyIncome.toString());
-                    setEditGoal(profile.annualSavingsGoal.toString());
-                    setIsEditing(true);
-                  }
-                }}
-                style={styles.editBtn}
-              >
-                <Text style={styles.editBtnText}>
-                  {isEditing ? "Done" : "Edit"}
-                </Text>
-              </Pressable>
-            </View>
+              {profile.name || "User"}
+            </Text>
+            <Text
+              numberOfLines={1}
+              className="text-[13px] font-medium text-text-secondary-light dark:text-text-secondary-dark mt-0.5"
+            >
+              Income: {formatCurrency(profile.monthlyIncome)} / mo
+            </Text>
+          </View>
+          <Pressable
+            onPress={() => {
+              if (isEditing) {
+                handleSaveProfile();
+              } else {
+                setEditName(profile.name);
+                setEditIncome(profile.monthlyIncome.toString());
+                setEditGoal(profile.annualSavingsGoal.toString());
+                setIsEditing(true);
+              }
+            }}
+            className="px-4 py-2 rounded-full bg-brand-perano active:opacity-80"
+          >
+            <Text className="text-[13px] font-bold text-brand-dark-purple">
+              {isEditing ? "Done" : "Edit"}
+            </Text>
+          </Pressable>
+        </View>
 
-            {/* Inset Edit Form (when Editing) */}
-            {isEditing && (
-              <View
-                style={[
-                  styles.editFormCard,
-                  isDark ? styles.cardDark : styles.cardLight,
-                ]}
-              >
-                <View style={styles.formRow}>
-                  <Text
-                    style={[
-                      styles.formLabel,
-                      isDark
-                        ? styles.textSecondaryDark
-                        : styles.textSecondaryLight,
-                    ]}
-                  >
-                    Full Name
-                  </Text>
-                  <TextInput
-                    value={editName}
-                    onChangeText={setEditName}
-                    style={[
-                      styles.formInput,
-                      isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                    ]}
-                  />
-                </View>
-                <View
-                  style={[
-                    styles.divider,
-                    isDark ? styles.dividerDark : styles.dividerLight,
-                  ]}
-                />
-                <View style={styles.formRow}>
-                  <Text
-                    style={[
-                      styles.formLabel,
-                      isDark
-                        ? styles.textSecondaryDark
-                        : styles.textSecondaryLight,
-                    ]}
-                  >
-                    Monthly Income (Rs.)
-                  </Text>
-                  <TextInput
-                    value={editIncome}
-                    onChangeText={setEditIncome}
-                    keyboardType="numeric"
-                    style={[
-                      styles.formInput,
-                      isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                    ]}
-                  />
-                </View>
-                <View
-                  style={[
-                    styles.divider,
-                    isDark ? styles.dividerDark : styles.dividerLight,
-                  ]}
-                />
-                <View style={styles.formRow}>
-                  <Text
-                    style={[
-                      styles.formLabel,
-                      isDark
-                        ? styles.textSecondaryDark
-                        : styles.textSecondaryLight,
-                    ]}
-                  >
-                    Annual Savings Goal (Rs.)
-                  </Text>
-                  <TextInput
-                    value={editGoal}
-                    onChangeText={setEditGoal}
-                    keyboardType="numeric"
-                    style={[
-                      styles.formInput,
-                      isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                    ]}
-                  />
-                </View>
-              </View>
-            )}
-
-            {/* Managed Accounts List */}
-            <View style={styles.groupWrapper}>
-              <View style={styles.sectionHeaderRow}>
-                <Text
-                  style={[
-                    styles.sectionHeader,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
-                  CONNECTED ACCOUNTS ({accounts.length})
-                </Text>
-                <Pressable
-                  onPress={() => setShowAddAccountModal(true)}
-                  style={({ pressed }) => [
-                    styles.addAccountPill,
-                    pressed && { opacity: 0.7 },
-                  ]}
-                >
-                  <SymbolView
-                    name={{ ios: "plus", android: "add", web: "add" }}
-                    size={12}
-                    tintColor="#AB9FF2"
-                  />
-                  <Text style={styles.addAccountPillText}>Add Account</Text>
-                </Pressable>
-              </View>
-
-              <View
-                style={[
-                  styles.cardContainer,
-                  isDark ? styles.cardDark : styles.cardLight,
-                ]}
-              >
-                {accounts.length === 0 ? (
-                  <View style={styles.emptyAccountRow}>
-                    <Text
-                      style={[
-                        styles.emptyAccountText,
-                        isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-                      ]}
-                    >
-                      No accounts added yet. Tap &apos;Add Account&apos; to add one.
-                    </Text>
-                  </View>
-                ) : (
-                  accounts.map((acc, idx) => {
-                    const balance = getAccountBalance(acc.id);
-                    const isLast = idx === accounts.length - 1;
-
-                    return (
-                      <View key={acc.id}>
-                        <View style={styles.accountItemRow}>
-                          <View
-                            style={[
-                              styles.accountIconWrap,
-                              isDark ? styles.iconWrapDark : styles.iconWrapLight,
-                            ]}
-                          >
-                            <SymbolView
-                              name={{
-                                ios:
-                                  acc.type === "savings"
-                                    ? "building.columns"
-                                    : "creditcard",
-                                android: "account_balance",
-                                web: "account_balance",
-                              }}
-                              size={16}
-                              tintColor={isDark ? "#FFFFFF" : "#000000"}
-                            />
-                          </View>
-                          <View style={styles.accountInfoCol}>
-                            <Text
-                              style={[
-                                styles.accountName,
-                                isDark
-                                  ? styles.textPrimaryDark
-                                  : styles.textPrimaryLight,
-                              ]}
-                            >
-                              {acc.name}
-                            </Text>
-                            <Text
-                              style={[
-                                styles.accountMeta,
-                                isDark
-                                  ? styles.textSecondaryDark
-                                  : styles.textSecondaryLight,
-                              ]}
-                            >
-                              {acc.type.toUpperCase()}{" "}
-                              {acc.institution ? `• ${acc.institution}` : ""}
-                            </Text>
-                          </View>
-                          <View style={styles.accountRightGroup}>
-                            <Text
-                              style={[
-                                styles.accountBalance,
-                                isDark
-                                  ? styles.textPrimaryDark
-                                  : styles.textPrimaryLight,
-                              ]}
-                            >
-                              {formatCurrency(balance)}
-                            </Text>
-                            <Pressable
-                              hitSlop={8}
-                              onPress={() => handleDeleteAccount(acc.name, acc.id)}
-                              style={styles.deleteAccountBtn}
-                              accessibilityRole="button"
-                              accessibilityLabel={`Delete account ${acc.name}`}
-                            >
-                              <SymbolView
-                                name={{ ios: "trash", android: "delete", web: "delete" }}
-                                size={16}
-                                tintColor={isDark ? "#8E8E93" : "#AEAEB2"}
-                              />
-                            </Pressable>
-                          </View>
-                        </View>
-                        {!isLast && (
-                          <View
-                            style={[
-                              styles.divider,
-                              isDark ? styles.dividerDark : styles.dividerLight,
-                              { marginLeft: 56 },
-                            ]}
-                          />
-                        )}
-                      </View>
-                    );
-                  })
-                )}
-              </View>
-            </View>
-
-            {/* Appearance Preference Group */}
-            <View style={styles.groupWrapper}>
-              <Text
-                style={[
-                  styles.sectionHeader,
-                  isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-                ]}
-              >
-                APPEARANCE
+        {/* ─── 2. Edit Profile Form (Inline when editing) ─── */}
+        {isEditing && (
+          <View className="p-4 rounded-3xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 gap-3">
+            <View className="gap-1">
+              <Text className="text-[12px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">
+                Full Name
               </Text>
-              <View
-                style={[
-                  styles.cardContainer,
-                  isDark ? styles.cardDark : styles.cardLight,
-                ]}
-              >
-                <View style={styles.themeSegmentRow}>
-                  {(["system", "light", "dark"] as ThemeMode[]).map((mode) => {
-                    const isActive = themeMode === mode;
-                    return (
-                      <Pressable
-                        key={mode}
-                        onPress={() => setThemeMode(mode)}
-                        style={[
-                          styles.themeSegmentBtn,
-                          isActive &&
-                            (isDark
-                              ? styles.themeSegmentActiveDark
-                              : styles.themeSegmentActiveLight),
-                        ]}
-                      >
-                        <SymbolView
-                          name={{
-                            ios:
-                              mode === "light"
-                                ? "sun.max.fill"
-                                : mode === "dark"
-                                  ? "moon.fill"
-                                  : "circle.lefthalf.filled",
-                            android:
-                              mode === "light"
-                                ? "light_mode"
-                                : mode === "dark"
-                                  ? "dark_mode"
-                                  : "brightness_medium",
-                            web:
-                              mode === "light"
-                                ? "light_mode"
-                                : mode === "dark"
-                                  ? "dark_mode"
-                                  : "brightness_medium",
-                          }}
-                          size={15}
-                          tintColor={
-                            isActive
-                              ? isDark
-                                ? "#FFFFFF"
-                                : "#000000"
-                              : "#8E8E93"
-                          }
-                        />
-                        <Text
-                          style={[
-                            styles.themeSegmentText,
-                            isActive
-                              ? isDark
-                                ? styles.themeTextActiveDark
-                                : styles.themeTextActiveLight
-                              : styles.themeTextInactive,
-                          ]}
-                        >
-                          {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
+              <TextInput
+                value={editName}
+                onChangeText={setEditName}
+                className="h-11 px-3.5 rounded-xl bg-white dark:bg-[#18191D] text-[15px] font-semibold text-text-light dark:text-text-dark border border-black/5 dark:border-white/5"
+              />
             </View>
 
-            {/* Preferences Group */}
-            <View style={styles.groupWrapper}>
-              <Text
-                style={[
-                  styles.sectionHeader,
-                  isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-                ]}
-              >
-                PREFERENCES
+            <View className="gap-1">
+              <Text className="text-[12px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">
+                Monthly Income
               </Text>
-              <View
-                style={[
-                  styles.cardContainer,
-                  isDark ? styles.cardDark : styles.cardLight,
-                ]}
-              >
-                <View style={styles.settingRow}>
-                  <View style={styles.labelWithIcon}>
-                    <View
-                      style={[
-                        styles.iconPill,
-                        isDark ? styles.iconWrapDark : styles.iconWrapLight,
-                      ]}
-                    >
-                      <SymbolView
-                        name={{
-                          ios: "bell.fill",
-                          android: "notifications",
-                          web: "notifications",
-                        }}
-                        size={16}
-                        tintColor={isDark ? "#FFFFFF" : "#1C1C1E"}
-                      />
-                    </View>
-                    <Text
-                      style={[
-                        styles.settingLabel,
-                        isDark
-                          ? styles.textPrimaryDark
-                          : styles.textPrimaryLight,
-                      ]}
-                    >
-                      Daily Budget Alerts
-                    </Text>
-                  </View>
-                  <AppleSwitch
-                    value={notifications}
-                    onValueChange={setNotifications}
-                  />
-                </View>
-              </View>
+              <TextInput
+                value={editIncome}
+                onChangeText={setEditIncome}
+                keyboardType="numeric"
+                className="h-11 px-3.5 rounded-xl bg-white dark:bg-[#18191D] text-[15px] font-semibold text-text-light dark:text-text-dark border border-black/5 dark:border-white/5"
+              />
             </View>
 
-            {/* Reset / Onboarding Start Over */}
-            <View style={styles.groupWrapper}>
-              <Text
-                style={[
-                  styles.sectionHeader,
-                  isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-                ]}
-              >
-                DATA MANAGEMENT
+            <View className="gap-1">
+              <Text className="text-[12px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">
+                Annual Savings Goal
               </Text>
-              <Pressable
-                onPress={handleResetConfirm}
-                style={[
-                  styles.resetButton,
-                  isDark ? styles.cardDark : styles.cardLight,
-                ]}
-              >
-                <Text style={styles.resetButtonText}>
-                  Reset All Data & Restore Defaults
-                </Text>
-              </Pressable>
+              <TextInput
+                value={editGoal}
+                onChangeText={setEditGoal}
+                keyboardType="numeric"
+                className="h-11 px-3.5 rounded-xl bg-white dark:bg-[#18191D] text-[15px] font-semibold text-text-light dark:text-text-dark border border-black/5 dark:border-white/5"
+              />
             </View>
           </View>
-        </Animated.ScrollView>
-      </BlurTargetView>
+        )}
 
-      <BlurredStatusBar blurTarget={blurTargetRef} scrollY={scrollY} />
+        {/* ─── 3. Connected Accounts Section ─── */}
+        <View className="gap-2.5">
+          <View className="flex-row items-center justify-between px-1">
+            <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase">
+              CONNECTED ACCOUNTS ({accounts.length})
+            </Text>
+            <Pressable
+              onPress={() => setShowAddAccountModal(true)}
+              className="flex-row items-center gap-1.5 py-1 px-2.5 rounded-full bg-brand-perano/15 active:opacity-70"
+            >
+              <SymbolView
+                name={{ ios: "plus", android: "add", web: "add" }}
+                size={12}
+                tintColor="#AB9FF2"
+              />
+              <Text className="text-[12px] font-bold text-[#AB9FF2]">
+                Add Account
+              </Text>
+            </Pressable>
+          </View>
+
+          <View className="rounded-3xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 overflow-hidden">
+            {accounts.length === 0 ? (
+              <View className="p-6 items-center justify-center">
+                <Text className="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">
+                  No accounts added yet.
+                </Text>
+              </View>
+            ) : (
+              accounts.map((acc, idx) => {
+                const balance = getAccountBalance(acc.id);
+                const isLast = idx === accounts.length - 1;
+
+                return (
+                  <View key={acc.id}>
+                    <View className="p-4 flex-row items-center justify-between">
+                      <View className="flex-row items-center gap-3 flex-1 mr-3">
+                        <View className="w-10 h-10 rounded-2xl bg-black/5 dark:bg-white/10 items-center justify-center shrink-0">
+                          <SymbolView
+                            name={{
+                              ios:
+                                acc.type === "savings"
+                                  ? "building.columns"
+                                  : "creditcard",
+                              android: "account_balance",
+                              web: "account_balance",
+                            }}
+                            size={18}
+                            tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <Text
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                            className="text-[15px] font-bold text-text-light dark:text-text-dark"
+                          >
+                            {acc.name}
+                          </Text>
+                          <Text className="text-[12px] font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase mt-0.5">
+                            {acc.type}{" "}
+                            {acc.institution ? `• ${acc.institution}` : ""}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View className="flex-row items-center gap-3 shrink-0">
+                        <Text className="text-[15px] font-extrabold text-text-light dark:text-text-dark">
+                          {formatCurrency(balance)}
+                        </Text>
+                        <Pressable
+                          hitSlop={10}
+                          onPress={() => handleDeleteAccount(acc.name, acc.id)}
+                          className="p-1 active:opacity-70"
+                          accessibilityRole="button"
+                          accessibilityLabel={`Delete account ${acc.name}`}
+                        >
+                          <SymbolView
+                            name={{
+                              ios: "trash",
+                              android: "delete",
+                              web: "delete",
+                            }}
+                            size={16}
+                            tintColor={isDark ? "#989BA5" : "#AEAEB2"}
+                          />
+                        </Pressable>
+                      </View>
+                    </View>
+                    {!isLast && (
+                      <View className="h-[0.5px] ml-16 bg-black/5 dark:bg-white/10" />
+                    )}
+                  </View>
+                );
+              })
+            )}
+          </View>
+        </View>
+
+        {/* ─── 4. Appearance Preferences ─── */}
+        <View className="gap-2.5">
+          <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-1">
+            APPEARANCE
+          </Text>
+          <View className="p-1.5 rounded-2xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 flex-row">
+            {(["system", "light", "dark"] as ThemeMode[]).map((mode) => {
+              const isActive = themeMode === mode;
+              return (
+                <Pressable
+                  key={mode}
+                  onPress={() => setThemeMode(mode)}
+                  className={`flex-1 py-2.5 rounded-xl flex-row items-center justify-center gap-1.5 ${
+                    isActive
+                      ? isDark
+                        ? "bg-[#2A2D35] shadow-xs"
+                        : "bg-white shadow-xs"
+                      : "bg-transparent"
+                  }`}
+                >
+                  <SymbolView
+                    name={{
+                      ios:
+                        mode === "light"
+                          ? "sun.max.fill"
+                          : mode === "dark"
+                            ? "moon.fill"
+                            : "circle.lefthalf.filled",
+                      android:
+                        mode === "light"
+                          ? "light_mode"
+                          : mode === "dark"
+                            ? "dark_mode"
+                            : "brightness_medium",
+                      web:
+                        mode === "light"
+                          ? "light_mode"
+                          : mode === "dark"
+                            ? "dark_mode"
+                            : "brightness_medium",
+                    }}
+                    size={15}
+                    tintColor={
+                      isActive
+                        ? isDark
+                          ? "#E4E5EB"
+                          : "#1E1F24"
+                        : isDark
+                          ? "#989BA5"
+                          : "#8E8E93"
+                    }
+                  />
+                  <Text
+                    className={`text-[13px] capitalize ${
+                      isActive
+                        ? "font-bold text-text-light dark:text-text-dark"
+                        : "font-semibold text-text-secondary-light dark:text-text-secondary-dark"
+                    }`}
+                  >
+                    {mode}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* ─── 5. Preferences & Alerts ─── */}
+        <View className="gap-2.5">
+          <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-1">
+            PREFERENCES
+          </Text>
+          <View className="p-4 rounded-3xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 flex-row items-center justify-between">
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-2xl bg-black/5 dark:bg-white/10 items-center justify-center">
+                <SymbolView
+                  name={{
+                    ios: "bell.fill",
+                    android: "notifications",
+                    web: "notifications",
+                  }}
+                  size={18}
+                  tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
+                />
+              </View>
+              <Text className="text-[15px] font-bold text-text-light dark:text-text-dark">
+                Daily Budget Alerts
+              </Text>
+            </View>
+            <AppleSwitch
+              value={notifications}
+              onValueChange={setNotifications}
+            />
+          </View>
+        </View>
+
+        {/* ─── 6. Data Management ─── */}
+        <View className="gap-2.5 pt-2">
+          <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-1">
+            DATA MANAGEMENT
+          </Text>
+          <AppButton
+            title="Reset All Data & Restore Defaults"
+            variant="danger"
+            icon={{
+              ios: "arrow.counterclockwise",
+              android: "restart_alt",
+              web: "restart_alt",
+            }}
+            iconSize={20}
+            onPress={handleResetConfirm}
+          />
+        </View>
+      </ScrollView>
 
       {/* Create Account Modal */}
       <CreateAccountModal
         visible={showAddAccountModal}
         onClose={() => setShowAddAccountModal(false)}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  screenDark: {
-    backgroundColor: "#000000",
-  },
-  screenLight: {
-    backgroundColor: "#FFFFFF",
-  },
-  blurTarget: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    alignItems: "center",
-    paddingHorizontal: 16,
-  },
-  contentWrapper: {
-    width: "100%",
-    maxWidth: MaxContentWidth,
-    gap: 20,
-  },
-  headerRow: {
-    paddingVertical: 6,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-  },
-  headerTitle: {
-    fontSize: 30,
-    fontWeight: "800",
-    letterSpacing: -0.6,
-    marginTop: 2,
-  },
-  profileCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 22,
-    padding: 18,
-    borderWidth: 1,
-    gap: 14,
-  },
-  avatarCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#AB9FF2",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: "#000000",
-  },
-  profileInfo: {
-    flex: 1,
-    gap: 3,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: "700",
-    letterSpacing: -0.3,
-  },
-  profileSubtitle: {
-    fontSize: 13,
-  },
-  editBtn: {
-    backgroundColor: "#AB9FF2",
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 14,
-  },
-  editBtnText: {
-    color: "#000000",
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  editFormCard: {
-    borderRadius: 20,
-    padding: 16,
-    borderWidth: 1,
-    gap: 10,
-  },
-  formRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 4,
-  },
-  formLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  formInput: {
-    fontSize: 15,
-    fontWeight: "600",
-    textAlign: "right",
-    minWidth: 140,
-  },
-  groupWrapper: {
-    gap: 8,
-  },
-  sectionHeaderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 4,
-  },
-  sectionHeader: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-  },
-  addAccountPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  addAccountPillText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#AB9FF2",
-  },
-  cardContainer: {
-    borderRadius: 22,
-    overflow: "hidden",
-    borderWidth: 1,
-  },
-  accountItemRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  accountIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconWrapDark: {
-    backgroundColor: "#1C1C1E",
-  },
-  iconWrapLight: {
-    backgroundColor: "#F5F2FF",
-  },
-  accountInfoCol: {
-    flex: 1,
-    gap: 2,
-  },
-  accountName: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  accountMeta: {
-    fontSize: 11,
-    fontWeight: "500",
-  },
-  accountBalance: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  accountRightGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  deleteAccountBtn: {
-    padding: 4,
-  },
-  emptyAccountRow: {
-    padding: 24,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  emptyAccountText: {
-    fontSize: 13,
-    textAlign: "center",
-  },
-  themeSegmentRow: {
-    flexDirection: "row",
-    padding: 4,
-    gap: 4,
-  },
-  themeSegmentBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    height: 38,
-    borderRadius: 12,
-  },
-  themeSegmentActiveDark: {
-    backgroundColor: "#3A3B3E",
-  },
-  themeSegmentActiveLight: {
-    backgroundColor: "#E5E5EA",
-  },
-  themeSegmentText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  themeTextActiveDark: {
-    color: "#FFFFFF",
-  },
-  themeTextActiveLight: {
-    color: "#000000",
-  },
-  themeTextInactive: {
-    color: "#8E8E93",
-  },
-  settingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-  },
-  labelWithIcon: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  iconPill: {
-    width: 32,
-    height: 32,
-    borderRadius: 9,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  settingLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  resetButton: {
-    borderRadius: 18,
-    padding: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-  },
-  resetButtonText: {
-    color: "#FF3B30",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 16,
-  },
-  dividerDark: {
-    backgroundColor: "rgba(255, 255, 255, 0.10)",
-  },
-  dividerLight: {
-    backgroundColor: "rgba(0, 0, 0, 0.08)",
-  },
-  cardDark: {
-    backgroundColor: "#202227",
-    borderColor: "rgba(255, 255, 255, 0.08)",
-  },
-  cardLight: {
-    backgroundColor: "#F5F5F5",
-    borderColor: "rgba(0, 0, 0, 0)",
-  },
-  textPrimaryDark: {
-    color: "#E4E5EB",
-  },
-  textPrimaryLight: {
-    color: "#1E1F24",
-  },
-  textSecondaryDark: {
-    color: "#989BA5",
-  },
-  textSecondaryLight: {
-    color: "#6C6C70",
-  },
-});

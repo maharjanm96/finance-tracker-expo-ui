@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import { AppButton } from "@/components/ui/app-button";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { ExpenseCategory, TransactionType } from "@/domain/types";
@@ -517,24 +518,23 @@ function AddTransactionForm({
       </ScrollView>
 
       {/* Save Button */}
-      <Pressable
-        onPress={handleSave}
-        disabled={!isSaveReady}
-        style={({ pressed }) => [
-          styles.saveBtn,
-          isDark ? styles.saveBtnDark : styles.saveBtnLight,
-          !isSaveReady && styles.saveBtnDisabled,
-          pressed && { opacity: 0.85 },
-        ]}
-      >
-        <Text style={isDark ? styles.saveBtnTextDark : styles.saveBtnTextLight}>
-          {type === "expense"
+      <AppButton
+        title={
+          type === "expense"
             ? "Save Expense"
             : type === "income"
               ? "Save Income"
-              : "Execute Transfer"}
-        </Text>
-      </Pressable>
+              : "Execute Transfer"
+        }
+        icon={{
+          ios: "checkmark",
+          android: "check",
+          web: "check",
+        }}
+        onPress={handleSave}
+        disabled={!isSaveReady}
+        className="mt-2 mb-1"
+      />
     </View>
   );
 }

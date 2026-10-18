@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 
+import { AppButton } from "@/components/ui/app-button";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { AccountType } from "@/domain/types";
@@ -178,17 +179,17 @@ function CreateAccountForm({ onClose }: { onClose: () => void }) {
       </ScrollView>
 
       {/* Create Button */}
-      <Pressable
+      <AppButton
+        title="Create Account"
+        icon={{
+          ios: "plus",
+          android: "add",
+          web: "add",
+        }}
         onPress={handleSave}
         disabled={!isSaveReady}
-        className={`h-[52px] rounded-2xl items-center justify-center mt-1 bg-[#AB9FF2] active:opacity-85 ${
-          !isSaveReady ? "opacity-35" : ""
-        }`}
-      >
-        <Text className="text-black text-[17px] font-bold">
-          Create Account
-        </Text>
-      </Pressable>
+        className="mt-2"
+      />
     </View>
   );
 }

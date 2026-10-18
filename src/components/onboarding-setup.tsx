@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 
 import { NativeGlassView } from '@/components/native-glass';
+import { AppButton } from '@/components/ui/app-button';
 import { useExpense } from '@/context/expense-context';
 import { useAppTheme } from '@/context/theme-context';
 
@@ -147,17 +148,18 @@ export function OnboardingSetup() {
             </View>
 
             {/* Submit Action */}
-            <Pressable
+            <AppButton
+              title="Get Started"
+              icon={{
+                ios: "arrow.right",
+                android: "arrow_forward",
+                web: "arrow_forward",
+              }}
+              iconPosition="right"
               onPress={handleFinish}
               disabled={!isReady}
-              style={({ pressed }) => [
-                styles.submitBtn,
-                isDark ? styles.submitBtnDark : styles.submitBtnLight,
-                !isReady && styles.submitBtnDisabled,
-                pressed && { opacity: 0.85 },
-              ]}>
-              <Text style={isDark ? styles.submitBtnTextDark : styles.submitBtnTextLight}>Get Started</Text>
-            </Pressable>
+              className="mt-2"
+            />
           </View>
         </KeyboardAvoidingView>
       </View>
