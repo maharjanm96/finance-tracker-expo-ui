@@ -1,5 +1,4 @@
 import { SymbolView } from "expo-symbols";
-import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { useExpense } from "@/context/expense-context";
@@ -46,7 +45,7 @@ export function AccountCarousel({
       <View className="flex-row items-center justify-between px-0.5">
         <View className="flex-row items-center gap-2">
           <Text className="text-xs font-bold tracking-wider uppercase text-text-secondary-light dark:text-text-secondary-dark">
-            YOUR CARDS & ACCOUNTS
+            YOUR ACCOUNTS
           </Text>
           <View className="px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10">
             <Text className="text-[11px] font-bold text-text-secondary-light dark:text-text-secondary-dark">

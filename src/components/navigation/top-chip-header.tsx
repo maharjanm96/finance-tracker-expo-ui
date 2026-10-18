@@ -86,7 +86,7 @@ export function TopChipHeader({
             accessibilityRole="button"
             accessibilityLabel="Profile avatar"
           >
-            <Text className="text-2xl select-none font-extrabold text-brand-dark-purple">
+            <Text className="text-2xl select-none font-black text-brand-dark-purple">
               {profile.name ? profile.name.charAt(0).toUpperCase() : "😎"}
             </Text>
           </Pressable>

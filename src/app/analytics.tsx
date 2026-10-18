@@ -321,7 +321,7 @@ export default function AnalyticsScreen() {
             </View>
 
             {/* Time Range Selector */}
-            <View className="flex-row h-11 rounded-2xl p-1 bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5">
+            <View className="flex-row h-11 rounded-3xl p-1 bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5">
               {(
                 [
                   { id: "week", label: "Week" },
@@ -337,17 +337,15 @@ export default function AnalyticsScreen() {
                       setTimeRange(option.id);
                       setSelectedBarIndex(null);
                     }}
-                    className={`flex-1 items-center justify-center rounded-xl transition-all ${
-                      isActive
-                        ? "bg-white dark:bg-chip-dark shadow-xs"
-                        : "bg-transparent"
+                    className={`flex-1 items-center justify-center rounded-3xl transition-all ${
+                      isActive ? "bg-brand-perano shadow-xs" : "bg-transparent"
                     }`}
                   >
                     <Text
                       className={`text-xs font-semibold ${
                         isActive
-                          ? "text-brand-dark-purple dark:text-brand-perano font-bold"
-                          : "text-text-secondary-light dark:text-text-secondary-dark"
+                          ? "text-brand-dark-purple dark:text-light font-bold"
+                          : "text-text-secondary-dark dark:text-text-secondary-light"
                       }`}
                     >
                       {option.label}

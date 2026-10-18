@@ -321,18 +321,18 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
           <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-1">
             APPEARANCE
           </Text>
-          <View className="p-1.5 rounded-2xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 flex-row">
+          <View className="p-1.5 rounded-3xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 flex-row">
             {(["system", "light", "dark"] as ThemeMode[]).map((mode) => {
               const isActive = themeMode === mode;
               return (
                 <Pressable
                   key={mode}
                   onPress={() => setThemeMode(mode)}
-                  className={`flex-1 py-2.5 rounded-xl flex-row items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-2.5 rounded-3xl flex-row items-center justify-center gap-1.5 ${
                     isActive
                       ? isDark
-                        ? "bg-[#2A2D35] shadow-xs"
-                        : "bg-white shadow-xs"
+                        ? "bg-brand-perano shadow-xs"
+                        : "bg-brand-perano shadow-xs"
                       : "bg-transparent"
                   }`}
                 >
@@ -361,7 +361,7 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
                     tintColor={
                       isActive
                         ? isDark
-                          ? "#E4E5EB"
+                          ? "#1E1F24"
                           : "#1E1F24"
                         : isDark
                           ? "#989BA5"
@@ -371,8 +371,8 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
                   <Text
                     className={`text-[13px] capitalize ${
                       isActive
-                        ? "font-bold text-text-light dark:text-text-dark"
-                        : "font-semibold text-text-secondary-light dark:text-text-secondary-dark"
+                        ? "font-bold text-text-light dark:text-text-light"
+                        : "font-semibold text-text-secondary-light dark:text-text-secondary-light"
                     }`}
                   >
                     {mode}

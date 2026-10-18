@@ -115,7 +115,7 @@ export default function TransactionsScreen({
             </View>
 
             {/* Type Filter Chips (All, Expense, Income, Transfer) */}
-            <View className="flex-row h-11 rounded-2xl bg-card-light dark:bg-card-dark p-1 border border-black/5 dark:border-white/5 gap-1">
+            <View className="flex-row h-11 rounded-3xl bg-card-light dark:bg-card-dark p-1 border border-black/5 dark:border-white/5 gap-1">
               {(["all", "expense", "income", "transfer"] as FilterType[]).map(
                 (ft) => {
                   const isSelected = filterType === ft;
@@ -132,7 +132,7 @@ export default function TransactionsScreen({
                     <Pressable
                       key={ft}
                       onPress={() => setFilterType(ft)}
-                      className={`flex-1 rounded-xl items-center justify-center active:opacity-80 ${
+                      className={`flex-1 rounded-3xl items-center justify-center active:opacity-80 ${
                         isSelected ? "bg-brand-perano" : ""
                       }`}
                     >
