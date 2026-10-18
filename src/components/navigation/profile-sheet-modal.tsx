@@ -1,8 +1,6 @@
-import { BottomSheet, RNHostView } from "@expo/ui";
-import { View } from "react-native";
+import { Modal, View } from "react-native";
 
 import ProfileScreen from "@/app/profile";
-import { useAppTheme } from "@/context/theme-context";
 
 interface ProfileSheetModalProps {
   visible: boolean;
@@ -13,22 +11,16 @@ export function ProfileSheetModal({
   visible,
   onClose,
 }: ProfileSheetModalProps) {
-  const { isDark } = useAppTheme();
-
   return (
-    <BottomSheet
-      isPresented={visible}
-      onDismiss={onClose}
-      snapPoints={["full"]}
-      showDragIndicator
-      containerColor={isDark ? "#18191D" : "#FFFFFF"}
-      contentPadding={0}
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      onRequestClose={onClose}
     >
-      <RNHostView matchContents={false}>
-        <View className="flex-1 bg-surface-light dark:bg-surface-dark">
-          <ProfileScreen onClose={onClose} />
-        </View>
-      </RNHostView>
-    </BottomSheet>
+      <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+        <ProfileScreen onClose={onClose} />
+      </View>
+    </Modal>
   );
 }

@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useState } from "react";
 import {
@@ -27,6 +28,7 @@ interface ProfileScreenProps {
 }
 
 export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark, themeMode, setThemeMode } = useAppTheme();
 
@@ -54,6 +56,16 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
   const [notifications, setNotifications] = useState(true);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+
+  const handleBack = () => {
+    if (onClose) {
+      onClose();
+    } else if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/" as never);
+    }
+  };
 
   const handleDeleteAccount = (accountName: string, accountId: string) => {
     Alert.alert(
@@ -101,47 +113,64 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       className="flex-1 bg-bg-light dark:bg-bg-dark"
     >
-      {/* ─── Top Header Bar ─── */}
+      {/* ─── Top Page Header Bar ─── */}
       <View
-        className="px-5 pt-3 pb-3 flex-row items-center justify-between border-b border-black/5 dark:border-white/5"
-        style={{ paddingTop: onClose ? 12 : Math.max(insets.top, 16) }}
+        className="px-5 pb-3 flex-row items-center justify-between border-b border-black/5 dark:border-white/5 bg-bg-light dark:bg-bg-dark z-10"
+        style={{ paddingTop: Math.max(insets.top, 16) + 6 }}
       >
-        <View className="flex-1">
-          <Text className="text-[12px] mt-4 font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase">
-            SETTINGS & PROFILE
-          </Text>
-          <Text className="text-2xl font-black tracking-tight text-text-light dark:text-text-dark mt-0.5">
-            Account
-          </Text>
-        </View>
-
-        {onClose && (
+        <View className="flex-row items-center gap-3">
           <Pressable
-            onPress={onClose}
+            onPress={handleBack}
             hitSlop={12}
-            className="w-9 h-9 rounded-full items-center justify-center bg-black/5 dark:bg-white/10 active:opacity-70 ml-3"
+            className="w-10 h-10 rounded-full items-center justify-center bg-black/5 dark:bg-white/10 active:opacity-70"
             accessibilityRole="button"
-            accessibilityLabel="Close profile"
+            accessibilityLabel="Go back"
           >
             <SymbolView
               name={{
-                ios: "xmark",
-                android: "close",
-                web: "close",
+                ios: "chevron.backward",
+                android: "arrow_back",
+                web: "arrow_back",
               }}
-              size={18}
+              size={20}
               tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
             />
+          </Pressable>
+
+          <View>
+            <Text className="text-[11px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase">
+              SETTINGS & PROFILE
+            </Text>
+            <Text className="text-xl font-black tracking-tight text-text-light dark:text-text-dark">
+              Account
+            </Text>
+          </View>
+        </View>
+
+        {isEditing && (
+          <Pressable
+            onPress={handleSaveProfile}
+            hitSlop={8}
+            className="px-3.5 py-1.5 rounded-full bg-brand-perano active:opacity-80"
+          >
+            <Text className="text-xs font-bold text-brand-dark-purple">
+              Save
+            </Text>
           </Pressable>
         )}
       </View>
 
       <ScrollView
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled={true}
+        bounces={true}
+        alwaysBounceVertical={true}
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 16,
-          paddingBottom: Math.max(insets.bottom + 40, 60),
+          paddingBottom: Math.max(insets.bottom + 60, 80),
           gap: 20,
         }}
       >
@@ -163,7 +192,8 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
               numberOfLines={1}
               className="text-[13px] font-medium text-text-secondary-light dark:text-text-secondary-dark mt-0.5"
             >
-              Income: {formatCurrency(profile.monthlyIncome, currencySymbol)} / mo
+              Income: {formatCurrency(profile.monthlyIncome, currencySymbol)} /
+              mo
             </Text>
           </View>
           <Pressable
