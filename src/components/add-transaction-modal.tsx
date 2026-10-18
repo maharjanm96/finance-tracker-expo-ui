@@ -98,7 +98,7 @@ function AddTransactionForm({
   };
 
   return (
-    <View className="flex-1 px-5 pt-3 pb-6 gap-4 bg-bg-light dark:bg-bg-dark">
+    <View className="flex-1 px-5 pt-3 pb-6 gap-4 bg-surface-light dark:bg-surface-dark">
       {/* ─── Sheet Header ─── */}
       <View className="flex-row items-center justify-between pt-1.5 pb-1">
         <Text className="text-[20px] font-bold tracking-tight text-text-light dark:text-text-dark">
@@ -447,7 +447,7 @@ export function AddTransactionModal({
       onDismiss={onClose}
       snapPoints={["full"]}
       showDragIndicator
-      containerColor={isDark ? "#121316" : "#FFFFFF"}
+      containerColor={isDark ? "#18191D" : "#FFFFFF"}
       contentPadding={0}
     >
       <RNHostView matchContents={false}>

@@ -21,7 +21,7 @@ export function ProfileSheetModal({
       onDismiss={onClose}
       snapPoints={["full"]}
       showDragIndicator
-      containerColor={isDark ? "#121316" : "#FFFFFF"}
+      containerColor={isDark ? "#18191D" : "#FFFFFF"}
       contentPadding={0}
     >
       <RNHostView matchContents={false}>

@@ -60,10 +60,10 @@ function TransactionDetailsContent({
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-black px-5 pt-3 pb-8">
+    <View className="flex-1 bg-surface-light dark:bg-surface-dark px-5 pt-3 pb-8">
       {/* Header */}
       <View className="flex-row items-center justify-between py-3">
-        <Text className="text-xl font-bold tracking-tight text-black dark:text-white">
+        <Text className="text-xl font-bold tracking-tight text-text-primary-light dark:text-text-primary-dark">
           Transaction Details
         </Text>
         <Pressable
@@ -80,7 +80,7 @@ function TransactionDetailsContent({
               web: "cancel",
             }}
             size={24}
-            tintColor={isDark ? "#8E8E93" : "#AEAEB2"}
+            tintColor={isDark ? "#989BA5" : "#AEAEB2"}
           />
         </Pressable>
       </View>
@@ -124,29 +124,29 @@ function TransactionDetailsContent({
         </View>
 
         {/* Grouped Information List */}
-        <View className="rounded-2xl px-4 py-1.5 bg-[#f5f5f5] dark:bg-[#1C1C1E]">
+        <View className="rounded-2xl px-4 py-1.5 bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/10">
           {/* Title Row */}
           <View className="flex-row items-center justify-between py-3.5 gap-3">
-            <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
+            <Text className="text-[14px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
               Title
             </Text>
             <Text
               numberOfLines={2}
-              className="text-[15px] font-bold text-black dark:text-white max-w-[200px] text-right"
+              className="text-[14px] font-bold text-text-primary-light dark:text-text-primary-dark max-w-[200px] text-right"
             >
               {transaction.title}
             </Text>
           </View>
 
-          <View className="h-[0.5px] w-full bg-black/5 dark:bg-white/10" />
+          <View className="h-[0.5px] w-full bg-black/5 dark:border-t dark:border-white/10" />
 
           {/* Category Row */}
           <View className="flex-row items-center justify-between py-3.5 gap-3">
-            <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
+            <Text className="text-[14px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
               Category
             </Text>
             <View className="flex-row items-center gap-2">
-              <View className="w-7 h-7 rounded-full items-center justify-center bg-[#E5E5EA] dark:bg-[#2C2C2E]">
+              <View className="w-7 h-7 rounded-full items-center justify-center bg-black/5 dark:bg-white/10">
                 <SymbolView
                   name={{
                     ios: isTransfer
@@ -155,60 +155,60 @@ function TransactionDetailsContent({
                     android: isTransfer ? "sync_alt" : categoryMeta.material,
                     web: isTransfer ? "sync_alt" : categoryMeta.material,
                   }}
-                  size={16}
+                  size={15}
                   tintColor={
-                    isTransfer ? "#AB9FF2" : isDark ? "#FFFFFF" : "#000000"
+                    isTransfer ? "#AB9FF2" : isDark ? "#E4E5EB" : "#1E1F24"
                   }
                 />
               </View>
-              <Text className="text-[15px] font-semibold text-black dark:text-white">
+              <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
                 {transaction.category}
               </Text>
             </View>
           </View>
 
-          <View className="h-[0.5px] w-full bg-black/5 dark:bg-white/10" />
+          <View className="h-[0.5px] w-full bg-black/5 dark:border-t dark:border-white/10" />
 
           {/* Account Row */}
           {isTransfer ? (
             <>
               <View className="flex-row items-center justify-between py-3.5 gap-3">
-                <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
+                <Text className="text-[14px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                   From
                 </Text>
-                <Text className="text-[15px] font-semibold text-black dark:text-white">
+                <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
                   {sourceAccount?.name ?? "Source Account"}
                 </Text>
               </View>
-              <View className="h-[0.5px] w-full bg-black/5 dark:bg-white/10" />
+              <View className="h-[0.5px] w-full bg-black/5 dark:border-t dark:border-white/10" />
               <View className="flex-row items-center justify-between py-3.5 gap-3">
-                <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
+                <Text className="text-[14px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                   To
                 </Text>
-                <Text className="text-[15px] font-semibold text-black dark:text-white">
+                <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
                   {destAccount?.name ?? "Destination Account"}
                 </Text>
               </View>
             </>
           ) : (
             <View className="flex-row items-center justify-between py-3.5 gap-3">
-              <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
+              <Text className="text-[14px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                 Account
               </Text>
-              <Text className="text-[15px] font-semibold text-black dark:text-white">
+              <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
                 {sourceAccount?.name ?? "Connected Account"}
               </Text>
             </View>
           )}
 
-          <View className="h-[0.5px] w-full bg-black/5 dark:bg-white/10" />
+          <View className="h-[0.5px] w-full bg-black/5 dark:border-t dark:border-white/10" />
 
           {/* Date Row */}
           <View className="flex-row items-center justify-between py-3.5 gap-3">
-            <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
+            <Text className="text-[14px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
               Date
             </Text>
-            <Text className="text-[15px] font-semibold text-black dark:text-white">
+            <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark">
               {transaction.date}
             </Text>
           </View>
@@ -216,12 +216,12 @@ function TransactionDetailsContent({
           {/* Notes Row if present */}
           {transaction.note ? (
             <>
-              <View className="h-[0.5px] w-full bg-black/5 dark:bg-white/10" />
+              <View className="h-[0.5px] w-full bg-black/5 dark:border-t dark:border-white/10" />
               <View className="flex-row items-center justify-between py-3.5 gap-3">
-                <Text className="text-[15px] font-medium text-neutral-500 dark:text-neutral-400">
+                <Text className="text-[14px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                   Note
                 </Text>
-                <Text className="text-[15px] font-semibold text-black dark:text-white max-w-[200px] text-right">
+                <Text className="text-[14px] font-semibold text-text-primary-light dark:text-text-primary-dark max-w-[200px] text-right">
                   {transaction.note}
                 </Text>
               </View>
@@ -234,7 +234,7 @@ function TransactionDetailsContent({
           title="Delete Transaction"
           variant="danger"
           icon={{ ios: "trash.fill", android: "delete", web: "delete" }}
-          iconSize={20}
+          iconSize={18}
           onPress={handleDelete}
           className="mt-2"
         />
@@ -256,7 +256,7 @@ export function TransactionDetailsModal({
       onDismiss={onClose}
       snapPoints={["full"]}
       showDragIndicator
-      containerColor={isDark ? "#121214" : "#FFFFFF"}
+      containerColor={isDark ? "#18191D" : "#FFFFFF"}
       contentPadding={0}
     >
       <RNHostView matchContents={false}>

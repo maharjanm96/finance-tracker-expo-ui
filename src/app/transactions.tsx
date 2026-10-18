@@ -103,7 +103,7 @@ export default function TransactionsScreen({
             { useNativeDriver: true },
           )}
         >
-          <View className="w-full max-w-[800px] px-4 gap-4">
+          <View className="w-full max-w-200 px-4 gap-4">
             {/* Header */}
             <View className="pt-2">
               <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase">

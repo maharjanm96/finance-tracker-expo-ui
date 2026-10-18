@@ -67,14 +67,14 @@ export default function HomeScreen({
             { useNativeDriver: true },
           )}
         >
-          <View className="w-full max-w-[800px] px-4 gap-5">
+          <View className="w-full max-w-200 px-4 gap-5">
             {/* Top Bar: Clean Title & Global Functional Currency Flag Pill */}
             <View className="flex-row items-center justify-between mt-2 px-0.5">
               <View>
-                <Text className="text-2xl font-black tracking-tight text-text-light dark:text-text-dark">
+                <Text className="text-2xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
                   Hello,
                 </Text>
-                <Text className="text-2xl font-black tracking-tight text-text-light dark:text-text-dark">
+                <Text className="text-3xl font-black tracking-tight text-text-light dark:text-text-dark">
                   {profile.name}
                 </Text>
                 <Text className="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
