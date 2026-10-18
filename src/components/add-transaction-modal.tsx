@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -99,27 +98,17 @@ function AddTransactionForm({
   };
 
   return (
-    <View
-      style={[
-        styles.formContainer,
-        isDark ? styles.sheetDark : styles.sheetLight,
-      ]}
-    >
-      {/* Sheet Header */}
-      <View style={styles.headerRow}>
-        <Text
-          style={[
-            styles.headerTitle,
-            isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-          ]}
-        >
+    <View className="flex-1 px-5 pt-3 pb-6 gap-4 bg-bg-light dark:bg-bg-dark">
+      {/* ─── Sheet Header ─── */}
+      <View className="flex-row items-center justify-between pt-1.5 pb-1">
+        <Text className="text-[20px] font-bold tracking-tight text-text-light dark:text-text-dark">
           {type === "expense"
             ? "Record Expense"
             : type === "income"
               ? "Record Income"
               : "Transfer Funds"}
         </Text>
-        <Pressable onPress={onClose} hitSlop={12} style={styles.closeBtn}>
+        <Pressable onPress={onClose} hitSlop={12} className="p-1 active:opacity-70">
           <SymbolView
             name={{
               ios: "xmark.circle.fill",
@@ -127,119 +116,80 @@ function AddTransactionForm({
               web: "cancel",
             }}
             size={24}
-            tintColor={isDark ? "#8E8E93" : "#8E8E93"}
+            tintColor={isDark ? "#989BA5" : "#8E8E93"}
           />
         </Pressable>
       </View>
 
-      {/* 3-Way Segmented Control: Expense | Income | Transfer */}
-      <View
-        style={[
-          styles.typeToggleRow,
-          isDark ? styles.toggleDark : styles.toggleLight,
-        ]}
-      >
-        <Pressable
-          onPress={() => setType("expense")}
-          style={[
-            styles.typeOption,
-            type === "expense" && styles.typeExpenseActive,
-          ]}
-        >
-          <Text
-            style={[
-              styles.typeText,
-              type === "expense"
-                ? styles.typeTextActive
-                : isDark
-                  ? styles.typeTextInactiveDark
-                  : styles.typeTextInactiveLight,
-            ]}
-          >
-            Expense
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => setType("income")}
-          style={[
-            styles.typeOption,
-            type === "income" && styles.typeIncomeActive,
-          ]}
-        >
-          <Text
-            style={[
-              styles.typeText,
-              type === "income"
-                ? styles.typeTextActive
-                : isDark
-                  ? styles.typeTextInactiveDark
-                  : styles.typeTextInactiveLight,
-            ]}
-          >
-            Income
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => setType("transfer")}
-          style={[
-            styles.typeOption,
-            type === "transfer" && styles.typeTransferActive,
-          ]}
-        >
-          <Text
-            style={[
-              styles.typeText,
-              type === "transfer"
-                ? styles.typeTextActive
-                : isDark
-                  ? styles.typeTextInactiveDark
-                  : styles.typeTextInactiveLight,
-            ]}
-          >
-            Transfer
-          </Text>
-        </Pressable>
+      {/* ─── 3-Way Segmented Control: Expense | Income | Transfer ─── */}
+      <View className="flex-row h-12 rounded-2xl bg-card-light dark:bg-card-dark p-1 border border-black/5 dark:border-white/5 gap-1">
+        {(["expense", "income", "transfer"] as const).map((t) => {
+          const isActive = type === t;
+          return (
+            <Pressable
+              key={t}
+              onPress={() => setType(t)}
+              className={`flex-1 rounded-xl items-center justify-center active:opacity-80 ${
+                isActive
+                  ? t === "expense"
+                    ? "bg-red-500/15"
+                    : t === "income"
+                      ? "bg-emerald-500/15"
+                      : "bg-brand-perano"
+                  : ""
+              }`}
+            >
+              <Text
+                className={`text-[14px] font-bold capitalize ${
+                  isActive
+                    ? t === "expense"
+                      ? "text-[#FF3B30]"
+                      : t === "income"
+                        ? "text-[#2EC08B]"
+                        : "text-brand-dark-purple"
+                    : isDark
+                      ? "text-text-secondary-dark"
+                      : "text-text-secondary-light"
+                }`}
+              >
+                {t}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
-      {/* Amount Input */}
-      <View style={styles.amountInputWrap}>
-        <Text style={styles.currencyPrefix}>Rs.</Text>
+      {/* ─── Big Amount Hero Input ─── */}
+      <View className="flex-row items-center justify-center py-3 px-2">
+        <Text className="text-3xl font-extrabold text-[#AB9FF2] mr-2">
+          Rs.
+        </Text>
         <TextInput
           value={amount}
           onChangeText={setAmount}
           placeholder="0.00"
-          placeholderTextColor="#8E8E93"
+          placeholderTextColor={isDark ? "#6C6C70" : "#8E8E93"}
           keyboardType="decimal-pad"
           autoFocus
-          style={[
-            styles.amountInput,
-            isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-          ]}
+          className="text-4xl font-extrabold text-text-light dark:text-text-dark tracking-tight min-w-[120px]"
         />
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.formScroll}
+        contentContainerStyle={{ gap: 16, paddingBottom: 16 }}
       >
-        {/* Account Selector(s) */}
+        {/* ─── Pay From Account (Expense) ─── */}
         {type === "expense" && (
-          <View style={styles.inputGroup}>
-            <Text
-              style={[
-                styles.label,
-                isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-              ]}
-            >
+          <View className="gap-2">
+            <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-0.5">
               PAY FROM ACCOUNT
             </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chipsScroll}
+              contentContainerStyle={{ gap: 8 }}
             >
               {accounts.map((acc) => {
                 const isSelected = sourceAccountId === acc.id;
@@ -247,26 +197,22 @@ function AddTransactionForm({
                   <Pressable
                     key={acc.id}
                     onPress={() => setSourceAccountId(acc.id)}
-                    style={[
-                      styles.accountChip,
-                      isDark ? styles.chipDark : styles.chipLight,
-                      isSelected &&
-                        (isDark
-                          ? styles.chipSelectedDark
-                          : styles.chipSelectedLight),
-                    ]}
+                    className={`px-4 py-2.5 rounded-full border active:opacity-80 ${
+                      isSelected
+                        ? "bg-brand-perano border-brand-perano"
+                        : isDark
+                          ? "bg-chip-dark border-white/5"
+                          : "bg-chip-light border-black/5"
+                    }`}
                   >
                     <Text
-                      style={[
-                        styles.accountChipText,
+                      className={`text-[13px] font-bold ${
                         isSelected
-                          ? isDark
-                            ? styles.chipTextSelectedDark
-                            : styles.chipTextSelectedLight
+                          ? "text-brand-dark-purple"
                           : isDark
-                            ? styles.chipTextInactiveDark
-                            : styles.chipTextInactiveLight,
-                      ]}
+                            ? "text-text-secondary-dark"
+                            : "text-text-secondary-light"
+                      }`}
                     >
                       {acc.name}
                     </Text>
@@ -277,20 +223,16 @@ function AddTransactionForm({
           </View>
         )}
 
+        {/* ─── Deposit To Account (Income) ─── */}
         {type === "income" && (
-          <View style={styles.inputGroup}>
-            <Text
-              style={[
-                styles.label,
-                isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-              ]}
-            >
+          <View className="gap-2">
+            <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-0.5">
               DEPOSIT TO ACCOUNT
             </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chipsScroll}
+              contentContainerStyle={{ gap: 8 }}
             >
               {accounts.map((acc) => {
                 const isSelected = sourceAccountId === acc.id;
@@ -298,26 +240,22 @@ function AddTransactionForm({
                   <Pressable
                     key={acc.id}
                     onPress={() => setSourceAccountId(acc.id)}
-                    style={[
-                      styles.accountChip,
-                      isDark ? styles.chipDark : styles.chipLight,
-                      isSelected &&
-                        (isDark
-                          ? styles.chipSelectedDark
-                          : styles.chipSelectedLight),
-                    ]}
+                    className={`px-4 py-2.5 rounded-full border active:opacity-80 ${
+                      isSelected
+                        ? "bg-brand-perano border-brand-perano"
+                        : isDark
+                          ? "bg-chip-dark border-white/5"
+                          : "bg-chip-light border-black/5"
+                    }`}
                   >
                     <Text
-                      style={[
-                        styles.accountChipText,
+                      className={`text-[13px] font-bold ${
                         isSelected
-                          ? isDark
-                            ? styles.chipTextSelectedDark
-                            : styles.chipTextSelectedLight
+                          ? "text-brand-dark-purple"
                           : isDark
-                            ? styles.chipTextInactiveDark
-                            : styles.chipTextInactiveLight,
-                      ]}
+                            ? "text-text-secondary-dark"
+                            : "text-text-secondary-light"
+                      }`}
                     >
                       {acc.name}
                     </Text>
@@ -328,26 +266,15 @@ function AddTransactionForm({
           </View>
         )}
 
+        {/* ─── Transfer Route (Transfer) ─── */}
         {type === "transfer" && (
-          <View style={styles.inputGroup}>
-            <Text
-              style={[
-                styles.label,
-                isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-              ]}
-            >
+          <View className="gap-2">
+            <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-0.5">
               TRANSFER ROUTE
             </Text>
-            <View style={styles.transferRoutesWrap}>
-              <View style={styles.routeCol}>
-                <Text
-                  style={[
-                    styles.routeSublabel,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
+            <View className="flex-row gap-3">
+              <View className="flex-1 gap-1.5 p-3 rounded-2xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5">
+                <Text className="text-[11px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase mb-1">
                   FROM
                 </Text>
                 {accounts.map((acc) => {
@@ -356,27 +283,23 @@ function AddTransactionForm({
                     <Pressable
                       key={`from-${acc.id}`}
                       onPress={() => setSourceAccountId(acc.id)}
-                      style={[
-                        styles.routeRowPill,
-                        isDark ? styles.chipDark : styles.chipLight,
-                        isSelected &&
-                          (isDark
-                            ? styles.chipSelectedDark
-                            : styles.chipSelectedLight),
-                      ]}
+                      className={`px-3 py-2 rounded-xl border active:opacity-80 ${
+                        isSelected
+                          ? "bg-brand-perano border-brand-perano"
+                          : isDark
+                            ? "bg-chip-dark border-white/5"
+                            : "bg-chip-light border-black/5"
+                      }`}
                     >
                       <Text
                         numberOfLines={1}
-                        style={[
-                          styles.routePillText,
+                        className={`text-[13px] font-bold ${
                           isSelected
-                            ? isDark
-                              ? styles.chipTextSelectedDark
-                              : styles.chipTextSelectedLight
+                            ? "text-brand-dark-purple"
                             : isDark
-                              ? styles.chipTextInactiveDark
-                              : styles.chipTextInactiveLight,
-                        ]}
+                              ? "text-text-secondary-dark"
+                              : "text-text-secondary-light"
+                        }`}
                       >
                         {acc.name}
                       </Text>
@@ -385,47 +308,37 @@ function AddTransactionForm({
                 })}
               </View>
 
-              <View style={styles.routeCol}>
-                <Text
-                  style={[
-                    styles.routeSublabel,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
+              <View className="flex-1 gap-1.5 p-3 rounded-2xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5">
+                <Text className="text-[11px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase mb-1">
                   TO
                 </Text>
                 {accounts.map((acc) => {
                   const isSelected = destAccountId === acc.id;
-                  const isSameAsSource = sourceAccountId === acc.id;
+                  const isSame = sourceAccountId === acc.id;
                   return (
                     <Pressable
                       key={`to-${acc.id}`}
-                      disabled={isSameAsSource}
+                      disabled={isSame}
                       onPress={() => setDestAccountId(acc.id)}
-                      style={[
-                        styles.routeRowPill,
-                        isDark ? styles.chipDark : styles.chipLight,
-                        isSelected &&
-                          (isDark
-                            ? styles.chipSelectedDark
-                            : styles.chipSelectedLight),
-                        isSameAsSource && { opacity: 0.3 },
-                      ]}
+                      className={`px-3 py-2 rounded-xl border active:opacity-80 ${
+                        isSame ? "opacity-30" : ""
+                      } ${
+                        isSelected
+                          ? "bg-brand-perano border-brand-perano"
+                          : isDark
+                            ? "bg-chip-dark border-white/5"
+                            : "bg-chip-light border-black/5"
+                      }`}
                     >
                       <Text
                         numberOfLines={1}
-                        style={[
-                          styles.routePillText,
+                        className={`text-[13px] font-bold ${
                           isSelected
-                            ? isDark
-                              ? styles.chipTextSelectedDark
-                              : styles.chipTextSelectedLight
+                            ? "text-brand-dark-purple"
                             : isDark
-                              ? styles.chipTextInactiveDark
-                              : styles.chipTextInactiveLight,
-                        ]}
+                              ? "text-text-secondary-dark"
+                              : "text-text-secondary-light"
+                        }`}
                       >
                         {acc.name}
                       </Text>
@@ -437,14 +350,9 @@ function AddTransactionForm({
           </View>
         )}
 
-        {/* Title / Note */}
-        <View style={styles.inputGroup}>
-          <Text
-            style={[
-              styles.label,
-              isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-            ]}
-          >
+        {/* ─── Note / Merchant Input ─── */}
+        <View className="gap-2">
+          <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-0.5">
             {type === "transfer" ? "NOTE (OPTIONAL)" : "NOTE / MERCHANT"}
           </Text>
           <TextInput
@@ -456,29 +364,20 @@ function AddTransactionForm({
                 : "e.g. Grocery Store, Salary, Coffee"
             }
             placeholderTextColor={isDark ? "#8E8E93" : "#8E8E93"}
-            style={[
-              styles.textInput,
-              isDark ? styles.inputDark : styles.inputLight,
-              isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-            ]}
+            className="h-12 px-4 rounded-2xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 text-[15px] font-semibold text-text-light dark:text-text-dark"
           />
         </View>
 
-        {/* Category Selector (For Expense & Income) */}
+        {/* ─── Category Selector ─── */}
         {!isTransfer && (
-          <View style={styles.inputGroup}>
-            <Text
-              style={[
-                styles.label,
-                isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-              ]}
-            >
+          <View className="gap-2">
+            <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-0.5">
               CATEGORY
             </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chipsScroll}
+              contentContainerStyle={{ gap: 8 }}
             >
               {CATEGORIES.map((cat) => {
                 const isSelected = category === cat;
@@ -486,26 +385,22 @@ function AddTransactionForm({
                   <Pressable
                     key={cat}
                     onPress={() => setCategory(cat)}
-                    style={[
-                      styles.categoryChip,
-                      isDark ? styles.chipDark : styles.chipLight,
-                      isSelected &&
-                        (isDark
-                          ? styles.chipSelectedDark
-                          : styles.chipSelectedLight),
-                    ]}
+                    className={`px-4 py-2.5 rounded-full border active:opacity-80 ${
+                      isSelected
+                        ? "bg-brand-perano border-brand-perano"
+                        : isDark
+                          ? "bg-chip-dark border-white/5"
+                          : "bg-chip-light border-black/5"
+                    }`}
                   >
                     <Text
-                      style={[
-                        styles.categoryChipText,
+                      className={`text-[13px] font-bold ${
                         isSelected
-                          ? isDark
-                            ? styles.chipTextSelectedDark
-                            : styles.chipTextSelectedLight
+                          ? "text-brand-dark-purple"
                           : isDark
-                            ? styles.chipTextInactiveDark
-                            : styles.chipTextInactiveLight,
-                      ]}
+                            ? "text-text-secondary-dark"
+                            : "text-text-secondary-light"
+                      }`}
                     >
                       {cat}
                     </Text>
@@ -517,7 +412,7 @@ function AddTransactionForm({
         )}
       </ScrollView>
 
-      {/* Save Button */}
+      {/* ─── Primary Save Button ─── */}
       <AppButton
         title={
           type === "expense"
@@ -552,7 +447,7 @@ export function AddTransactionModal({
       onDismiss={onClose}
       snapPoints={["full"]}
       showDragIndicator
-      containerColor={isDark ? "#121214" : "#FFFFFF"}
+      containerColor={isDark ? "#121316" : "#FFFFFF"}
       contentPadding={0}
     >
       <RNHostView matchContents={false}>
@@ -565,235 +460,3 @@ export function AddTransactionModal({
     </BottomSheet>
   );
 }
-
-const styles = StyleSheet.create({
-  formContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 24,
-    gap: 16,
-  },
-  sheetDark: {
-    backgroundColor: "#121214",
-  },
-  sheetLight: {
-    backgroundColor: "#FFFFFF",
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 6,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    letterSpacing: -0.3,
-  },
-  closeBtn: {
-    padding: 4,
-  },
-  typeToggleRow: {
-    flexDirection: "row",
-    height: 42,
-    borderRadius: 12,
-    padding: 3,
-  },
-  toggleDark: {
-    backgroundColor: "#1C1C1E",
-  },
-  toggleLight: {
-    backgroundColor: "#F5F5F5",
-  },
-  typeOption: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 10,
-  },
-  typeExpenseActive: {
-    backgroundColor: "#FF3B30",
-  },
-  typeIncomeActive: {
-    backgroundColor: "#2EC08B",
-  },
-  typeTransferActive: {
-    backgroundColor: "#AB9FF2",
-  },
-  typeText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  typeTextActive: {
-    color: "#000000",
-    fontWeight: "700",
-  },
-  typeTextInactiveDark: {
-    color: "#8E8E93",
-  },
-  typeTextInactiveLight: {
-    color: "#6C6C70",
-  },
-  amountInputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 4,
-  },
-  currencyPrefix: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#AB9FF2",
-    marginRight: 6,
-  },
-  amountInput: {
-    fontSize: 38,
-    fontWeight: "800",
-    letterSpacing: -1,
-    minWidth: 120,
-    textAlign: "center",
-  },
-  formScroll: {
-    gap: 16,
-    paddingBottom: 8,
-  },
-  inputGroup: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.6,
-  },
-  textInput: {
-    height: 48,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    borderWidth: 1,
-  },
-  inputDark: {
-    backgroundColor: "#1C1C1E",
-    borderColor: "rgba(255, 255, 255, 0.12)",
-  },
-  inputLight: {
-    backgroundColor: "#F5F5F5",
-    borderColor: "rgba(0, 0, 0, 0.08)",
-  },
-  chipsScroll: {
-    gap: 8,
-    paddingVertical: 2,
-  },
-  accountChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  accountChipText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  categoryChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  categoryChipText: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  transferRoutesWrap: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  routeCol: {
-    flex: 1,
-    gap: 6,
-  },
-  routeSublabel: {
-    fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-  },
-  routeRowPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  routePillText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  chipDark: {
-    backgroundColor: "#1C1C1E",
-    borderColor: "rgba(255, 255, 255, 0.12)",
-  },
-  chipLight: {
-    backgroundColor: "#f5f5f5ff",
-    borderColor: "rgba(0, 0, 0, 0)",
-  },
-  chipSelectedDark: {
-    backgroundColor: "#AB9FF2",
-    borderColor: "#AB9FF2",
-  },
-  chipSelectedLight: {
-    backgroundColor: "#AB9FF2",
-    borderColor: "#AB9FF2",
-  },
-  chipTextSelectedDark: {
-    color: "#000000",
-    fontWeight: "700",
-  },
-  chipTextSelectedLight: {
-    color: "#000000",
-    fontWeight: "700",
-  },
-  chipTextInactiveDark: {
-    color: "#8E8E93",
-  },
-  chipTextInactiveLight: {
-    color: "#6C6C70",
-  },
-  saveBtn: {
-    height: 52,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 4,
-  },
-  saveBtnDark: {
-    backgroundColor: "#AB9FF2",
-  },
-  saveBtnLight: {
-    backgroundColor: "#AB9FF2",
-  },
-  saveBtnDisabled: {
-    opacity: 0.35,
-  },
-  saveBtnTextDark: {
-    color: "#000000",
-    fontSize: 17,
-    fontWeight: "700",
-  },
-  saveBtnTextLight: {
-    color: "#000000",
-    fontSize: 17,
-    fontWeight: "700",
-  },
-  textPrimaryDark: {
-    color: "#FFFFFF",
-  },
-  textPrimaryLight: {
-    color: "#000000",
-  },
-  textSecondaryDark: {
-    color: "#8E8E93",
-  },
-  textSecondaryLight: {
-    color: "#6C6C70",
-  },
-});

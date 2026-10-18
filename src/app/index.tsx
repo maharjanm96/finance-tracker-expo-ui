@@ -1,14 +1,7 @@
 import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useRef, useState } from "react";
-import {
-  Animated,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Animated, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddTransactionModal } from "@/components/add-transaction-modal";
@@ -20,7 +13,6 @@ import { getTopHeaderPadding } from "@/components/navigation/top-chip-header";
 import { OnboardingSetup } from "@/components/onboarding-setup";
 import { TransactionDetailsModal } from "@/components/transaction-details-modal";
 import { TransactionItem } from "@/components/transaction-item";
-import { MaxContentWidth } from "@/constants/theme";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { Transaction, TransactionType } from "@/domain/types";
@@ -53,17 +45,15 @@ export default function HomeScreen({
   const recentItems = scopedTransactions.slice(0, 5);
 
   return (
-    <View className="flex-1 bg-bg-light dark:bg-bg-dark" style={styles.screen}>
-      <BlurTargetView ref={blurTargetRef} style={styles.blurTarget}>
+    <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+      <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
         <Animated.ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={[
-            styles.scrollContent,
-            {
-              paddingTop: topHeaderPadding,
-              paddingBottom: 110,
-            },
-          ]}
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingTop: topHeaderPadding,
+            paddingBottom: 110,
+            alignItems: "center",
+          }}
           scrollIndicatorInsets={{ top: topHeaderPadding, bottom: 90 }}
           showsVerticalScrollIndicator={false}
           scrollEventThrottle={16}
@@ -72,9 +62,9 @@ export default function HomeScreen({
             { useNativeDriver: true },
           )}
         >
-          <View style={styles.contentWrapper}>
+          <View className="w-full max-w-[800px] px-4 gap-5">
             {/* Wallet Selector Row below Avatar */}
-            <View className="flex-row items-center mt-2.5 px-0.5">
+            <View className="flex-row items-center mt-2 px-0.5">
               <Pressable
                 onPress={onPressWallet ?? (() => setShowAccountSelector(true))}
                 className="flex-row items-center gap-1.5 py-1 px-2 -ml-2 rounded-lg active:opacity-70 max-w-[80%]"
@@ -99,31 +89,19 @@ export default function HomeScreen({
                 />
               </Pressable>
             </View>
+
             {/* ─── 1. Monthly Financial Snapshot Hero ─── */}
             <MonthlySummary />
 
-            {/* ─── 4. Scoped Recent Transactions ─── */}
-            <View style={styles.sectionWrap}>
-              <View style={styles.sectionHeaderRow}>
+            {/* ─── 2. Scoped Recent Transactions ─── */}
+            <View className="gap-2.5">
+              <View className="flex-row items-center justify-between px-1">
                 <View>
-                  <Text
-                    style={[
-                      styles.sectionTitle,
-                      isDark
-                        ? styles.textSecondaryDark
-                        : styles.textSecondaryLight,
-                    ]}
-                  >
+                  <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase">
                     RECENT ACTIVITY
                   </Text>
                   {selectedAccount && (
-                    <Text
-                      style={[
-                        styles.accountFilterBadge,
-                        { color: "#AB9FF2" },
-                        { fontSize: 12 },
-                      ]}
-                    >
+                    <Text className="text-[11px] font-semibold text-[#AB9FF2] mt-0.5">
                       Filtered by {selectedAccount.name}
                     </Text>
                   )}
@@ -139,18 +117,9 @@ export default function HomeScreen({
                       }
                     }}
                     hitSlop={8}
-                    style={({ pressed }) => [
-                      styles.seeAllBtn,
-                      pressed && { opacity: 0.7 },
-                    ]}
+                    className="flex-row items-center gap-1 active:opacity-70"
                   >
-                    <Text
-                      style={[
-                        styles.seeAllText,
-                        { color: "#AB9FF2" },
-                        { fontSize: 14 },
-                      ]}
-                    >
+                    <Text className="text-[13px] font-bold text-[#AB9FF2]">
                       See all
                     </Text>
                     <SymbolView
@@ -159,34 +128,22 @@ export default function HomeScreen({
                         android: "chevron_right",
                         web: "chevron_right",
                       }}
-                      size={16}
+                      size={14}
                       tintColor="#AB9FF2"
                     />
                   </Pressable>
                 )}
               </View>
 
-              <View
-                style={[
-                  styles.tableContainer,
-                  isDark ? styles.cardDark : styles.cardLight,
-                ]}
-              >
+              <View className="rounded-3xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 overflow-hidden">
                 {recentItems.length === 0 ? (
-                  <View style={styles.emptyState}>
+                  <View className="items-center justify-center p-8 gap-2.5">
                     <SymbolView
                       name={{ ios: "tray", android: "inbox", web: "inbox" }}
                       size={32}
-                      tintColor="#8E8E93"
+                      tintColor={isDark ? "#989BA5" : "#8E8E93"}
                     />
-                    <Text
-                      style={[
-                        styles.emptyStateText,
-                        isDark
-                          ? styles.textSecondaryDark
-                          : styles.textSecondaryLight,
-                      ]}
-                    >
+                    <Text className="text-[15px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                       No recent activity recorded
                     </Text>
                   </View>
@@ -216,6 +173,13 @@ export default function HomeScreen({
         onClose={() => setModalType(null)}
       />
 
+      {/* Account Selector Sheet */}
+      <AccountSelectorSheet
+        visible={showAccountSelector}
+        onClose={() => setShowAccountSelector(false)}
+        onOpenCreateAccount={() => setShowAccountModal(true)}
+      />
+
       {/* Create Account Modal */}
       <CreateAccountModal
         visible={showAccountModal}
@@ -228,144 +192,6 @@ export default function HomeScreen({
         transaction={selectedTx}
         onClose={() => setSelectedTx(null)}
       />
-
-      {/* Account Selector Bottom Sheet */}
-      <AccountSelectorSheet
-        visible={showAccountSelector}
-        onClose={() => setShowAccountSelector(false)}
-        onOpenCreateAccount={() => setShowAccountModal(true)}
-      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  screenDark: {
-    backgroundColor: "#000000",
-  },
-  screenLight: {
-    backgroundColor: "#FFFFFF",
-  },
-  blurTarget: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    alignItems: "center",
-    paddingHorizontal: 16,
-  },
-  contentWrapper: {
-    width: "100%",
-    maxWidth: MaxContentWidth,
-    gap: 22,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 6,
-  },
-  dateText: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-  },
-  greetingText: {
-    fontSize: 30,
-    fontWeight: "800",
-    letterSpacing: -0.6,
-    marginTop: 2,
-  },
-  addBtnCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#AB9FF2",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
-  addBtnDark: {
-    backgroundColor: "#AB9FF2",
-  },
-  addBtnLight: {
-    backgroundColor: "#AB9FF2",
-  },
-  sectionWrap: {
-    gap: 12,
-  },
-  sectionHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 4,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-  },
-  accountFilterBadge: {
-    fontSize: 11,
-    fontWeight: "600",
-    marginTop: 2,
-  },
-  seeAllBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-  },
-  seeAllText: {
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  tableContainer: {
-    borderRadius: 22,
-    overflow: "hidden",
-    borderWidth: 1,
-  },
-  emptyState: {
-    padding: 36,
-    alignItems: "center",
-    gap: 10,
-  },
-  emptyStateText: {
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  cardDark: {
-    backgroundColor: "#202227",
-    borderColor: "rgba(255, 255, 255, 0.08)",
-  },
-  cardLight: {
-    backgroundColor: "#F5F5F5",
-    borderColor: "rgba(0, 0, 0, 0)",
-  },
-  textPrimaryDark: {
-    color: "#E4E5EB",
-  },
-  textPrimaryLight: {
-    color: "#1E1F24",
-  },
-  textSecondaryDark: {
-    color: "#989BA5",
-  },
-  textSecondaryLight: {
-    color: "#6C6C70",
-  },
-});

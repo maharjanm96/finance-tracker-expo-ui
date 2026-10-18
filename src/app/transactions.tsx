@@ -1,14 +1,6 @@
 import { SymbolView } from "expo-symbols";
 import { useMemo, useRef, useState } from "react";
-import {
-  Animated,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Animated, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddTransactionModal } from "@/components/add-transaction-modal";
@@ -16,7 +8,6 @@ import { BlurTargetView } from "@/components/blurred-status-bar";
 import { getTopHeaderPadding } from "@/components/navigation/top-chip-header";
 import { TransactionDetailsModal } from "@/components/transaction-details-modal";
 import { TransactionItem } from "@/components/transaction-item";
-import { MaxContentWidth } from "@/constants/theme";
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
 import { Transaction, TransactionType } from "@/domain/types";
@@ -95,17 +86,15 @@ export default function TransactionsScreen({
   }, [filteredTransactions]);
 
   return (
-    <View className="flex-1 bg-bg-light dark:bg-bg-dark" style={styles.screen}>
-      <BlurTargetView ref={blurTargetRef} style={styles.blurTarget}>
+    <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+      <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
         <Animated.ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={[
-            styles.scrollContent,
-            {
-              paddingTop: topHeaderPadding,
-              paddingBottom: 110,
-            },
-          ]}
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingTop: topHeaderPadding,
+            paddingBottom: 110,
+            alignItems: "center",
+          }}
           scrollIndicatorInsets={{ top: topHeaderPadding, bottom: 90 }}
           showsVerticalScrollIndicator={false}
           scrollEventThrottle={16}
@@ -114,33 +103,19 @@ export default function TransactionsScreen({
             { useNativeDriver: true },
           )}
         >
-          <View style={styles.contentWrapper}>
+          <View className="w-full max-w-[800px] px-4 gap-4">
             {/* Header */}
-            <View style={styles.headerRow}>
-              <View>
-                <Text
-                  style={[
-                    styles.headerSubtitle,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
-                  LEDGER & HISTORY
-                </Text>
-                <Text
-                  style={[
-                    styles.headerTitle,
-                    isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                  ]}
-                >
-                  Transactions
-                </Text>
-              </View>
+            <View className="pt-2">
+              <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                LEDGER & HISTORY
+              </Text>
+              <Text className="text-3xl font-extrabold tracking-tight text-text-light dark:text-text-dark">
+                Transactions
+              </Text>
             </View>
 
             {/* Type Filter Chips (All, Expense, Income, Transfer) */}
-            <View style={styles.filterRow}>
+            <View className="flex-row h-11 rounded-2xl bg-card-light dark:bg-card-dark p-1 border border-black/5 dark:border-white/5 gap-1">
               {(["all", "expense", "income", "transfer"] as FilterType[]).map(
                 (ft) => {
                   const isSelected = filterType === ft;
@@ -157,26 +132,18 @@ export default function TransactionsScreen({
                     <Pressable
                       key={ft}
                       onPress={() => setFilterType(ft)}
-                      style={[
-                        styles.filterChip,
-                        isDark ? styles.chipDark : styles.chipLight,
-                        isSelected &&
-                          (isDark
-                            ? styles.chipSelectedDark
-                            : styles.chipSelectedLight),
-                      ]}
+                      className={`flex-1 rounded-xl items-center justify-center active:opacity-80 ${
+                        isSelected ? "bg-brand-perano" : ""
+                      }`}
                     >
                       <Text
-                        style={[
-                          styles.filterChipText,
+                        className={`text-[13px] font-bold ${
                           isSelected
-                            ? isDark
-                              ? styles.chipTextSelectedDark
-                              : styles.chipTextSelectedLight
+                            ? "text-brand-dark-purple"
                             : isDark
-                              ? styles.chipTextInactiveDark
-                              : styles.chipTextInactiveLight,
-                        ]}
+                              ? "text-text-secondary-dark"
+                              : "text-text-secondary-light"
+                        }`}
                       >
                         {label}
                       </Text>
@@ -187,34 +154,30 @@ export default function TransactionsScreen({
             </View>
 
             {/* Account Selector Chips */}
-            <View style={styles.accountFilterWrap}>
+            <View>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.accountChipsScroll}
+                contentContainerStyle={{ gap: 8 }}
               >
                 <Pressable
                   onPress={() => selectAccount(null)}
-                  style={[
-                    styles.accountChip,
-                    isDark ? styles.chipDark : styles.chipLight,
-                    selectedAccountId === null &&
-                      (isDark
-                        ? styles.chipSelectedDark
-                        : styles.chipSelectedLight),
-                  ]}
+                  className={`px-4 py-2 rounded-full border active:opacity-80 ${
+                    selectedAccountId === null
+                      ? "bg-brand-perano border-brand-perano"
+                      : isDark
+                        ? "bg-chip-dark border-white/5"
+                        : "bg-chip-light border-black/5"
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.accountChipText,
+                    className={`text-[13px] font-bold ${
                       selectedAccountId === null
-                        ? isDark
-                          ? styles.chipTextSelectedDark
-                          : styles.chipTextSelectedLight
+                        ? "text-brand-dark-purple"
                         : isDark
-                          ? styles.chipTextInactiveDark
-                          : styles.chipTextInactiveLight,
-                    ]}
+                          ? "text-text-secondary-dark"
+                          : "text-text-secondary-light"
+                    }`}
                   >
                     All Accounts
                   </Text>
@@ -226,26 +189,22 @@ export default function TransactionsScreen({
                     <Pressable
                       key={acc.id}
                       onPress={() => selectAccount(acc.id)}
-                      style={[
-                        styles.accountChip,
-                        isDark ? styles.chipDark : styles.chipLight,
-                        isSelected &&
-                          (isDark
-                            ? styles.chipSelectedDark
-                            : styles.chipSelectedLight),
-                      ]}
+                      className={`px-4 py-2 rounded-full border active:opacity-80 ${
+                        isSelected
+                          ? "bg-brand-perano border-brand-perano"
+                          : isDark
+                            ? "bg-chip-dark border-white/5"
+                            : "bg-chip-light border-black/5"
+                      }`}
                     >
                       <Text
-                        style={[
-                          styles.accountChipText,
+                        className={`text-[13px] font-bold ${
                           isSelected
-                            ? isDark
-                              ? styles.chipTextSelectedDark
-                              : styles.chipTextSelectedLight
+                            ? "text-brand-dark-purple"
                             : isDark
-                              ? styles.chipTextInactiveDark
-                              : styles.chipTextInactiveLight,
-                        ]}
+                              ? "text-text-secondary-dark"
+                              : "text-text-secondary-light"
+                        }`}
                       >
                         {acc.name}
                       </Text>
@@ -257,12 +216,7 @@ export default function TransactionsScreen({
 
             {/* Date-Grouped Transaction List */}
             {groupedTransactions.length === 0 ? (
-              <View
-                style={[
-                  styles.emptyContainer,
-                  isDark ? styles.cardDark : styles.cardLight,
-                ]}
-              >
+              <View className="p-8 rounded-3xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 items-center justify-center gap-2.5 my-4">
                 <SymbolView
                   name={{
                     ios: "doc.text.magnifyingglass",
@@ -270,47 +224,23 @@ export default function TransactionsScreen({
                     web: "find_in_page",
                   }}
                   size={36}
-                  tintColor="#8E8E93"
+                  tintColor={isDark ? "#989BA5" : "#8E8E93"}
                 />
-                <Text
-                  style={[
-                    styles.emptyTitle,
-                    isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                  ]}
-                >
+                <Text className="text-[17px] font-bold text-text-light dark:text-text-dark">
                   No Transactions Found
                 </Text>
-                <Text
-                  style={[
-                    styles.emptySubtitle,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
+                <Text className="text-[14px] text-center text-text-secondary-light dark:text-text-secondary-dark max-w-[280px]">
                   Try clearing your search query or switching your account
                   filter.
                 </Text>
               </View>
             ) : (
               groupedTransactions.map((group) => (
-                <View key={group.date} style={styles.dateGroup}>
-                  <Text
-                    style={[
-                      styles.dateGroupLabel,
-                      isDark
-                        ? styles.textSecondaryDark
-                        : styles.textSecondaryLight,
-                    ]}
-                  >
+                <View key={group.date} className="gap-2">
+                  <Text className="text-[12px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase px-1">
                     {group.date.toUpperCase()}
                   </Text>
-                  <View
-                    style={[
-                      styles.tableContainer,
-                      isDark ? styles.cardDark : styles.cardLight,
-                    ]}
-                  >
+                  <View className="rounded-3xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 overflow-hidden">
                     {group.items.map((tx, idx) => (
                       <TransactionItem
                         key={tx.id}
@@ -342,201 +272,3 @@ export default function TransactionsScreen({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  screenDark: {
-    backgroundColor: "#000000",
-  },
-  screenLight: {
-    backgroundColor: "#FFFFFF",
-  },
-  blurTarget: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    alignItems: "center",
-    paddingHorizontal: 16,
-  },
-  contentWrapper: {
-    width: "100%",
-    maxWidth: MaxContentWidth,
-    gap: 16,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 6,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-  },
-  headerTitle: {
-    fontSize: 30,
-    fontWeight: "800",
-    letterSpacing: -0.6,
-    marginTop: 2,
-  },
-  addBtnCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#AB9FF2",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
-  addBtnDark: {
-    backgroundColor: "#AB9FF2",
-  },
-  addBtnLight: {
-    backgroundColor: "#AB9FF2",
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    height: 48,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    gap: 10,
-    borderWidth: 1,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  filterRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 16,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  filterChipText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  accountFilterWrap: {
-    marginTop: -4,
-  },
-  accountChipsScroll: {
-    gap: 8,
-    paddingVertical: 4,
-  },
-  accountChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  accountChipText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  chipDark: {
-    backgroundColor: "#1C1C1E",
-    borderColor: "rgba(255, 255, 255, 0.12)",
-  },
-  chipLight: {
-    backgroundColor: "#f5f5f5ff",
-    borderColor: "rgba(0, 0, 0, 0)",
-  },
-  chipSelectedDark: {
-    backgroundColor: "#AB9FF2",
-    borderColor: "#AB9FF2",
-  },
-  chipSelectedLight: {
-    backgroundColor: "#AB9FF2",
-    borderColor: "#AB9FF2",
-  },
-  chipTextSelectedDark: {
-    color: "#000000",
-    fontWeight: "700",
-  },
-  chipTextSelectedLight: {
-    color: "#000000",
-    fontWeight: "700",
-  },
-  chipTextInactiveDark: {
-    color: "#8E8E93",
-  },
-  chipTextInactiveLight: {
-    color: "#6C6C70",
-  },
-  dateGroup: {
-    gap: 8,
-    marginTop: 6,
-  },
-  dateGroupLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-    paddingHorizontal: 4,
-  },
-  tableContainer: {
-    borderRadius: 22,
-    overflow: "hidden",
-    borderWidth: 1,
-  },
-  emptyContainer: {
-    padding: 40,
-    alignItems: "center",
-    borderRadius: 22,
-    borderWidth: 1,
-    gap: 10,
-    marginTop: 12,
-  },
-  emptyTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    textAlign: "center",
-    maxWidth: 260,
-  },
-  cardDark: {
-    backgroundColor: "#202227",
-    borderColor: "rgba(255, 255, 255, 0.08)",
-  },
-  cardLight: {
-    backgroundColor: "#F5F5F5",
-    borderColor: "rgba(0, 0, 0, 0)",
-  },
-  textPrimaryDark: {
-    color: "#E4E5EB",
-  },
-  textPrimaryLight: {
-    color: "#1E1F24",
-  },
-  textSecondaryDark: {
-    color: "#989BA5",
-  },
-  textSecondaryLight: {
-    color: "#6C6C70",
-  },
-});

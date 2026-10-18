@@ -56,10 +56,8 @@ export function TopChipHeader({
     <>
       <StatusBar style={isDark ? "light" : "dark"} />
       <View
-        style={[
-          styles.headerContainer,
-          { paddingTop: topInset },
-        ]}
+        className="absolute top-0 left-0 right-0 z-30 overflow-hidden border-b border-black/5 dark:border-white/10"
+        style={{ paddingTop: topInset }}
       >
         {/* ─── Frosted Glass Blur Backdrop covering status bar and header ─── */}
         <BlurView
@@ -136,16 +134,3 @@ export function TopChipHeader({
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  headerContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 30,
-    overflow: "hidden",
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(128, 128, 128, 0.15)",
-  },
-});

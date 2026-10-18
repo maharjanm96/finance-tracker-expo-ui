@@ -1,6 +1,6 @@
 import { BlurView } from "expo-blur";
 import { SymbolView } from "expo-symbols";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Animated,
   Easing,
@@ -136,7 +136,10 @@ export function BottomFloatingBar({
             },
           ]}
         >
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => closeMenu()} />
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => closeMenu()}
+          />
         </Animated.View>
       )}
 

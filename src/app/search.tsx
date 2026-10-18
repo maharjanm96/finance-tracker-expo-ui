@@ -4,7 +4,6 @@ import {
   Animated,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -66,17 +65,16 @@ export default function AnalyticsScreen() {
   const expenseBarWidth = Math.round((monthlyExpenses / maxCashFlow) * 100);
 
   return (
-    <View className="flex-1 bg-bg-light dark:bg-bg-dark" style={styles.screen}>
-      <BlurTargetView ref={blurTargetRef} style={styles.blurTarget}>
+    <View className="flex-1 bg-bg-light dark:bg-bg-dark">
+      <BlurTargetView ref={blurTargetRef} className="flex-1">
         <Animated.ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={[
-            styles.scrollContent,
-            {
-              paddingTop: topHeaderPadding,
-              paddingBottom: 110,
-            },
-          ]}
+          className="flex-1"
+          contentContainerStyle={{
+            alignItems: "center",
+            paddingHorizontal: 16,
+            paddingTop: topHeaderPadding,
+            paddingBottom: 110,
+          }}
           scrollIndicatorInsets={{ top: topHeaderPadding, bottom: 90 }}
           showsVerticalScrollIndicator={false}
           scrollEventThrottle={16}
@@ -85,140 +83,72 @@ export default function AnalyticsScreen() {
             { useNativeDriver: true },
           )}
         >
-          <View style={styles.contentWrapper}>
+          <View className="w-full gap-4.5" style={{ maxWidth: MaxContentWidth }}>
             {/* Header */}
-            <View style={styles.headerRow}>
-              <View>
-                <Text
-                  style={[
-                    styles.headerSubtitle,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
-                  INSIGHTS & CASH FLOW
-                </Text>
-                <Text
-                  style={[
-                    styles.headerTitle,
-                    isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                  ]}
-                >
-                  Analytics
-                </Text>
-              </View>
+            <View className="py-1">
+              <Text className="text-xs font-bold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
+                INSIGHTS & CASH FLOW
+              </Text>
+              <Text className="text-3xl font-extrabold tracking-tight text-text-primary-light dark:text-text-primary-dark mt-0.5">
+                Analytics
+              </Text>
             </View>
 
             {/* Time Range Selector */}
-            <View
-              style={[
-                styles.timeRangeToggle,
-                isDark ? styles.cardDark : styles.cardLight,
-              ]}
-            >
-              <Pressable
-                onPress={() => setTimeRange("month")}
-                style={[
-                  styles.timeOption,
-                  timeRange === "month" &&
-                    (isDark
-                      ? styles.timeOptionActiveDark
-                      : styles.timeOptionActiveLight),
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.timeOptionText,
-                    timeRange === "month"
-                      ? styles.timeTextActive
-                      : isDark
-                        ? styles.textSecondaryDark
-                        : styles.textSecondaryLight,
-                  ]}
-                >
-                  This Month
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => setTimeRange("lastMonth")}
-                style={[
-                  styles.timeOption,
-                  timeRange === "lastMonth" &&
-                    (isDark
-                      ? styles.timeOptionActiveDark
-                      : styles.timeOptionActiveLight),
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.timeOptionText,
-                    timeRange === "lastMonth"
-                      ? styles.timeTextActive
-                      : isDark
-                        ? styles.textSecondaryDark
-                        : styles.textSecondaryLight,
-                  ]}
-                >
-                  Last Month
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => setTimeRange("ytd")}
-                style={[
-                  styles.timeOption,
-                  timeRange === "ytd" &&
-                    (isDark
-                      ? styles.timeOptionActiveDark
-                      : styles.timeOptionActiveLight),
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.timeOptionText,
-                    timeRange === "ytd"
-                      ? styles.timeTextActive
-                      : isDark
-                        ? styles.textSecondaryDark
-                        : styles.textSecondaryLight,
-                  ]}
-                >
-                  YTD
-                </Text>
-              </Pressable>
+            <View className="flex-row h-11 rounded-2xl p-1 bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5">
+              {(
+                [
+                  { id: "month", label: "This Month" },
+                  { id: "lastMonth", label: "Last Month" },
+                  { id: "ytd", label: "YTD" },
+                ] as const
+              ).map((option) => {
+                const isActive = timeRange === option.id;
+                return (
+                  <Pressable
+                    key={option.id}
+                    onPress={() => setTimeRange(option.id)}
+                    className={`flex-1 items-center justify-center rounded-xl transition-all ${
+                      isActive
+                        ? "bg-white dark:bg-chip-dark shadow-xs"
+                        : "bg-transparent"
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-semibold ${
+                        isActive
+                          ? "text-brand-dark-purple dark:text-white font-bold"
+                          : "text-text-secondary-light dark:text-text-secondary-dark"
+                      }`}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
 
             {/* Scope / Account Filter Chips */}
-            <View style={styles.accountScopeWrap}>
+            <View className="-mt-1">
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.accountChipsScroll}
+                contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
               >
                 <Pressable
                   onPress={() => selectAccount(null)}
-                  style={[
-                    styles.scopeChip,
-                    isDark ? styles.chipDark : styles.chipLight,
-                    selectedAccountId === null &&
-                      (isDark
-                        ? styles.chipSelectedDark
-                        : styles.chipSelectedLight),
-                  ]}
+                  className={`px-3.5 py-1.5 rounded-full border transition-all ${
+                    selectedAccountId === null
+                      ? "bg-brand-perano border-brand-perano"
+                      : "bg-card-light dark:bg-card-dark border-black/5 dark:border-white/10"
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.scopeChipText,
+                    className={`text-xs font-semibold ${
                       selectedAccountId === null
-                        ? isDark
-                          ? styles.chipTextSelectedDark
-                          : styles.chipTextSelectedLight
-                        : isDark
-                          ? styles.chipTextInactiveDark
-                          : styles.chipTextInactiveLight,
-                    ]}
+                        ? "text-brand-dark-purple dark:text-brand-dark-purple font-bold"
+                        : "text-text-secondary-light dark:text-text-secondary-dark"
+                    }`}
                   >
                     Combined (All Accounts)
                   </Text>
@@ -230,26 +160,18 @@ export default function AnalyticsScreen() {
                     <Pressable
                       key={acc.id}
                       onPress={() => selectAccount(acc.id)}
-                      style={[
-                        styles.scopeChip,
-                        isDark ? styles.chipDark : styles.chipLight,
-                        isSelected &&
-                          (isDark
-                            ? styles.chipSelectedDark
-                            : styles.chipSelectedLight),
-                      ]}
+                      className={`px-3.5 py-1.5 rounded-full border transition-all ${
+                        isSelected
+                          ? "bg-brand-perano border-brand-perano"
+                          : "bg-card-light dark:bg-card-dark border-black/5 dark:border-white/10"
+                      }`}
                     >
                       <Text
-                        style={[
-                          styles.scopeChipText,
+                        className={`text-xs font-semibold ${
                           isSelected
-                            ? isDark
-                              ? styles.chipTextSelectedDark
-                              : styles.chipTextSelectedLight
-                            : isDark
-                              ? styles.chipTextInactiveDark
-                              : styles.chipTextInactiveLight,
-                        ]}
+                            ? "text-brand-dark-purple dark:text-brand-dark-purple font-bold"
+                            : "text-text-secondary-light dark:text-text-secondary-dark"
+                        }`}
                       >
                         {acc.name}
                       </Text>
@@ -260,22 +182,13 @@ export default function AnalyticsScreen() {
             </View>
 
             {/* 1. Cash Flow Comparison Card */}
-            <View
-              style={[styles.card, isDark ? styles.cardDark : styles.cardLight]}
-            >
-              <View style={styles.cardHeaderRow}>
-                <Text
-                  style={[
-                    styles.cardTitle,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
+            <View className="rounded-3xl p-4.5 bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 gap-3.5">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-[11px] font-bold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
                   CASH FLOW COMPARISON
                 </Text>
-                <View style={styles.savingsPill}>
-                  <Text style={styles.savingsPillText}>
+                <View className="bg-emerald-500/15 px-2.5 py-1 rounded-full">
+                  <Text className="text-emerald-500 dark:text-emerald-400 text-xs font-bold">
                     {savingsRate !== null
                       ? `${formatPercentage(savingsRate)} Saved`
                       : "0% Saved"}
@@ -283,21 +196,14 @@ export default function AnalyticsScreen() {
                 </View>
               </View>
 
-              <View style={styles.cashFlowBars}>
+              <View className="gap-3">
                 {/* Income Bar */}
-                <View style={styles.flowRow}>
-                  <View style={styles.flowLabelRow}>
-                    <Text
-                      style={[
-                        styles.flowLabel,
-                        isDark
-                          ? styles.textPrimaryDark
-                          : styles.textPrimaryLight,
-                      ]}
-                    >
+                <View className="gap-1.5">
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
                       Income
                     </Text>
-                    <View style={styles.flowAmountRow}>
+                    <View className="flex-row items-center gap-1">
                       <SymbolView
                         name={{
                           ios: "arrow.up",
@@ -307,43 +213,26 @@ export default function AnalyticsScreen() {
                         size={11}
                         tintColor="#2EC08B"
                       />
-                      <Text style={[styles.flowAmount, { color: "#2EC08B" }]}>
+                      <Text className="text-sm font-bold text-emerald-500 dark:text-emerald-400">
                         {formatCurrency(monthlyIncome)}
                       </Text>
                     </View>
                   </View>
-                  <View
-                    style={[
-                      styles.barTrack,
-                      isDark ? styles.trackDark : styles.trackLight,
-                    ]}
-                  >
+                  <View className="h-2 rounded-full overflow-hidden bg-black/5 dark:bg-white/10">
                     <View
-                      style={[
-                        styles.barFill,
-                        {
-                          width: `${incomeBarWidth}%`,
-                          backgroundColor: "#2EC08B",
-                        },
-                      ]}
+                      className="h-full rounded-full bg-emerald-500"
+                      style={{ width: `${incomeBarWidth}%` }}
                     />
                   </View>
                 </View>
 
                 {/* Expenses Bar */}
-                <View style={styles.flowRow}>
-                  <View style={styles.flowLabelRow}>
-                    <Text
-                      style={[
-                        styles.flowLabel,
-                        isDark
-                          ? styles.textPrimaryDark
-                          : styles.textPrimaryLight,
-                      ]}
-                    >
+                <View className="gap-1.5">
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
                       Expenses
                     </Text>
-                    <View style={styles.flowAmountRow}>
+                    <View className="flex-row items-center gap-1">
                       <SymbolView
                         name={{
                           ios: "arrow.down",
@@ -353,48 +242,26 @@ export default function AnalyticsScreen() {
                         size={11}
                         tintColor="#FF3B30"
                       />
-                      <Text style={[styles.flowAmount, { color: "#FF3B30" }]}>
+                      <Text className="text-sm font-bold text-rose-500 dark:text-rose-400">
                         {formatCurrency(monthlyExpenses)}
                       </Text>
                     </View>
                   </View>
-                  <View
-                    style={[
-                      styles.barTrack,
-                      isDark ? styles.trackDark : styles.trackLight,
-                    ]}
-                  >
+                  <View className="h-2 rounded-full overflow-hidden bg-black/5 dark:bg-white/10">
                     <View
-                      style={[
-                        styles.barFill,
-                        {
-                          width: `${expenseBarWidth}%`,
-                          backgroundColor: "#FF3B30",
-                        },
-                      ]}
+                      className="h-full rounded-full bg-rose-500"
+                      style={{ width: `${expenseBarWidth}%` }}
                     />
                   </View>
                 </View>
               </View>
 
               {/* Net Cash Flow Summary Footer */}
-              <View
-                style={[
-                  styles.flowFooter,
-                  isDark ? styles.footerDark : styles.footerLight,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.footerLabel,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
+              <View className="flex-row justify-between items-center pt-3 border-t border-black/5 dark:border-white/10">
+                <Text className="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark">
                   Net Surplus
                 </Text>
-                <View style={styles.flowAmountRow}>
+                <View className="flex-row items-center gap-1">
                   <SymbolView
                     name={{
                       ios: monthlySavings >= 0 ? "arrow.up" : "arrow.down",
@@ -407,10 +274,11 @@ export default function AnalyticsScreen() {
                     tintColor={monthlySavings >= 0 ? "#2EC08B" : "#FF3B30"}
                   />
                   <Text
-                    style={[
-                      styles.footerValue,
-                      { color: monthlySavings >= 0 ? "#2EC08B" : "#FF3B30" },
-                    ]}
+                    className={`text-sm font-extrabold ${
+                      monthlySavings >= 0
+                        ? "text-emerald-500 dark:text-emerald-400"
+                        : "text-rose-500 dark:text-rose-400"
+                    }`}
                   >
                     {formatCurrency(Math.abs(monthlySavings))}
                   </Text>
@@ -419,114 +287,55 @@ export default function AnalyticsScreen() {
             </View>
 
             {/* 2. Annual Savings Goal Progress */}
-            <View
-              style={[styles.card, isDark ? styles.cardDark : styles.cardLight]}
-            >
-              <View style={styles.cardHeaderRow}>
-                <Text
-                  style={[
-                    styles.cardTitle,
-                    isDark
-                      ? styles.textSecondaryDark
-                      : styles.textSecondaryLight,
-                  ]}
-                >
+            <View className="rounded-3xl p-4.5 bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 gap-3.5">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-[11px] font-bold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
                   2026 ANNUAL SAVINGS GOAL
                 </Text>
-                <Text style={[styles.goalPercentBadge, { color: "#AB9FF2" }]}>
+                <Text className="text-xs font-bold text-brand-perano">
                   {formatPercentage(annualGoalProgress.percentage)}
                 </Text>
               </View>
 
-              <View style={styles.goalValuesRow}>
+              <View className="flex-row justify-between">
                 <View>
-                  <Text
-                    style={[
-                      styles.goalLabel,
-                      isDark
-                        ? styles.textSecondaryDark
-                        : styles.textSecondaryLight,
-                    ]}
-                  >
+                  <Text className="text-[11px] font-semibold text-text-secondary-light dark:text-text-secondary-dark">
                     Total Saved YTD
                   </Text>
-                  <Text
-                    style={[
-                      styles.goalAmount,
-                      isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                    ]}
-                  >
+                  <Text className="text-base font-bold text-text-primary-light dark:text-text-primary-dark mt-0.5">
                     {formatCurrency(monthlySavings > 0 ? monthlySavings : 0)}
                   </Text>
                 </View>
-                <View style={{ alignItems: "flex-end" }}>
-                  <Text
-                    style={[
-                      styles.goalLabel,
-                      isDark
-                        ? styles.textSecondaryDark
-                        : styles.textSecondaryLight,
-                    ]}
-                  >
+                <View className="items-end">
+                  <Text className="text-[11px] font-semibold text-text-secondary-light dark:text-text-secondary-dark">
                     Target Goal
                   </Text>
-                  <Text
-                    style={[
-                      styles.goalAmount,
-                      isDark ? styles.textPrimaryDark : styles.textPrimaryLight,
-                    ]}
-                  >
+                  <Text className="text-base font-bold text-text-primary-light dark:text-text-primary-dark mt-0.5">
                     {formatCurrency(profile.annualSavingsGoal)}
                   </Text>
                 </View>
               </View>
 
-              <View
-                style={[
-                  styles.barTrack,
-                  isDark ? styles.trackDark : styles.trackLight,
-                ]}
-              >
+              <View className="h-2 rounded-full overflow-hidden bg-black/5 dark:bg-white/10">
                 <View
-                  style={[
-                    styles.barFill,
-                    {
-                      width: `${Math.min(100, Math.round(annualGoalProgress.percentage))}%`,
-                      backgroundColor: "#AB9FF2",
-                    },
-                  ]}
+                  className="h-full rounded-full bg-brand-perano"
+                  style={{
+                    width: `${Math.min(100, Math.round(annualGoalProgress.percentage))}%`,
+                  }}
                 />
               </View>
             </View>
 
             {/* 3. Category Spending Breakdown */}
-            <View style={styles.categorySection}>
-              <Text
-                style={[
-                  styles.sectionTitle,
-                  isDark ? styles.textSecondaryDark : styles.textSecondaryLight,
-                ]}
-              >
+            <View className="gap-2.5">
+              <Text className="text-[11px] font-bold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark px-1">
                 SPENDING BY CATEGORY
               </Text>
 
-              <View
-                style={[
-                  styles.card,
-                  isDark ? styles.cardDark : styles.cardLight,
-                  { padding: 0 },
-                ]}
-              >
+              <View className="rounded-3xl bg-card-light dark:bg-card-dark border border-black/5 dark:border-white/5 overflow-hidden">
                 {categoryBreakdown.length === 0 ? (
-                  <View style={styles.emptyCatWrap}>
-                    <Text
-                      style={[
-                        styles.emptyCatText,
-                        isDark
-                          ? styles.textSecondaryDark
-                          : styles.textSecondaryLight,
-                      ]}
-                    >
+                  <View className="p-8 items-center justify-center">
+                    <Text className="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">
                       No expense records in this period
                     </Text>
                   </View>
@@ -540,13 +349,8 @@ export default function AnalyticsScreen() {
 
                     return (
                       <View key={item.category}>
-                        <View style={styles.catRow}>
-                          <View
-                            style={[
-                              styles.catIconWrap,
-                              isDark ? styles.catIconDark : styles.catIconLight,
-                            ]}
-                          >
+                        <View className="flex-row items-center px-4 py-3 gap-3">
+                          <View className="w-9 h-9 rounded-xl items-center justify-center bg-brand-perano/20 dark:bg-chip-dark">
                             <SymbolView
                               name={{
                                 ios: meta.sf,
@@ -554,71 +358,37 @@ export default function AnalyticsScreen() {
                                 web: meta.material,
                               }}
                               size={16}
-                              tintColor={isDark ? "#FFFFFF" : "#000000"}
+                              tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
                             />
                           </View>
 
-                          <View style={styles.catInfoCol}>
-                            <View style={styles.catTitleRow}>
-                              <Text
-                                style={[
-                                  styles.catName,
-                                  isDark
-                                    ? styles.textPrimaryDark
-                                    : styles.textPrimaryLight,
-                                ]}
-                              >
+                          <View className="flex-1 gap-1.5">
+                            <View className="flex-row justify-between items-center">
+                              <Text className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
                                 {item.category}
                               </Text>
-                              <Text
-                                style={[
-                                  styles.catAmount,
-                                  isDark
-                                    ? styles.textPrimaryDark
-                                    : styles.textPrimaryLight,
-                                ]}
-                              >
+                              <Text className="text-sm font-bold text-text-primary-light dark:text-text-primary-dark">
                                 {formatCurrency(item.amount)}
                               </Text>
                             </View>
 
-                            <View style={styles.catProgressRow}>
-                              <View
-                                style={[
-                                  styles.catTrack,
-                                  isDark ? styles.trackDark : styles.trackLight,
-                                ]}
-                              >
+                            <View className="flex-row items-center gap-2">
+                              <View className="flex-1 h-1.5 rounded-full overflow-hidden bg-black/5 dark:bg-white/10">
                                 <View
-                                  style={[
-                                    styles.catFill,
-                                    {
-                                      width: `${Math.min(100, item.percentage)}%`,
-                                      backgroundColor: "#AB9FF2",
-                                    },
-                                  ]}
+                                  className="h-full rounded-full bg-brand-perano"
+                                  style={{
+                                    width: `${Math.min(100, item.percentage)}%`,
+                                  }}
                                 />
                               </View>
-                              <Text
-                                style={[
-                                  styles.catPercentText,
-                                  isDark
-                                    ? styles.textSecondaryDark
-                                    : styles.textSecondaryLight,
-                                ]}
-                              >
+                              <Text className="text-[11px] font-semibold text-text-secondary-light dark:text-text-secondary-dark w-8 text-right">
                                 {item.percentage}%
                               </Text>
                             </View>
                           </View>
                         </View>
                         {!isLast && (
-                          <View
-                            style={[
-                              styles.catDivider,
-                              isDark ? styles.dividerDark : styles.dividerLight,
-                            ]}
-                          />
+                          <View className="h-[1px] ml-16 bg-black/5 dark:border-t dark:border-white/5" />
                         )}
                       </View>
                     );
@@ -632,327 +402,3 @@ export default function AnalyticsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  screenDark: {
-    backgroundColor: "#000000",
-  },
-  screenLight: {
-    backgroundColor: "#FFFFFF",
-  },
-  blurTarget: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    alignItems: "center",
-    paddingHorizontal: 16,
-  },
-  contentWrapper: {
-    width: "100%",
-    maxWidth: MaxContentWidth,
-    gap: 18,
-  },
-  headerRow: {
-    paddingVertical: 6,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-  },
-  headerTitle: {
-    fontSize: 30,
-    fontWeight: "800",
-    letterSpacing: -0.6,
-    marginTop: 2,
-  },
-  timeRangeToggle: {
-    flexDirection: "row",
-    height: 42,
-    borderRadius: 14,
-    padding: 3,
-    borderWidth: 1,
-  },
-  timeOption: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 11,
-  },
-  timeOptionActiveDark: {
-    backgroundColor: "#3A3B3E",
-  },
-  timeOptionActiveLight: {
-    backgroundColor: "#E5E5EA",
-  },
-  timeOptionText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  timeTextActive: {
-    color: "#000000",
-    fontWeight: "700",
-  },
-  accountScopeWrap: {
-    marginTop: -4,
-  },
-  accountChipsScroll: {
-    gap: 8,
-    paddingVertical: 4,
-  },
-  scopeChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  scopeChipText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  card: {
-    borderRadius: 22,
-    padding: 18,
-    borderWidth: 1,
-    gap: 14,
-  },
-  cardHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  cardTitle: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-  },
-  savingsPill: {
-    backgroundColor: "rgba(46, 192, 139, 0.15)",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  savingsPillText: {
-    color: "#2EC08B",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  goalPercentBadge: {
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  cashFlowBars: {
-    gap: 12,
-  },
-  flowRow: {
-    gap: 6,
-  },
-  flowLabelRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  flowLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  flowAmount: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  flowAmountRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  barTrack: {
-    height: 8,
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  trackDark: {
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
-  },
-  trackLight: {
-    backgroundColor: "rgba(0, 0, 0, 0.06)",
-  },
-  barFill: {
-    height: "100%",
-    borderRadius: 4,
-  },
-  flowFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  footerDark: {
-    borderTopColor: "rgba(255, 255, 255, 0.10)",
-  },
-  footerLight: {
-    borderTopColor: "rgba(0, 0, 0, 0.08)",
-  },
-  footerLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  footerValue: {
-    fontSize: 15,
-    fontWeight: "800",
-  },
-  goalValuesRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  goalLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-  },
-  goalAmount: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginTop: 2,
-  },
-  categorySection: {
-    gap: 10,
-  },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-    paddingHorizontal: 4,
-  },
-  emptyCatWrap: {
-    padding: 30,
-    alignItems: "center",
-  },
-  emptyCatText: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  catRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  catIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  catIconDark: {
-    backgroundColor: "#1C1C1E",
-  },
-  catIconLight: {
-    backgroundColor: "#F5F2FF",
-  },
-  catInfoCol: {
-    flex: 1,
-    gap: 6,
-  },
-  catTitleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  catName: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  catAmount: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  catProgressRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  catTrack: {
-    flex: 1,
-    height: 6,
-    borderRadius: 3,
-    overflow: "hidden",
-  },
-  catFill: {
-    height: "100%",
-    borderRadius: 3,
-  },
-  catPercentText: {
-    fontSize: 11,
-    fontWeight: "600",
-    width: 32,
-    textAlign: "right",
-  },
-  catDivider: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 64,
-  },
-  dividerDark: {
-    backgroundColor: "rgba(255, 255, 255, 0.10)",
-  },
-  dividerLight: {
-    backgroundColor: "rgba(0, 0, 0, 0.08)",
-  },
-  chipDark: {
-    backgroundColor: "#121214",
-    borderColor: "rgba(255, 255, 255, 0.12)",
-  },
-  chipLight: {
-    backgroundColor: "#f5f5f5ff",
-    borderColor: "rgba(0, 0, 0, 0)",
-  },
-  chipSelectedDark: {
-    backgroundColor: "#AB9FF2",
-    borderColor: "#AB9FF2",
-  },
-  chipSelectedLight: {
-    backgroundColor: "#AB9FF2",
-    borderColor: "#AB9FF2",
-  },
-  chipTextSelectedDark: {
-    color: "#000000",
-    fontWeight: "700",
-  },
-  chipTextSelectedLight: {
-    color: "#000000",
-    fontWeight: "700",
-  },
-  chipTextInactiveDark: {
-    color: "#8E8E93",
-  },
-  chipTextInactiveLight: {
-    color: "#6C6C70",
-  },
-  cardDark: {
-    backgroundColor: "#202227",
-    borderColor: "rgba(255, 255, 255, 0.08)",
-  },
-  cardLight: {
-    backgroundColor: "#F5F5F5",
-    borderColor: "rgba(0, 0, 0, 0)",
-  },
-  textPrimaryDark: {
-    color: "#E4E5EB",
-  },
-  textPrimaryLight: {
-    color: "#1E1F24",
-  },
-  textSecondaryDark: {
-    color: "#989BA5",
-  },
-  textSecondaryLight: {
-    color: "#6C6C70",
-  },
-});

@@ -20,63 +20,69 @@ export function ExpenseHeroCard() {
   const isLowBalance = percentSpent > 85;
 
   return (
-    <View style={styles.cardWrapper}>
+    <View className="rounded-3xl p-5.5 border border-black/5 dark:border-white/10 overflow-hidden relative gap-4">
       <NativeGlassView
         glassEffectStyle="regular"
-        tintColor={isDark ? 'rgba(18, 18, 20, 0.75)' : 'rgba(255, 255, 255, 0.90)'}
+        tintColor={isDark ? 'rgba(24, 25, 29, 0.75)' : 'rgba(255, 255, 255, 0.90)'}
         intensity={70}
         blurTint={isDark ? 'systemMaterialDark' : 'systemMaterialLight'}
         style={StyleSheet.absoluteFill}
       />
 
       {/* Top Header Label */}
-      <View style={styles.topRow}>
-        <Text style={[styles.eyebrow, isDark ? styles.textSecondaryDark : styles.textSecondaryLight]}>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-xs font-bold tracking-wider uppercase text-text-secondary-light dark:text-text-secondary-dark">
           REMAINING BUDGET
         </Text>
-        <View style={[styles.badge, isLowBalance ? styles.badgeAlert : styles.badgeNormal]}>
-          <Text style={[styles.badgeText, isLowBalance ? styles.badgeTextAlert : styles.badgeTextNormal]}>
+        <View
+          className={`px-2 py-0.5 rounded-lg ${
+            isLowBalance ? 'bg-rose-500/15' : 'bg-brand-perano/20'
+          }`}
+        >
+          <Text
+            className={`text-[11px] font-bold ${
+              isLowBalance ? 'text-rose-500' : 'text-brand-perano'
+            }`}
+          >
             {percentSpent}% Used
           </Text>
         </View>
       </View>
 
       {/* Hero Remaining Balance */}
-      <Text style={[styles.heroAmount, isDark ? styles.textPrimaryDark : styles.textPrimaryLight]}>
+      <Text className="text-4xl font-extrabold tracking-tight text-text-primary-light dark:text-text-primary-dark">
         {formatCurrency(remainingBalance)}
       </Text>
 
       {/* Minimalist Progress Track (Perano Primary Purple) */}
-      <View style={[styles.progressTrack, isDark ? styles.progressTrackDark : styles.progressTrackLight]}>
+      <View className="h-1.5 rounded-full overflow-hidden bg-black/5 dark:bg-white/10">
         <View
-          style={[
-            styles.progressFill,
-            {
-              width: `${Math.min(100, Math.max(2, percentSpent))}%`,
-              backgroundColor: isLowBalance ? '#FF3B30' : '#AB9FF2',
-            },
-          ]}
+          className="h-full rounded-full"
+          style={{
+            width: `${Math.min(100, Math.max(2, percentSpent))}%`,
+            backgroundColor: isLowBalance ? '#FF3B30' : '#AB9FF2',
+          }}
         />
       </View>
 
       {/* Sub Stats Row */}
-      <View style={styles.subStatsRow}>
-        <View style={styles.statColumn}>
-          <Text style={[styles.statLabel, isDark ? styles.textSecondaryDark : styles.textSecondaryLight]}>
+      <View className="flex-row items-center pt-1">
+        <View className="flex-1 gap-1">
+          <Text className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">
             Total Spent
           </Text>
-          <Text style={[styles.statValue, { color: isDark ? '#FFFFFF' : '#000000' }]}>
+          <Text className="text-lg font-bold tracking-tight text-text-primary-light dark:text-text-primary-dark">
             {formatCurrency(totalSpent)}
           </Text>
         </View>
 
-        <View style={[styles.statDivider, isDark ? styles.dividerDark : styles.dividerLight]} />
+        <View className="w-[1px] h-9 mx-4 bg-black/5 dark:bg-white/10" />
 
-        <View style={styles.statColumn}>
-          <Text style={[styles.statLabel, isDark ? styles.textSecondaryDark : styles.textSecondaryLight]}>
+        <View className="flex-1 gap-1">
+          <Text className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">
             Monthly Income
           </Text>
-          <Text style={[styles.statValue, { color: '#2EC08B' }]}>
+          <Text className="text-lg font-bold tracking-tight text-emerald-500 dark:text-emerald-400">
             {formatCurrency(profile.monthlyIncome)}
           </Text>
         </View>
@@ -84,107 +90,3 @@ export function ExpenseHeroCard() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  cardWrapper: {
-    borderRadius: 24,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    overflow: 'hidden',
-    position: 'relative',
-    gap: 16,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  badgeNormal: {
-    backgroundColor: 'rgba(171, 159, 242, 0.18)',
-  },
-  badgeAlert: {
-    backgroundColor: 'rgba(255, 69, 58, 0.15)',
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  badgeTextNormal: {
-    color: '#AB9FF2',
-  },
-  badgeTextAlert: {
-    color: '#FF453A',
-  },
-  heroAmount: {
-    fontSize: 38,
-    fontWeight: '800',
-    letterSpacing: -1,
-  },
-  progressTrack: {
-    height: 6,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressTrackDark: {
-    backgroundColor: '#2C2C2E',
-  },
-  progressTrackLight: {
-    backgroundColor: '#E2DFFE', // Fog
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  subStatsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 4,
-  },
-  statColumn: {
-    flex: 1,
-    gap: 4,
-  },
-  statLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-  },
-  statDivider: {
-    width: StyleSheet.hairlineWidth,
-    height: 36,
-    marginHorizontal: 16,
-  },
-  dividerDark: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-  },
-  dividerLight: {
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
-  },
-  textPrimaryDark: {
-    color: '#FFFFFF',
-  },
-  textPrimaryLight: {
-    color: '#000000',
-  },
-  textSecondaryDark: {
-    color: '#8E8E93',
-  },
-  textSecondaryLight: {
-    color: '#6C6C70',
-  },
-});

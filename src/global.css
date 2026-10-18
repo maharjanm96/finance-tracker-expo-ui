@@ -2,6 +2,15 @@
 @import "uniwind";
 
 @theme {
+  /* Plus Jakarta Sans Fonts */
+  --font-sans: PlusJakartaSans-Regular, system-ui, sans-serif;
+  --font-light: PlusJakartaSans-Light;
+  --font-regular: PlusJakartaSans-Regular;
+  --font-medium: PlusJakartaSans-Medium;
+  --font-semibold: PlusJakartaSans-SemiBold;
+  --font-bold: PlusJakartaSans-Bold;
+  --font-extrabold: PlusJakartaSans-ExtraBold;
+
   /* Brand Accent Tokens */
   --color-brand-perano: #AB9FF2;
   --color-brand-dark-purple: #3C315B;
@@ -32,6 +41,15 @@
 }
 
 :root {
+  /* Fonts */
+  --font-sans: PlusJakartaSans-Regular, system-ui, sans-serif;
+  --font-light: PlusJakartaSans-Light;
+  --font-regular: PlusJakartaSans-Regular;
+  --font-medium: PlusJakartaSans-Medium;
+  --font-semibold: PlusJakartaSans-SemiBold;
+  --font-bold: PlusJakartaSans-Bold;
+  --font-extrabold: PlusJakartaSans-ExtraBold;
+
   /* Brand Palette */
   --brand-perano: #AB9FF2;
   --brand-dark-purple: #3C315B;
@@ -59,4 +77,37 @@
   --text-dark: #E4E5EB;
   --text-secondary-dark: #989BA5;
   --border-dark: rgba(255, 255, 255, 0.08);
+}
+
+/* Tailwind Utilities for Plus Jakarta Sans font weight mapping */
+@utility font-sans {
+  font-family: PlusJakartaSans-Regular;
+}
+@utility font-light {
+  font-family: PlusJakartaSans-Light;
+  font-weight: 300;
+}
+@utility font-regular {
+  font-family: PlusJakartaSans-Regular;
+  font-weight: 400;
+}
+@utility font-normal {
+  font-family: PlusJakartaSans-Regular;
+  font-weight: 400;
+}
+@utility font-medium {
+  font-family: PlusJakartaSans-Medium;
+  font-weight: 500;
+}
+@utility font-semibold {
+  font-family: PlusJakartaSans-SemiBold;
+  font-weight: 600;
+}
+@utility font-bold {
+  font-family: PlusJakartaSans-Bold;
+  font-weight: 700;
+}
+@utility font-extrabold {
+  font-family: PlusJakartaSans-ExtraBold;
+  font-weight: 800;
 }
