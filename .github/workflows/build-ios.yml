@@ -16,11 +16,16 @@ on:
 jobs:
   build-ios:
     name: 🍏 Compile iOS App
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - name: ⬇️ Checkout Repository
         uses: actions/checkout@v4
+
+      - name: 🍎 Select Xcode 16
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
 
       - name: 🟢 Setup Node.js 20
         uses: actions/setup-node@v4
@@ -45,11 +50,6 @@ jobs:
           SCHEME=$(xcodebuild -list -workspace "$WORKSPACE" -json | jq -r '.workspace.schemes[0]')
           echo "Detected scheme: $SCHEME"
           echo "scheme=$SCHEME" >> $GITHUB_OUTPUT
-
-      - name: 📱 Install CocoaPods
-        run: |
-          cd ios
-          pod install --repo-update
 
       # ─── 1. Build Physical Device Unsigned IPA (For Sideloadly / AltStore) ───
       - name: 🔨 Build Device Archive (Unsigned)
