@@ -1,5 +1,5 @@
 {
-  "name": "finance-tracker-app",
+  "name": "finance-tracker",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
@@ -8,6 +8,7 @@
     "expo": "~57.0.30",
     "expo-blur": "~57.0.3",
     "expo-constants": "~57.0.22",
+    "expo-dev-client": "~57.0.20",
     "expo-device": "~57.0.2",
     "expo-font": "~57.0.4",
     "expo-glass-effect": "~57.0.4",
