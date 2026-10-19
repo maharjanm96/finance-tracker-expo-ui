@@ -24,6 +24,7 @@ export const TABS = [
   { name: "Home", pageIndex: 1 },
   { name: "Transactions", pageIndex: 2 },
   { name: "Analytics", pageIndex: 3 },
+  { name: "Goals", pageIndex: 4 },
 ] as const;
 
 /**

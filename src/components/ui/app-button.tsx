@@ -16,6 +16,7 @@ export type ButtonVariant =
   | "primary"
   | "secondary"
   | "danger"
+  | "destructive"
   | "outline"
   | "ghost";
 
@@ -68,11 +69,17 @@ export function AppButton({
   let defaultIconColor = "";
 
   switch (variant) {
+    case "destructive":
+      containerVariantClass =
+        "bg-red-500/10 dark:bg-red-500/15 border border-red-500/25";
+      textVariantClass = "text-red-500";
+      defaultIconColor = "#EF4444";
+      break;
     case "danger":
       containerVariantClass =
         "bg-red-500 dark:bg-red-500 border border-red-500/20";
-      textVariantClass = "text-text-dark dark:text-text-light";
-      defaultIconColor = isDark ? "#1E1F24" : "#E4E5EB";
+      textVariantClass = "text-white dark:text-white";
+      defaultIconColor = "#FFFFFF";
       break;
     case "secondary":
       containerVariantClass =

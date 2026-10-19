@@ -53,9 +53,7 @@ export default function ProfileScreen({
 
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(profile.name);
-  const [editGoal, setEditGoal] = useState(
-    profile.annualSavingsGoal.toString(),
-  );
+  const [editEmail, setEditEmail] = useState(profile.email ?? "");
   const [notifications, setNotifications] = useState(true);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
@@ -86,13 +84,9 @@ export default function ProfileScreen({
   };
 
   const handleSaveProfile = () => {
-    const parsedGoal =
-      parseFloat(editGoal.replace(/[^0-9.]/g, "")) || profile.annualSavingsGoal;
-
     setProfile({
       name: editName.trim() || profile.name,
-      annualSavingsGoal:
-        parsedGoal > 0 ? parsedGoal : profile.annualSavingsGoal,
+      email: editEmail.trim(),
     });
     setIsEditing(false);
   };
@@ -194,7 +188,7 @@ export default function ProfileScreen({
               numberOfLines={1}
               className="text-[13px] font-medium text-text-secondary-light dark:text-text-secondary-dark mt-0.5"
             >
-              Goal: {formatCurrency(profile.annualSavingsGoal, currencySymbol)} / yr
+              {profile.email || "No email added"}
             </Text>
           </View>
           <Pressable
@@ -203,7 +197,7 @@ export default function ProfileScreen({
                 handleSaveProfile();
               } else {
                 setEditName(profile.name);
-                setEditGoal(profile.annualSavingsGoal.toString());
+                setEditEmail(profile.email ?? "");
                 setIsEditing(true);
               }
             }}
@@ -231,12 +225,15 @@ export default function ProfileScreen({
 
             <View className="gap-1">
               <Text className="text-[12px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">
-                Annual Savings Goal
+                Email Address
               </Text>
               <TextInput
-                value={editGoal}
-                onChangeText={setEditGoal}
-                keyboardType="numeric"
+                value={editEmail}
+                onChangeText={setEditEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholder="e.g. manish@example.com"
+                placeholderTextColor={isDark ? "#6E717C" : "#9E9EA7"}
                 className="h-11 px-3.5 rounded-xl bg-white dark:bg-[#18191D] text-[15px] font-semibold text-text-light dark:text-text-dark border border-black/5 dark:border-white/5"
               />
             </View>

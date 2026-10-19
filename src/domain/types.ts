@@ -1,4 +1,9 @@
-export type AccountType = 'savings' | 'spending' | 'emergency' | 'cash' | 'investment';
+export type AccountType =
+  | "savings"
+  | "spending"
+  | "emergency"
+  | "cash"
+  | "investment";
 
 export interface Account {
   id: string;
@@ -13,23 +18,23 @@ export interface Account {
 }
 
 export type ExpenseCategory =
-  | 'Food'
-  | 'Housing'
-  | 'Transportation'
-  | 'Shopping'
-  | 'Entertainment'
-  | 'Bills'
-  | 'Health'
-  | 'Salary'
-  | 'Freelance'
-  | 'Business'
-  | 'Investment'
-  | 'Gift'
-  | 'Rental'
-  | 'Transfer'
-  | 'Other';
+  | "Food"
+  | "Housing"
+  | "Transportation"
+  | "Shopping"
+  | "Entertainment"
+  | "Bills"
+  | "Health"
+  | "Salary"
+  | "Freelance"
+  | "Business"
+  | "Investment"
+  | "Gift"
+  | "Rental"
+  | "Transfer"
+  | "Other";
 
-export type TransactionType = 'expense' | 'income' | 'transfer';
+export type TransactionType = "expense" | "income" | "transfer";
 
 export interface Transaction {
   id: string;
@@ -47,6 +52,7 @@ export interface Transaction {
 
 export interface UserProfile {
   name: string;
+  email?: string;
   monthlyIncome: number;
   annualSavingsGoal: number;
   currency: string;
@@ -58,4 +64,14 @@ export interface CategoryBreakdownItem {
   amount: number;
   percentage: number;
   count: number;
+}
+
+export interface Goal {
+  id: string;
+  title: string;
+  targetAmount: number;
+  isActive: boolean;
+  category?: string;
+  icon?: string;
+  createdAt: number;
 }

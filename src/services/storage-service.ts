@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { Account, Transaction, UserProfile } from "@/domain/types";
+import { Account, Goal, Transaction, UserProfile } from "@/domain/types";
 
 export type StoredThemeMode = "system" | "light" | "dark";
 
@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   USER_PROFILE: "@expense_app/user_profile",
   ACCOUNTS: "@expense_app/accounts",
   TRANSACTIONS: "@expense_app/transactions",
+  GOALS: "@expense_app/goals",
   THEME_MODE: "@expense_app/theme_mode",
 } as const;
 
@@ -75,6 +76,27 @@ export const StorageService = {
     }
   },
 
+  async loadGoals(): Promise<Goal[] | null> {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.GOALS);
+      return data ? (JSON.parse(data) as Goal[]) : null;
+    } catch (error) {
+      console.warn("Failed to load goals from storage", error);
+      return null;
+    }
+  },
+
+  async saveGoals(goals: Goal[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.GOALS,
+        JSON.stringify(goals)
+      );
+    } catch (error) {
+      console.warn("Failed to save goals to storage", error);
+    }
+  },
+
   async loadThemeMode(): Promise<StoredThemeMode | null> {
     try {
       const mode = await AsyncStorage.getItem(STORAGE_KEYS.THEME_MODE);
@@ -99,6 +121,7 @@ export const StorageService = {
         STORAGE_KEYS.USER_PROFILE,
         STORAGE_KEYS.ACCOUNTS,
         STORAGE_KEYS.TRANSACTIONS,
+        STORAGE_KEYS.GOALS,
       ]);
     } catch (error) {
       console.warn("Failed to clear local app data", error);

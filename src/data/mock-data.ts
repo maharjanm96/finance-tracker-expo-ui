@@ -2,6 +2,7 @@ import { Account, Transaction, UserProfile } from "@/domain/types";
 
 export const INITIAL_PROFILE: UserProfile = {
   name: "Manish",
+  email: "manish@example.com",
   monthlyIncome: 85000,
   annualSavingsGoal: 500000,
   currency: "NPR",

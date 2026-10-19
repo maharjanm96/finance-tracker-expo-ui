@@ -1,11 +1,7 @@
 import type { SymbolViewProps } from "expo-symbols";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-import {
-  CurrencyInfo,
-  DEFAULT_CURRENCY,
-  getCurrencyInfo,
-} from "@/constants/currencies";
+import { CurrencyInfo, getCurrencyInfo } from "@/constants/currencies";
 import {
   calculateAccountBalance,
   calculateCombinedBalance,
@@ -19,6 +15,7 @@ import { setActiveCurrency } from "@/domain/formatters";
 import {
   Account,
   ExpenseCategory,
+  Goal,
   Transaction,
   UserProfile,
 } from "@/domain/types";
@@ -84,6 +81,7 @@ export const CATEGORY_ICONS: Record<ExpenseCategory, CategoryMeta> = {
 
 export const DEFAULT_PROFILE: UserProfile = {
   name: "",
+  email: "",
   monthlyIncome: 0,
   annualSavingsGoal: 0,
   currency: "NPR",
@@ -121,6 +119,14 @@ interface ExpenseContextType {
   scopedTransactions: Transaction[];
   recentTransactions: Transaction[];
 
+  // Goals system
+  goals: Goal[];
+  activeGoal: Goal | null;
+  addGoal: (goal: Omit<Goal, "id" | "createdAt">) => void;
+  editGoal: (id: string, goal: Partial<Goal>) => void;
+  deleteGoal: (id: string) => void;
+  setActiveGoal: (id: string) => void;
+
   // Mutators
   selectAccount: (id: string | null) => void;
   setProfile: (profile: Partial<UserProfile>) => void;
@@ -150,6 +156,7 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfileState] = useState<UserProfile>(DEFAULT_PROFILE);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
   );
@@ -158,11 +165,12 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
   // Load persisted offline state on startup
   useEffect(() => {
     async function hydrate() {
-      const [savedProfile, savedAccounts, savedTransactions] =
+      const [savedProfile, savedAccounts, savedTransactions, savedGoals] =
         await Promise.all([
           StorageService.loadProfile(),
           StorageService.loadAccounts(),
           StorageService.loadTransactions(),
+          StorageService.loadGoals(),
         ]);
 
       if (savedProfile) {
@@ -176,6 +184,9 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
       }
       if (savedTransactions) {
         setTransactions(savedTransactions);
+      }
+      if (savedGoals) {
+        setGoals(savedGoals);
       }
       setIsHydrated(true);
     }
@@ -209,7 +220,7 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
     calculateExpenses(transactions, null),
   );
   const annualGoalProgress = calculateGoalProgress(
-    annualSavings,
+    combinedBalance,
     profile.annualSavingsGoal,
   );
 
@@ -344,8 +355,77 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
     setProfileState(DEFAULT_PROFILE);
     setAccounts([]);
     setTransactions([]);
+    setGoals([]);
     setSelectedAccountId(null);
     StorageService.clearAllData();
+  };
+
+  // Active Goal computation
+  const activeGoal =
+    goals.find((g) => g.isActive) ?? (goals.length > 0 ? goals[0] : null);
+
+  const addGoal = (goalData: Omit<Goal, "id" | "createdAt">) => {
+    const newGoal: Goal = {
+      ...goalData,
+      id: `goal-${Date.now()}`,
+      createdAt: Date.now(),
+    };
+    setGoals((prev) => {
+      let next: Goal[];
+      if (newGoal.isActive) {
+        next = [newGoal, ...prev.map((g) => ({ ...g, isActive: false }))];
+      } else {
+        const hasActive = prev.some((g) => g.isActive);
+        if (!hasActive) {
+          newGoal.isActive = true;
+        }
+        next = [newGoal, ...prev];
+      }
+      StorageService.saveGoals(next);
+      return next;
+    });
+  };
+
+  const editGoal = (id: string, updated: Partial<Goal>) => {
+    setGoals((prev) => {
+      let next: Goal[];
+      if (updated.isActive) {
+        next = prev.map((g) =>
+          g.id === id
+            ? { ...g, ...updated, isActive: true }
+            : { ...g, isActive: false },
+        );
+      } else {
+        next = prev.map((g) => (g.id === id ? { ...g, ...updated } : g));
+        if (!next.some((g) => g.isActive) && next.length > 0) {
+          next[0].isActive = true;
+        }
+      }
+      StorageService.saveGoals(next);
+      return next;
+    });
+  };
+
+  const deleteGoal = (id: string) => {
+    setGoals((prev) => {
+      const next = prev.filter((g) => g.id !== id);
+      if (!next.some((g) => g.isActive) && next.length > 0) {
+        next[0].isActive = true;
+      }
+      StorageService.saveGoals(next);
+      return next;
+    });
+  };
+
+  const setActiveGoal = (id: string) => {
+    setGoals((prev) => {
+      const next = prev.map((g) => ({
+        ...g,
+        isActive: g.id === id,
+      }));
+      StorageService.saveGoals(next);
+      return next;
+    });
   };
 
   // Legacy compat aliases for hero card
@@ -365,6 +445,12 @@ export function ExpenseProvider({ children }: { children: React.ReactNode }) {
         profile,
         accounts,
         transactions,
+        goals,
+        activeGoal,
+        addGoal,
+        editGoal,
+        deleteGoal,
+        setActiveGoal,
         selectedAccountId,
         selectedAccount,
         isHydrated,

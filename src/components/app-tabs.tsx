@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import AnalyticsScreen from "@/app/analytics";
+import GoalsScreen from "@/app/goals";
 import HomeScreen from "@/app/index";
 import ProfileScreen from "@/app/profile";
 import TransactionsScreen from "@/app/transactions";
@@ -23,7 +24,7 @@ import { TransactionType } from "@/domain/types";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function AppTabs() {
-  // Index 0: Profile, Index 1: Home (Default main page), Index 2: Transactions, Index 3: Analytics
+  // Index 0: Profile, Index 1: Home (Default main page), Index 2: Transactions, Index 3: Analytics, Index 4: Goals
   const [activeTab, setActiveTab] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addTransactionType, setAddTransactionType] =
@@ -53,7 +54,7 @@ export default function AppTabs() {
   const handleScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = e.nativeEvent.contentOffset.x;
     const pageIndex = Math.round(offsetX / SCREEN_WIDTH);
-    if (pageIndex >= 0 && pageIndex <= 3 && pageIndex !== activeTab) {
+    if (pageIndex >= 0 && pageIndex <= 4 && pageIndex !== activeTab) {
       setActiveTab(pageIndex);
     }
   };
@@ -63,7 +64,7 @@ export default function AppTabs() {
       className="flex-1 bg-bg-light dark:bg-bg-dark"
       style={styles.container}
     >
-      {/* ─── Horizontal Swiping Screen Pager (Profile, Home, Transactions, Analytics) ─── */}
+      {/* ─── Horizontal Swiping Screen Pager (Profile, Home, Transactions, Analytics, Goals) ─── */}
       <ScrollView
         ref={scrollRef}
         horizontal
@@ -105,6 +106,11 @@ export default function AppTabs() {
         {/* Screen 3: Analytics */}
         <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
           <AnalyticsScreen />
+        </View>
+
+        {/* Screen 4: Goals */}
+        <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
+          <GoalsScreen />
         </View>
       </ScrollView>
 

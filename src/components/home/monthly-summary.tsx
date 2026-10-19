@@ -14,18 +14,29 @@ export function MonthlySummary() {
     monthlyIncome,
     monthlyExpenses,
     monthlySavings,
+    combinedBalance,
+    scopedBalance,
     savingsRate,
     currencySymbol,
+    activeGoal,
   } = useExpense();
 
-  // Monthly savings goal calculation based on annual profile goal
-  const monthlyGoal =
-    Math.round((profile.annualSavingsGoal || 300000) / 12) || 25000;
-  const currentSavings = Math.max(0, monthlySavings);
-  const goalPercentage = Math.min(
-    100,
-    Math.round((currentSavings / monthlyGoal) * 100),
+  // Target amount and title from activeGoal (fallback to annualSavingsGoal if no active goal)
+  const targetGoalAmount =
+    activeGoal?.targetAmount ?? (profile.annualSavingsGoal || 300000);
+  const goalTitle = activeGoal?.title ?? "Savings Goal";
+
+  // Total savings is the total balance across all accounts (or selected account if filtered)
+  const totalSavings = Math.max(
+    0,
+    selectedAccount ? scopedBalance : combinedBalance,
   );
+  const isGoalReached =
+    targetGoalAmount > 0 && totalSavings >= targetGoalAmount;
+  const goalPercentage =
+    targetGoalAmount > 0
+      ? Math.min(100, Math.round((totalSavings / targetGoalAmount) * 100))
+      : 0;
 
   const savingsRateText =
     savingsRate !== null ? `${savingsRate}% saved` : "0% saved";
@@ -115,14 +126,29 @@ export function MonthlySummary() {
             <View className="gap-1 mt-0.5">
               <View className="h-1.5 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
                 <View
-                  className="h-full rounded-full bg-brand-perano"
+                  className={`h-full rounded-full ${
+                    isGoalReached ? "bg-income" : "bg-brand-perano"
+                  }`}
                   style={{ width: `${Math.max(4, goalPercentage)}%` }}
                 />
               </View>
-              <Text className="text-[10px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
-                {goalPercentage}% of goal (
-                {formatCompactCurrency(monthlyGoal, currencySymbol)})
-              </Text>
+              {isGoalReached ? (
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  className="text-[10px] font-bold text-income"
+                >
+                  {goalTitle}
+                </Text>
+              ) : (
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  className="text-[10px] font-medium text-text-secondary-light dark:text-text-secondary-dark"
+                >
+                  {goalTitle}
+                </Text>
+              )}
             </View>
           </View>
 
