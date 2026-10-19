@@ -37,7 +37,12 @@ jobs:
         run: npm ci
 
       - name: 🏗️ Run Expo Prebuild (Generate Native iOS Project)
-        run: npx expo prebuild --platform ios --clean
+        run: npx expo prebuild --platform ios --clean --no-install
+
+      - name: 📦 Install CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update
 
       - name: 🔍 Detect Xcode Workspace and Scheme
         id: xcode-info
@@ -63,11 +68,13 @@ jobs:
             -scheme "$SCHEME" \
             -configuration Release \
             -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
             -derivedDataPath build_device \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            COMPILER_INDEX_STORE_ENABLE=NO
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            build
 
           # Package into standard IPA structure (Payload folder)
           mkdir -p Payload
@@ -97,8 +104,10 @@ jobs:
             -scheme "$SCHEME" \
             -configuration Release \
             -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build_sim \
-            COMPILER_INDEX_STORE_ENABLE=NO
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            build
 
           # Compress .app for download
           APP_PATH=$(find build_sim/Build/Products/Release-iphonesimulator -name "*.app" -type d | head -n 1)
