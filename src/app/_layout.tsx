@@ -10,7 +10,8 @@ import { Text, TextInput } from "react-native";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import AppTabs from "@/components/app-tabs";
-import { ExpenseProvider } from "@/context/expense-context";
+import { OnboardingSetup } from "@/components/onboarding-setup";
+import { ExpenseProvider, useExpense } from "@/context/expense-context";
 import { ThemeProvider, useAppTheme } from "@/context/theme-context";
 
 import "../global.css";
@@ -32,10 +33,16 @@ SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
   const { isDark } = useAppTheme();
+  const { profile, isHydrated } = useExpense();
+
+  if (!isHydrated) {
+    return null;
+  }
+
   return (
     <NavThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
-      <AppTabs />
+      {!profile.isConfigured ? <OnboardingSetup /> : <AppTabs />}
     </NavThemeProvider>
   );
 }

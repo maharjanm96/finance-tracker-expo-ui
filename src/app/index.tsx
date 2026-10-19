@@ -12,7 +12,6 @@ import { AccountCarousel } from "@/components/home/account-carousel";
 import { MonthlySummary } from "@/components/home/monthly-summary";
 import { AccountSelectorSheet } from "@/components/navigation/account-selector-sheet";
 import { getTopHeaderPadding } from "@/components/navigation/top-chip-header";
-import { OnboardingSetup } from "@/components/onboarding-setup";
 import { TransactionDetailsModal } from "@/components/transaction-details-modal";
 import { TransactionItem } from "@/components/transaction-item";
 import { useExpense } from "@/context/expense-context";
@@ -134,7 +133,7 @@ export default function HomeScreen({ onNavigateToTab }: HomeScreenProps = {}) {
                   <Pressable
                     onPress={() => {
                       if (onNavigateToTab) {
-                        onNavigateToTab(1);
+                        onNavigateToTab(2);
                       } else {
                         router.push("/transactions" as never);
                       }
@@ -185,9 +184,6 @@ export default function HomeScreen({ onNavigateToTab }: HomeScreenProps = {}) {
           </View>
         </Animated.ScrollView>
       </BlurTargetView>
-
-      {/* Initial 2-Step Onboarding Modal */}
-      <OnboardingSetup />
 
       {/* Slide-Up Transaction Modal (Expense, Income, Transfer) */}
       <AddTransactionModal

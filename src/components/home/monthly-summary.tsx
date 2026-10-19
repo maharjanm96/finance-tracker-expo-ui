@@ -4,7 +4,7 @@ import { Text, View } from "react-native";
 
 import { useExpense } from "@/context/expense-context";
 import { useAppTheme } from "@/context/theme-context";
-import { formatCurrency } from "@/domain/formatters";
+import { formatCompactCurrency } from "@/domain/formatters";
 
 export function MonthlySummary() {
   const { isDark } = useAppTheme();
@@ -108,7 +108,7 @@ export function MonthlySummary() {
               numberOfLines={1}
               className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text-primary-light dark:text-text-primary-dark"
             >
-              {formatCurrency(monthlySavings, currencySymbol)}
+              {formatCompactCurrency(monthlySavings, currencySymbol)}
             </Text>
 
             {/* Compact Goal Progress Track */}
@@ -121,7 +121,7 @@ export function MonthlySummary() {
               </View>
               <Text className="text-[10px] font-medium text-text-secondary-light dark:text-text-secondary-dark">
                 {goalPercentage}% of goal (
-                {formatCurrency(monthlyGoal, currencySymbol)})
+                {formatCompactCurrency(monthlyGoal, currencySymbol)})
               </Text>
             </View>
           </View>
@@ -153,7 +153,7 @@ export function MonthlySummary() {
                 numberOfLines={1}
                 className="text-[13px] font-bold text-income"
               >
-                +{formatCurrency(monthlyIncome, currencySymbol)}
+                +{formatCompactCurrency(monthlyIncome, currencySymbol)}
               </Text>
             </View>
 
@@ -179,7 +179,7 @@ export function MonthlySummary() {
                 numberOfLines={1}
                 className="text-[13px] font-bold text-expense"
               >
-                -{formatCurrency(monthlyExpenses, currencySymbol)}
+                -{formatCompactCurrency(monthlyExpenses, currencySymbol)}
               </Text>
             </View>
 

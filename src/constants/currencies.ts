@@ -9,7 +9,7 @@ export interface CurrencyInfo {
 export const CURRENCIES: CurrencyInfo[] = [
   {
     code: "NPR",
-    symbol: "NPR",
+    symbol: "रु",
     name: "Nepalese Rupee",
     country: "Nepal",
     flag: require("../../assets/images/flags/nepal.png"),
@@ -37,15 +37,20 @@ export const CURRENCIES: CurrencyInfo[] = [
   },
 ];
 
-export const DEFAULT_CURRENCY = CURRENCIES[0]; // Nepal (Rs.)
+export const DEFAULT_CURRENCY = CURRENCIES[0]; // Nepal (रु)
 
 export function getCurrencyInfo(symbolOrCode?: string): CurrencyInfo {
   if (!symbolOrCode) return DEFAULT_CURRENCY;
+  const clean = symbolOrCode.trim().toLowerCase();
   return (
     CURRENCIES.find(
       (c) =>
-        c.symbol.toLowerCase() === symbolOrCode.toLowerCase() ||
-        c.code.toLowerCase() === symbolOrCode.toLowerCase(),
+        c.symbol.toLowerCase() === clean ||
+        c.code.toLowerCase() === clean ||
+        clean === "npr" ||
+        clean === "रु" ||
+        clean === "rs." ||
+        clean === "rs",
     ) ?? DEFAULT_CURRENCY
   );
 }

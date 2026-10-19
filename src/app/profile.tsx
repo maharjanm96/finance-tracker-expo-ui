@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CreateAccountModal } from "@/components/create-account-modal";
 import { CurrencyPickerModal } from "@/components/currency-picker-modal";
+import { getTopHeaderPadding } from "@/components/navigation/top-chip-header";
 import { AppButton } from "@/components/ui/app-button";
 import { getAccountTypeIcon } from "@/constants/account-types";
 import { useExpense } from "@/context/expense-context";
@@ -25,12 +26,17 @@ import { Account } from "@/domain/types";
 
 interface ProfileScreenProps {
   onClose?: () => void;
+  isTab?: boolean;
 }
 
-export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
+export default function ProfileScreen({
+  onClose,
+  isTab = false,
+}: ProfileScreenProps = {}) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark, themeMode, setThemeMode } = useAppTheme();
+  const topHeaderPadding = getTopHeaderPadding(insets.top);
 
   const {
     profile,
@@ -47,9 +53,6 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(profile.name);
-  const [editIncome, setEditIncome] = useState(
-    profile.monthlyIncome.toString(),
-  );
   const [editGoal, setEditGoal] = useState(
     profile.annualSavingsGoal.toString(),
   );
@@ -83,14 +86,11 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
   };
 
   const handleSaveProfile = () => {
-    const parsedIncome =
-      parseFloat(editIncome.replace(/[^0-9.]/g, "")) || profile.monthlyIncome;
     const parsedGoal =
       parseFloat(editGoal.replace(/[^0-9.]/g, "")) || profile.annualSavingsGoal;
 
     setProfile({
       name: editName.trim() || profile.name,
-      monthlyIncome: parsedIncome > 0 ? parsedIncome : profile.monthlyIncome,
       annualSavingsGoal:
         parsedGoal > 0 ? parsedGoal : profile.annualSavingsGoal,
     });
@@ -113,52 +113,54 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       className="flex-1 bg-bg-light dark:bg-bg-dark"
     >
-      {/* ─── Top Page Header Bar ─── */}
-      <View
-        className="px-5 pb-3 flex-row items-center justify-between border-b border-black/5 dark:border-white/5 bg-bg-light dark:bg-bg-dark z-10"
-        style={{ paddingTop: Math.max(insets.top, 16) + 6 }}
-      >
-        <View className="flex-row items-center gap-3">
-          <Pressable
-            onPress={handleBack}
-            hitSlop={12}
-            className="w-10 h-10 rounded-full items-center justify-center bg-black/5 dark:bg-white/10 active:opacity-70"
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <SymbolView
-              name={{
-                ios: "chevron.backward",
-                android: "arrow_back",
-                web: "arrow_back",
-              }}
-              size={20}
-              tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
-            />
-          </Pressable>
+      {/* ─── Top Page Header Bar (Only shown when not used as a tab) ─── */}
+      {!isTab && (
+        <View
+          className="px-5 pb-3 flex-row items-center justify-between border-b border-black/5 dark:border-white/5 bg-bg-light dark:bg-bg-dark z-10"
+          style={{ paddingTop: Math.max(insets.top, 16) + 6 }}
+        >
+          <View className="flex-row items-center gap-3">
+            <Pressable
+              onPress={handleBack}
+              hitSlop={12}
+              className="w-10 h-10 rounded-full items-center justify-center bg-black/5 dark:bg-white/10 active:opacity-70"
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <SymbolView
+                name={{
+                  ios: "chevron.backward",
+                  android: "arrow_back",
+                  web: "arrow_back",
+                }}
+                size={20}
+                tintColor={isDark ? "#E4E5EB" : "#1E1F24"}
+              />
+            </Pressable>
 
-          <View>
-            <Text className="text-[11px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase">
-              SETTINGS & PROFILE
-            </Text>
-            <Text className="text-xl font-black tracking-tight text-text-light dark:text-text-dark">
-              Account
-            </Text>
+            <View>
+              <Text className="text-[11px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark uppercase">
+                SETTINGS & PROFILE
+              </Text>
+              <Text className="text-xl font-black tracking-tight text-text-light dark:text-text-dark">
+                Account
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {isEditing && (
-          <Pressable
-            onPress={handleSaveProfile}
-            hitSlop={8}
-            className="px-3.5 py-1.5 rounded-full bg-brand-perano active:opacity-80"
-          >
-            <Text className="text-xs font-bold text-brand-dark-purple">
-              Save
-            </Text>
-          </Pressable>
-        )}
-      </View>
+          {isEditing && (
+            <Pressable
+              onPress={handleSaveProfile}
+              hitSlop={8}
+              className="px-3.5 py-1.5 rounded-full bg-brand-perano active:opacity-80"
+            >
+              <Text className="text-xs font-bold text-brand-dark-purple">
+                Save
+              </Text>
+            </Pressable>
+          )}
+        </View>
+      )}
 
       <ScrollView
         style={{ flex: 1 }}
@@ -169,8 +171,8 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
         alwaysBounceVertical={true}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingTop: 16,
-          paddingBottom: Math.max(insets.bottom + 60, 80),
+          paddingTop: isTab ? topHeaderPadding + 10 : 16,
+          paddingBottom: isTab ? 140 : Math.max(insets.bottom + 60, 80),
           gap: 20,
         }}
       >
@@ -192,8 +194,7 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
               numberOfLines={1}
               className="text-[13px] font-medium text-text-secondary-light dark:text-text-secondary-dark mt-0.5"
             >
-              Income: {formatCurrency(profile.monthlyIncome, currencySymbol)} /
-              mo
+              Goal: {formatCurrency(profile.annualSavingsGoal, currencySymbol)} / yr
             </Text>
           </View>
           <Pressable
@@ -202,7 +203,6 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
                 handleSaveProfile();
               } else {
                 setEditName(profile.name);
-                setEditIncome(profile.monthlyIncome.toString());
                 setEditGoal(profile.annualSavingsGoal.toString());
                 setIsEditing(true);
               }
@@ -225,18 +225,6 @@ export default function ProfileScreen({ onClose }: ProfileScreenProps = {}) {
               <TextInput
                 value={editName}
                 onChangeText={setEditName}
-                className="h-11 px-3.5 rounded-xl bg-white dark:bg-[#18191D] text-[15px] font-semibold text-text-light dark:text-text-dark border border-black/5 dark:border-white/5"
-              />
-            </View>
-
-            <View className="gap-1">
-              <Text className="text-[12px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">
-                Monthly Income
-              </Text>
-              <TextInput
-                value={editIncome}
-                onChangeText={setEditIncome}
-                keyboardType="numeric"
                 className="h-11 px-3.5 rounded-xl bg-white dark:bg-[#18191D] text-[15px] font-semibold text-text-light dark:text-text-dark border border-black/5 dark:border-white/5"
               />
             </View>

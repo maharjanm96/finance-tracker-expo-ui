@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   NativeScrollEvent,
@@ -10,12 +10,12 @@ import {
 
 import AnalyticsScreen from "@/app/analytics";
 import HomeScreen from "@/app/index";
+import ProfileScreen from "@/app/profile";
 import TransactionsScreen from "@/app/transactions";
 import { AddTransactionModal } from "@/components/add-transaction-modal";
 import { CreateAccountModal } from "@/components/create-account-modal";
 import { AccountSelectorSheet } from "@/components/navigation/account-selector-sheet";
 import { BottomFloatingBar } from "@/components/navigation/bottom-floating-bar";
-import { ProfileSheetModal } from "@/components/navigation/profile-sheet-modal";
 import { SearchSheetModal } from "@/components/navigation/search-sheet-modal";
 import { TopChipHeader } from "@/components/navigation/top-chip-header";
 import { TransactionType } from "@/domain/types";
@@ -23,16 +23,24 @@ import { TransactionType } from "@/domain/types";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function AppTabs() {
-  const [activeTab, setActiveTab] = useState(0);
+  // Index 0: Profile, Index 1: Home (Default main page), Index 2: Transactions, Index 3: Analytics
+  const [activeTab, setActiveTab] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addTransactionType, setAddTransactionType] =
     useState<TransactionType>("expense");
   const [showAccountSheet, setShowAccountSheet] = useState(false);
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
+
+  // Initialize scroll position on Home (index 1)
+  useEffect(() => {
+    scrollRef.current?.scrollTo({
+      x: SCREEN_WIDTH,
+      animated: false,
+    });
+  }, []);
 
   const handleSelectTab = (index: number) => {
     setActiveTab(index);
@@ -45,7 +53,7 @@ export default function AppTabs() {
   const handleScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = e.nativeEvent.contentOffset.x;
     const pageIndex = Math.round(offsetX / SCREEN_WIDTH);
-    if (pageIndex >= 0 && pageIndex <= 2 && pageIndex !== activeTab) {
+    if (pageIndex >= 0 && pageIndex <= 3 && pageIndex !== activeTab) {
       setActiveTab(pageIndex);
     }
   };
@@ -55,18 +63,24 @@ export default function AppTabs() {
       className="flex-1 bg-bg-light dark:bg-bg-dark"
       style={styles.container}
     >
-      {/* ─── Horizontal Swiping Screen Pager (Home, Transactions, Analytics) ─── */}
+      {/* ─── Horizontal Swiping Screen Pager (Profile, Home, Transactions, Analytics) ─── */}
       <ScrollView
         ref={scrollRef}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         bounces={false}
+        contentOffset={{ x: SCREEN_WIDTH, y: 0 }}
         onMomentumScrollEnd={handleScrollEnd}
         scrollEventThrottle={16}
         style={styles.pagerScrollView}
       >
-        {/* Screen 0: Home */}
+        {/* Screen 0: Profile (Left side of Home) */}
+        <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
+          <ProfileScreen isTab />
+        </View>
+
+        {/* Screen 1: Home (Default main screen) */}
         <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
           <HomeScreen
             onNavigateToTab={handleSelectTab}
@@ -78,7 +92,7 @@ export default function AppTabs() {
           />
         </View>
 
-        {/* Screen 1: Transactions */}
+        {/* Screen 2: Transactions */}
         <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
           <TransactionsScreen
             onOpenAddTransaction={() => {
@@ -88,7 +102,7 @@ export default function AppTabs() {
           />
         </View>
 
-        {/* Screen 2: Analytics */}
+        {/* Screen 3: Analytics */}
         <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
           <AnalyticsScreen />
         </View>
@@ -98,7 +112,7 @@ export default function AppTabs() {
       <TopChipHeader
         activeTab={activeTab}
         onSelectTab={handleSelectTab}
-        onPressAvatar={() => setShowProfileModal(true)}
+        onPressAvatar={() => handleSelectTab(0)}
       />
 
       {/* ─── Bottom Floating Stadium Search Bar & Plus Button ─── */}
@@ -108,12 +122,6 @@ export default function AppTabs() {
           setAddTransactionType(type);
           setShowAddModal(true);
         }}
-      />
-
-      {/* ─── Profile Bottom Sheet Modal ─── */}
-      <ProfileSheetModal
-        visible={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
       />
 
       {/* ─── Search Sheet Modal (Recents + Live Search, matching Phantom) ─── */}

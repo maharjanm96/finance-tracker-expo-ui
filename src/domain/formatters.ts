@@ -1,6 +1,6 @@
 import { getCurrencyInfo } from "@/constants/currencies";
 
-let activeCurrencySymbol = "NPR";
+let activeCurrencySymbol = "रु";
 
 export function setActiveCurrency(currency: string) {
   const info = getCurrencyInfo(currency);
@@ -23,10 +23,11 @@ export function formatCurrency(amount: number, currency?: string): string {
         ? "en-GB"
         : info.code === "CNY" || symbol === "¥"
           ? "zh-CN"
-          : "en-IN"; // South Asian grouping standard for NPR/INR
+          : "en-US"; // Standard 3-digit comma grouping (e.g. 100,000)
 
-  const formatted = rounded.toLocaleString(locale);
-  return `${symbol} ${formatted}`;
+  const formatted = Math.abs(rounded).toLocaleString(locale);
+  const sign = rounded < 0 ? "-" : "";
+  return `${sign}${symbol} ${formatted}`;
 }
 
 export function formatCompactCurrency(
@@ -36,15 +37,16 @@ export function formatCompactCurrency(
   const info = getCurrencyInfo(currency ?? activeCurrencySymbol);
   const symbol = info.symbol;
   const abs = Math.abs(amount);
-  if (abs >= 10000000) {
-    return `${symbol} ${(amount / 10000000).toFixed(1)}Cr`;
+  const sign = amount < 0 ? "-" : "";
+
+  // Only compact after 1,000,000 (>= 1,000,000) -> e.g. 1M, 1.2M, 10M
+  if (abs >= 1000000) {
+    const millions = abs / 1000000;
+    const formatted = parseFloat(millions.toFixed(2));
+    return `${sign}${symbol} ${formatted}M`;
   }
-  if (abs >= 100000) {
-    return `${symbol} ${(amount / 100000).toFixed(1)}L`;
-  }
-  if (abs >= 1000) {
-    return `${symbol} ${(amount / 1000).toFixed(1)}k`;
-  }
+
+  // Under 1,000,000: display full amount as it is (e.g. रु 100,000, रु 85,000)
   return formatCurrency(amount, symbol);
 }
 

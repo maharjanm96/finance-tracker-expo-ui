@@ -1,6 +1,6 @@
 import { BlurView } from "expo-blur";
 import { StatusBar } from "expo-status-bar";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   Platform,
   Pressable,
@@ -20,7 +20,11 @@ interface TopChipHeaderProps {
   onPressAvatar?: () => void;
 }
 
-const TABS = ["Home", "Transactions", "Analytics"] as const;
+export const TABS = [
+  { name: "Home", pageIndex: 1 },
+  { name: "Transactions", pageIndex: 2 },
+  { name: "Analytics", pageIndex: 3 },
+] as const;
 
 /**
  * Total height of the top chip header including status bar safe area inset.
@@ -48,9 +52,19 @@ export function TopChipHeader({
   const { profile } = useExpense();
   const scrollRef = useRef<ScrollView>(null);
 
+  useEffect(() => {
+    if (activeTab > 2) {
+      scrollRef.current?.scrollTo({ x: (activeTab - 2) * 80, animated: true });
+    } else {
+      scrollRef.current?.scrollTo({ x: 0, animated: true });
+    }
+  }, [activeTab]);
+
   const topInset =
     Math.max(insets.top, Platform.OS === "ios" ? 44 : 24) +
     (Platform.OS === "ios" ? 6 : 8);
+
+  const isProfileActive = activeTab === 0;
 
   return (
     <>
@@ -79,10 +93,20 @@ export function TopChipHeader({
 
         {/* Top Row: Avatar + Navigation Chips */}
         <View className="flex-row items-center gap-3 px-4 pb-2.5">
-          {/* Avatar Circle */}
+          {/* Avatar Circle (Tapping opens Profile on left, or toggles back to Home) */}
           <Pressable
-            onPress={onPressAvatar}
-            className="w-12 h-12 rounded-full bg-brand-perano items-center justify-center active:opacity-80 shadow-xs"
+            onPress={() => {
+              if (isProfileActive) {
+                onSelectTab(1); // Toggle back to Home if already on profile
+              } else {
+                onPressAvatar?.();
+              }
+            }}
+            className={`w-12 h-12 rounded-full items-center justify-center active:opacity-80 shadow-xs ${
+              isProfileActive
+                ? "bg-brand-perano border-2 border-white/80 scale-105"
+                : "bg-brand-perano/90 border border-black/5 dark:border-white/10"
+            }`}
             accessibilityRole="button"
             accessibilityLabel="Profile avatar"
           >
@@ -91,19 +115,19 @@ export function TopChipHeader({
             </Text>
           </Pressable>
 
-          {/* Chips Horizontal Scroll */}
+          {/* Chips Horizontal Scroll (Home, Transactions, Analytics) */}
           <ScrollView
             ref={scrollRef}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: 8, alignItems: "center" }}
           >
-            {TABS.map((tab, idx) => {
-              const isActive = activeTab === idx;
+            {TABS.map((item) => {
+              const isActive = activeTab === item.pageIndex;
               return (
                 <Pressable
-                  key={tab}
-                  onPress={() => onSelectTab(idx)}
+                  key={item.name}
+                  onPress={() => onSelectTab(item.pageIndex)}
                   className={`px-4 py-2.5 rounded-full active:opacity-80 ${
                     isActive
                       ? "bg-brand-perano"
@@ -123,7 +147,7 @@ export function TopChipHeader({
                           : "font-semibold text-text-light"
                     }`}
                   >
-                    {tab}
+                    {item.name}
                   </Text>
                 </Pressable>
               );

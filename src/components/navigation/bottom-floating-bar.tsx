@@ -206,7 +206,7 @@ export function BottomFloatingBar({
         ]}
       >
         <BlurView
-          intensity={Platform.OS === "ios" ? 40 : 85}
+          intensity={Platform.OS === "ios" ? 30 : 100}
           tint={isDark ? "dark" : "light"}
           style={StyleSheet.absoluteFill}
         />
