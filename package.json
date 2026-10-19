@@ -1,5 +1,5 @@
 {
-  "name": "finance-tracker",
+  "name": "vectra",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {

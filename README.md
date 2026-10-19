@@ -1,4 +1,4 @@
-# Finance Tracker 💳✨
+# Vectra — Personal Finance Tracker
 
 A modern, local-first personal finance tracking application built with **React Native**, **Expo SDK 57**, and **React 19**. Featuring Apple-inspired glassmorphism (`expo-glass-effect`), smooth gesture navigation, multi-currency support, and offline-first persistence.
 
@@ -77,6 +77,7 @@ Ensure you have the following installed on your machine:
 ### Installation & Setup
 
 1. **Clone the repository**:
+
    ```bash
    git clone <repository-url>
    cd finance-tracker-app
@@ -96,6 +97,7 @@ npm run start
 ```
 
 From the interactive terminal prompt, press:
+
 - `a` to open in an **Android Emulator** or connected Android device.
 - `i` to open in an **iOS Simulator** (macOS required).
 - `w` to open in a **Web Browser**.
@@ -118,23 +120,27 @@ npm run ios
 ## How-To Guides
 
 ### Adding a Transaction
+
 1. Tap the **`+` Action Button** in the floating navigation bar.
 2. Select the transaction type: **Expense**, **Income**, or **Transfer**.
-3. Enter the amount, choose an account (e.g., Spending or Savings), select a category (e.g., *Food*, *Housing*, *Salary*), and optionally add a note.
+3. Enter the amount, choose an account (e.g., Spending or Savings), select a category (e.g., _Food_, _Housing_, _Salary_), and optionally add a note.
 4. Press **Save Transaction**. The ledger and all dashboard cards will recalculate instantly.
 
 ### Managing Multi-Accounts
+
 1. Open the Account Selector via the top header account chip.
 2. Tap **Create New Account**.
 3. Choose an account type (`Savings`, `Spending`, `Emergency`, `Cash`, or `Investment`), assign a name, set the opening balance, and pick a custom accent color.
 4. The account is immediately available for transactions and transfers.
 
 ### Switching Currencies
+
 1. Tap the profile avatar in the header to open user settings.
 2. Select **Change Currency**.
 3. Choose your preferred currency (**NPR**, **USD**, **GBP**, or **CNY**). The entire UI will reformat currency prefixes and localized number groupings automatically.
 
 ### Toggling Dark & Light Modes
+
 1. Open the profile modal.
 2. Toggle between **System**, **Light**, and **Dark** themes. Preferences persist across restarts.
 
@@ -167,15 +173,18 @@ The application follows an offline-first, reactive unidirectional state architec
 ```
 
 ### Data Flow
+
 1. **Context as Single Source of Truth**: `ExpenseProvider` (`src/context/expense-context.tsx`) provides state and mutating dispatchers (`addTransaction`, `deleteTransaction`, `createAccount`, `updateProfile`).
 2. **Deterministic Calculations**: Financial metrics are separated into pure functions in `src/domain/finance-calculations.ts` to ensure consistency between screens without duplicated math.
 
 ### Storage & Persistence
+
 - Built on top of `@react-native-async-storage/async-storage`.
 - Keys are namespaced under `@expense_app/*`.
 - On cold launch, `StorageService` (`src/services/storage-service.ts`) hydrates accounts, profile preferences, and transaction history. If no data exists, initial seed defaults are loaded.
 
 ### Financial Calculations Engine
+
 - **Account Balances**: Calculated as `openingBalance + totalIncome + totalTransfersIn - totalExpenses - totalTransfersOut`.
 - **Savings Rate**: Evaluated as `(netSavings / totalIncome) * 100` when total income > 0.
 - **Goal Progress**: Compares net savings to `annualSavingsGoal` configured in the user profile.
@@ -223,22 +232,28 @@ finance-tracker-app/
 
 ### Available Scripts
 
-| Command | Description |
-| :--- | :--- |
-| `npm run start` | Launches the Expo Metro bundler server. |
-| `npm run ios` | Starts Metro and targets an iOS Simulator. |
-| `npm run android` | Starts Metro and targets an Android Emulator/device. |
-| `npm run web` | Bundles and runs the application in the default web browser. |
-| `npm run lint` | Runs ESLint over project files to enforce code standards. |
-| `npm run reset-project` | Resets the starter project structure (Expo utility script). |
+| Command                 | Description                                                  |
+| :---------------------- | :----------------------------------------------------------- |
+| `npm run start`         | Launches the Expo Metro bundler server.                      |
+| `npm run ios`           | Starts Metro and targets an iOS Simulator.                   |
+| `npm run android`       | Starts Metro and targets an Android Emulator/device.         |
+| `npm run web`           | Bundles and runs the application in the default web browser. |
+| `npm run lint`          | Runs ESLint over project files to enforce code standards.    |
+| `npm run reset-project` | Resets the starter project structure (Expo utility script).  |
 
 ### Domain Data Contracts
 
 Key domain entities defined in `src/domain/types.ts`:
 
 #### `Account`
+
 ```typescript
-export type AccountType = 'savings' | 'spending' | 'emergency' | 'cash' | 'investment';
+export type AccountType =
+  | "savings"
+  | "spending"
+  | "emergency"
+  | "cash"
+  | "investment";
 
 export interface Account {
   id: string;
@@ -254,8 +269,9 @@ export interface Account {
 ```
 
 #### `Transaction`
+
 ```typescript
-export type TransactionType = 'expense' | 'income' | 'transfer';
+export type TransactionType = "expense" | "income" | "transfer";
 
 export interface Transaction {
   id: string;
@@ -273,6 +289,21 @@ export interface Transaction {
 ```
 
 #### `UserProfile`
+
+type: TransactionType;
+category: ExpenseCategory;
+date: string;
+timestamp: number;
+time?: string;
+sourceAccountId: string;
+destinationAccountId?: string;
+note?: string;
+}
+
+````
+
+#### `UserProfile`
+
 ```typescript
 export interface UserProfile {
   name: string;
@@ -281,7 +312,7 @@ export interface UserProfile {
   currency: string;
   isConfigured: boolean;
 }
-```
+````
 
 ### Tech Stack & Dependencies
 

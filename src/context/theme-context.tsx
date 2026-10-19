@@ -18,9 +18,9 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const deviceColorScheme = useDeviceColorScheme();
-  const [themeMode, setThemeModeState] = useState<ThemeMode>('light');
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('dark');
   const [systemScheme, setSystemScheme] = useState<'light' | 'dark'>(
-    deviceColorScheme === 'dark' ? 'dark' : 'light'
+    deviceColorScheme === 'light' ? 'light' : 'dark'
   );
 
   // Load saved theme preference on launch
@@ -31,7 +31,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setThemeModeState(savedMode);
         Uniwind.setTheme(savedMode);
       } else {
-        Uniwind.setTheme('light');
+        Uniwind.setTheme('dark');
       }
     }
     loadTheme();
