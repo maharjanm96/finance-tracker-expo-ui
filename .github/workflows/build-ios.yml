@@ -4,81 +4,65 @@ on:
   workflow_dispatch:
     inputs:
       build_target:
-        description: 'Build Target'
+        description: "Build Target"
         required: true
-        default: 'all'
+        default: "ipa-device"
         type: choice
         options:
-          - 'all'
-          - 'ipa-device'
-          - 'simulator'
+          - "all"
+          - "ipa-device"
+          - "simulator"
 
 jobs:
   build-ios:
-    name: 🍏 Compile iOS App
+    name: Compile iOS App
     runs-on: macos-15
 
     steps:
-      - name: ⬇️ Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 🍎 Select Xcode 16
+      - name: Select Xcode 16.4
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable
+          xcode-version: "26.3"
 
-      - name: 🟢 Setup Node.js 20
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
 
-      - name: 📦 Install Node Dependencies
+      - name: Install Node dependencies
         run: npm ci
 
-      - name: 🏗️ Run Expo Prebuild (Generate Native iOS Project)
+      - name: Expo prebuild
         run: npx expo prebuild --platform ios --clean --no-install
 
-      - name: 📦 Install CocoaPods
-        run: |
-          cd ios
-          pod install --repo-update
+      - name: Install CocoaPods
+        working-directory: ios
+        run: pod install
 
-      - name: 🔍 Detect Xcode Workspace and Scheme
+      - name: Detect workspace and scheme
         id: xcode-info
         run: |
-          WORKSPACE=$(find ios -name "*.xcworkspace" | head -n 1)
-          echo "Found workspace: $WORKSPACE"
+          WORKSPACE=$(ls -d ios/*.xcworkspace | head -n 1)
+          test -d ios/Pods || { echo "ios/Pods missing"; exit 1; }
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          echo "Workspace: $WORKSPACE"
+          echo "Scheme: $SCHEME"
+          xcodebuild -list -workspace "$WORKSPACE" | head -n 40
           echo "workspace=$WORKSPACE" >> $GITHUB_OUTPUT
-          
-          # Extract first scheme from the workspace
-          SCHEME=$(xcodebuild -list -workspace "$WORKSPACE" -json | jq -r '.workspace.schemes[0]')
-          echo "Detected scheme: $SCHEME"
           echo "scheme=$SCHEME" >> $GITHUB_OUTPUT
 
-      # ─── 1. Build Physical Device Unsigned IPA (For Sideloadly / AltStore) ───
-      - name: 🔨 Build Device Archive (Unsigned)
+      # Unsigned device build. Sideloadly re-signs it with your Apple ID.
+      - name: Build device app (unsigned)
         if: ${{ github.event.inputs.build_target == 'all' || github.event.inputs.build_target == 'ipa-device' }}
         run: |
-          WORKSPACE="${{ steps.xcode-info.outputs.workspace }}"
-          SCHEME="${{ steps.xcode-info.outputs.scheme }}"
-          PODS_SCHEME="Pods-$SCHEME"
-
-          rm -rf build_device
-          
-          echo "1️⃣ Compiling CocoaPods dependencies ($PODS_SCHEME) to generate module maps..."
-          xcodebuild -workspace "$WORKSPACE" \
-            -scheme "$PODS_SCHEME" \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
-            -derivedDataPath build_device \
-            COMPILER_INDEX_STORE_ENABLE=NO \
-            build || echo "Pods pre-compilation completed"
-          
-          echo "2️⃣ Compiling main application scheme ($SCHEME)..."
-          xcodebuild -workspace "$WORKSPACE" \
-            -scheme "$SCHEME" \
+          set -o pipefail
+          xcodebuild \
+            -workspace "${{ steps.xcode-info.outputs.workspace }}" \
+            -scheme "${{ steps.xcode-info.outputs.scheme }}" \
             -configuration Release \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
@@ -86,18 +70,18 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
+            EXPANDED_CODE_SIGN_IDENTITY="" \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            build
+            build 2>&1 | tee build_device.log
 
-          # Package into standard IPA structure (Payload folder)
-          mkdir -p Payload
-          APP_PATH=$(find build_device/Build/Products/Release-iphoneos -name "*.app" -type d | head -n 1)
-          echo "Copying $APP_PATH into Payload/"
-          cp -r "$APP_PATH" Payload/
+          APP_PATH=$(find build_device/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" -type d | head -n 1)
+          test -n "$APP_PATH" || { echo "No .app found"; exit 1; }
+          rm -rf Payload && mkdir Payload
+          cp -R "$APP_PATH" Payload/
           zip -r -q finance-tracker-unsigned.ipa Payload
-          echo "Successfully created finance-tracker-unsigned.ipa"
+          ls -lh finance-tracker-unsigned.ipa
 
-      - name: 📤 Upload Device IPA (Sideloadly / AltStore)
+      - name: Upload device IPA
         if: ${{ github.event.inputs.build_target == 'all' || github.event.inputs.build_target == 'ipa-device' }}
         uses: actions/upload-artifact@v4
         with:
@@ -105,48 +89,38 @@ jobs:
           path: finance-tracker-unsigned.ipa
           retention-days: 7
 
-      # ─── 2. Build iOS Simulator App ───
-      - name: 💻 Build Simulator App
+      - name: Build simulator app
         if: ${{ github.event.inputs.build_target == 'all' || github.event.inputs.build_target == 'simulator' }}
         run: |
-          WORKSPACE="${{ steps.xcode-info.outputs.workspace }}"
-          SCHEME="${{ steps.xcode-info.outputs.scheme }}"
-          PODS_SCHEME="Pods-$SCHEME"
-
-          rm -rf build_sim
-
-          echo "1️⃣ Compiling CocoaPods dependencies ($PODS_SCHEME) for simulator..."
-          xcodebuild -workspace "$WORKSPACE" \
-            -scheme "$PODS_SCHEME" \
+          set -o pipefail
+          xcodebuild \
+            -workspace "${{ steps.xcode-info.outputs.workspace }}" \
+            -scheme "${{ steps.xcode-info.outputs.scheme }}" \
             -configuration Release \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build_sim \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            build || echo "Pods pre-compilation completed"
+            build 2>&1 | tee build_sim.log
 
-          echo "2️⃣ Compiling main application scheme ($SCHEME)..."
-          xcodebuild -workspace "$WORKSPACE" \
-            -scheme "$SCHEME" \
-            -configuration Release \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath build_sim \
-            COMPILER_INDEX_STORE_ENABLE=NO \
-            build
+          APP_PATH=$(find build_sim/Build/Products/Release-iphonesimulator -maxdepth 1 -name "*.app" -type d | head -n 1)
+          test -n "$APP_PATH" || { echo "No .app found"; exit 1; }
+          (cd "$(dirname "$APP_PATH")" && zip -r -q "$GITHUB_WORKSPACE/finance-tracker-simulator.zip" "$(basename "$APP_PATH")")
 
-          # Compress .app for download
-          APP_PATH=$(find build_sim/Build/Products/Release-iphonesimulator -name "*.app" -type d | head -n 1)
-          APP_DIR=$(dirname "$APP_PATH")
-          APP_NAME=$(basename "$APP_PATH")
-          cd "$APP_DIR"
-          zip -r -q "$GITHUB_WORKSPACE/finance-tracker-simulator.zip" "$APP_NAME"
-          echo "Successfully created finance-tracker-simulator.zip"
-
-      - name: 📤 Upload Simulator App
+      - name: Upload simulator app
         if: ${{ github.event.inputs.build_target == 'all' || github.event.inputs.build_target == 'simulator' }}
         uses: actions/upload-artifact@v4
         with:
           name: finance-tracker-simulator-app
           path: finance-tracker-simulator.zip
           retention-days: 7
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            build_device.log
+            build_sim.log
+          if-no-files-found: ignore
