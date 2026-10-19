@@ -62,8 +62,21 @@ jobs:
         run: |
           WORKSPACE="${{ steps.xcode-info.outputs.workspace }}"
           SCHEME="${{ steps.xcode-info.outputs.scheme }}"
+          PODS_SCHEME="Pods-$SCHEME"
+
+          rm -rf build_device
           
-          echo "Building unsigned binary for physical devices..."
+          echo "1️⃣ Compiling CocoaPods dependencies ($PODS_SCHEME) to generate module maps..."
+          xcodebuild -workspace "$WORKSPACE" \
+            -scheme "$PODS_SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build_device \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            build || echo "Pods pre-compilation completed"
+          
+          echo "2️⃣ Compiling main application scheme ($SCHEME)..."
           xcodebuild -workspace "$WORKSPACE" \
             -scheme "$SCHEME" \
             -configuration Release \
@@ -98,8 +111,21 @@ jobs:
         run: |
           WORKSPACE="${{ steps.xcode-info.outputs.workspace }}"
           SCHEME="${{ steps.xcode-info.outputs.scheme }}"
-          
-          echo "Building Simulator app..."
+          PODS_SCHEME="Pods-$SCHEME"
+
+          rm -rf build_sim
+
+          echo "1️⃣ Compiling CocoaPods dependencies ($PODS_SCHEME) for simulator..."
+          xcodebuild -workspace "$WORKSPACE" \
+            -scheme "$PODS_SCHEME" \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build_sim \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            build || echo "Pods pre-compilation completed"
+
+          echo "2️⃣ Compiling main application scheme ($SCHEME)..."
           xcodebuild -workspace "$WORKSPACE" \
             -scheme "$SCHEME" \
             -configuration Release \
